@@ -27,8 +27,13 @@ int main()
 	printByteArr(arr, 14);
 	std::cout << std::endl;
 
-	// Get the ethernet protocol into ether2
+	// create ether2
 	Ethernet ether2;
+
+	// print empty ether2
+	std::cout << ether2 << std::endl;
+
+	// Get the ethernet protocol into ether2
 	ether2.deserialize(arr);
 
 	// Print ether2 protocol

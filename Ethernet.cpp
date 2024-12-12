@@ -44,7 +44,8 @@ void Ethernet::serialize(byte* ptr) const
 	memcpy(ptr, &m_src , ADDR_MAC_BYTES);
 	ptr += ADDR_MAC_BYTES;
 
-	memcpy(ptr, &m_type, ETHER_LEN_TYPE);
+	byte2 netType = EndiannessHandler::toNetworkEndian(m_type);
+	memcpy(ptr, &netType, ETHER_LEN_TYPE);
 }
 
 void Ethernet::deserialize(const byte* ptr)
@@ -56,6 +57,7 @@ void Ethernet::deserialize(const byte* ptr)
 	ptr += ADDR_MAC_BYTES;
 
 	memcpy(&m_type, ptr, ETHER_LEN_TYPE);
+	m_type = EndiannessHandler::fromNetworkEndian(m_type);
 }
 
 std::ostream& operator<<(std::ostream& os, const Ethernet ether)

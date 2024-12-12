@@ -156,6 +156,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Address.cpp" />
+    <ClCompile Include="EndianHandler.cpp" />
     <ClCompile Include="Ethernet.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Protocol.cpp" />
@@ -163,6 +164,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Address.h" />
+    <ClInclude Include="EndianHandler.h" />
     <ClInclude Include="Ethernet.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Protocol.h" />

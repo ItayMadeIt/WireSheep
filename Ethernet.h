@@ -1,5 +1,6 @@
 #pragma once
 
+#include "EndianHandler.h"
 #include "Protocol.h"
 #include "Address.h"
 
