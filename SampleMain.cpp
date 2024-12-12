@@ -3,18 +3,9 @@
 #include <vector>
 #include "WireDefs.h"
 #include "Helper.h"
+#include "Protocol.h"
 
 int main()
 {
-	std::vector<byte> bytes1 = { 0xFF, 0xEE, 0xDD, 0xCC, 0xBB, 0xAA, 0x99, 0x88, 0x77, 0x66, 0x55 , 0x44, 0x33, 0x22, 0x11, 0};
-	std::vector<byte> bytes2 = { 0xF, 0xE, 0xD, 0xC, 0xB, 0xA, 0x9, 0x8, 0x7, 0x6, 0x5, 0x4, 0x3, 0x2, 0x1, 0};
 
-	std::cout << bytes1 << std::endl;
-	std::cout << bytes2 << std::endl;
-
-	std::cout << std::endl;
-	printByteArr(bytes1.data(), bytes1.size());
-	std::cout << std::endl;
-	printByteArr(bytes2.data(), bytes2.size());
-	std::cout << std::endl;
 }
