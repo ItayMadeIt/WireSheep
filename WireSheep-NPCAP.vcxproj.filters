@@ -24,6 +24,12 @@
     <ClCompile Include="Protocol.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Ethernet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Address.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Helper.h">
@@ -33,6 +39,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Protocol.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Ethernet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Address.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
