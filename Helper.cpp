@@ -27,5 +27,5 @@ void printByteArr(byte* arr, size_t len)
 		std::cout << std::setw(HEX_LEN) << (int)arr[i] << ' ';
 	}
 
-	std::cout << std::dec;
+	std::cout << std::endl << std::dec;
 }

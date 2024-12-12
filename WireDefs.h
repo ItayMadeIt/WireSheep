@@ -8,8 +8,6 @@ using byte2 = uint16_t;
 using byte4 = uint32_t;
 using byte8 = uint64_t;
 
-using t = std::bitset<30>;
-
 enum class ProtocolTypes : byte
 {
 	Invalid = -1,

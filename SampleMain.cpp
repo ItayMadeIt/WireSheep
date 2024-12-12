@@ -2,21 +2,36 @@
 #include <memory>
 #include <iostream>
 #include <vector>
-#include "WireDefs.h"
+#include "Ethernet.h"
 #include "Helper.h"
-#include "Protocol.h"
-#include "Address.h"
 
 int main()
 {
 	using namespace address;
 
-	addrMac mac = addrMac::fromString("0A:B2:1C:FD:0E:FF");
-	std::cout << mac.toString() << std::endl;
+	addrMac macDst = addrMac::fromString("E8:AD:A6:FB:FC:74");
+	addrMac macSrc = addrMac::fromString("74:56:3C:73:67:B0");
 
-	addrIPv6 ipv6 = addrIPv6::fromString("FFEE:DDCC:BBAA:9988:7766:5544:3322:1100");
-	std::cout << ipv6.toString() << std::endl;
+	// Create ethernet and array
+	Ethernet ether(macSrc, macDst, 0x0800);
+	byte arr[14] = { 0 };
 
-	addrIPv4 ipv4 = addrIPv4::fromString("192.168.100.1");
-	std::cout << ipv4.toString() << std::endl;
+	// Print ethernet & empty array
+	std::cout << ether << std::endl;
+	printByteArr(arr, 14);
+
+	// Serialize ether into the byte array
+	ether.serialize(arr);
+
+	// Print the new array after inputting ether var into it
+	printByteArr(arr, 14);
+	std::cout << std::endl;
+
+	// Get the ethernet protocol into ether2
+	Ethernet ether2;
+	ether2.deserialize(arr);
+
+	// Print ether2 protocol
+	std::cout << ether2 << std::endl;
+
 }

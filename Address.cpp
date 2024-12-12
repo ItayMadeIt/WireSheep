@@ -143,3 +143,18 @@ addrIPv6 addrIPv6::fromString(const std::string& addr)
 
 	return result;
 }
+
+std::ostream& address::operator<<(std::ostream& os, const addrIPv4 ipv4)
+{
+	return os << ipv4;
+}
+
+std::ostream& address::operator<<(std::ostream& os, const addrIPv6 ipv6)
+{
+	return os << ipv6.toString();
+}
+
+std::ostream& address::operator<<(std::ostream& os, const addrMac mac)
+{
+	return os << mac.toString();
+}

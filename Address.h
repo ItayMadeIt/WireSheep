@@ -19,6 +19,8 @@ namespace address
 		std::string toString() const;
 
 		static addrIPv4 fromString(const std::string& addr);
+
+		friend std::ostream& operator<<(std::ostream& os, const addrIPv4 ipv4);
 	};
 
 	struct addrIPv6
@@ -30,6 +32,8 @@ namespace address
 		std::string toString() const;
 
 		static addrIPv6 fromString(const std::string& addr);
+	
+		friend std::ostream& operator<<(std::ostream& os, const addrIPv6 ipv6);
 	};
 	
 	struct addrMac
@@ -41,6 +45,8 @@ namespace address
 		std::string toString() const;
 
 		static addrMac fromString(const std::string& addr);
+
+		friend std::ostream& operator<<(std::ostream& os, const addrMac mac);
 	};
 
 }
