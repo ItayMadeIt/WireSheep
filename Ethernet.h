@@ -10,7 +10,6 @@ constexpr size_t ETHER_LEN_TYPE = 2;
 
 class Ethernet final : public Protocol 
 {
-
 public:
 	Ethernet();
 	Ethernet(const addrMac src, const addrMac dst, const byte2 type);
@@ -27,8 +26,13 @@ public:
 
 	virtual void serialize(byte* ptr) const override;
 	virtual void deserialize(const byte* ptr) override;
+
+	virtual size_t getSize() const override;
 	
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet ether);
+
+public:
+	const static size_t Size = 14;
 
 private:
 	addrMac m_dst;

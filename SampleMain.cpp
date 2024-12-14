@@ -14,17 +14,17 @@ int main()
 
 	// Create ethernet and array
 	Ethernet ether(macSrc, macDst, 0x0800);
-	byte arr[14] = { 0 };
+	byte arr[Ethernet::Size] = {0};
 
 	// Print ethernet & empty array
 	std::cout << ether << std::endl;
-	printByteArr(arr, 14);
+	printByteArr(arr, Ethernet::Size);
 
 	// Serialize ether into the byte array
 	ether.serialize(arr);
 
 	// Print the new array after inputting ether var into it
-	printByteArr(arr, 14);
+	printByteArr(arr, Ethernet::Size);
 	std::cout << std::endl;
 
 	// create ether2

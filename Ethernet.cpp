@@ -1,10 +1,10 @@
 #include "Ethernet.h"
 
-Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet)
+Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet, Ethernet::Size)
 { }
 
 Ethernet::Ethernet(const addrMac srcAddr, const addrMac dstAddr, const byte2 type)
-	: Protocol(ProtocolTypes::Ethernet), m_src(srcAddr), m_dst(dstAddr), m_type(type)
+	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size), m_src(srcAddr), m_dst(dstAddr), m_type(type)
 { }
 
 Ethernet::~Ethernet() = default;
@@ -60,14 +60,22 @@ void Ethernet::deserialize(const byte* ptr)
 	m_type = EndiannessHandler::fromNetworkEndian(m_type);
 }
 
+size_t Ethernet::getSize() const
+{
+	return Ethernet::Size;
+}
+
 std::ostream& operator<<(std::ostream& os, const Ethernet ether)
 {
 	os << "[Ethernet]" << std::endl;
+
 	// Output source and destination
 	os << "Src : " << ether.m_src  << std::endl;
 	os << "Dst : " << ether.m_dst  << std::endl;
+
 	// Output type as dec and hex
 	os << "Type: " << std::setfill(' ') << std::setw(5) << std::dec << ether.m_type;
 	os << " | 0x" << std::setfill('0') << std::setw(4) << std::hex << ether.m_type << std::endl << std::dec;
+
 	return os;
 }

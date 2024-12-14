@@ -6,7 +6,7 @@
 class Protocol
 {
 public:
-	Protocol(ProtocolTypes protocol);
+	Protocol(ProtocolTypes protocol, size_t size);
 	virtual ~Protocol() = default;
 	
 	/// <summary>
@@ -23,8 +23,10 @@ public:
 	virtual void deserialize(const byte* ptr) = 0;
 
 	ProtocolTypes getProtocol();
+	virtual size_t getSize() const = 0;
 
 private:
 	ProtocolTypes m_protocol;
+	size_t m_size;
 };
 

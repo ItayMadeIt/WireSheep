@@ -1,6 +1,7 @@
 #include "Protocol.h"
 
-Protocol::Protocol(ProtocolTypes protocol) : m_protocol(protocol)
+Protocol::Protocol(ProtocolTypes protocol, size_t size) 
+	: m_protocol(protocol), m_size(size)
 { }
 
 ProtocolTypes Protocol::getProtocol()
