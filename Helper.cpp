@@ -11,7 +11,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<byte>& vector)
 		os << std::setw(HEX_LEN) << (int)vector[i] << ' ';
 	}
 
-	os << std::dec;
+	std::cout << std::endl << std::setfill(' ') << std::dec;
 
 	return os;
 }
@@ -27,5 +27,5 @@ void printByteArr(byte* arr, size_t len)
 		std::cout << std::setw(HEX_LEN) << (int)arr[i] << ' ';
 	}
 
-	std::cout << std::endl << std::dec;
+	std::cout << std::endl << std::setfill(' ') << std::dec;
 }

@@ -63,8 +63,11 @@ void Ethernet::deserialize(const byte* ptr)
 std::ostream& operator<<(std::ostream& os, const Ethernet ether)
 {
 	os << "[Ethernet]" << std::endl;
+	// Output source and destination
 	os << "Src : " << ether.m_src  << std::endl;
 	os << "Dst : " << ether.m_dst  << std::endl;
-	os << "Type: " << ether.m_type << std::endl;
+	// Output type as dec and hex
+	os << "Type: " << std::setfill(' ') << std::setw(5) << std::dec << ether.m_type;
+	os << " | 0x" << std::setfill('0') << std::setw(4) << std::hex << ether.m_type << std::endl << std::dec;
 	return os;
 }
