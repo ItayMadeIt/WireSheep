@@ -9,6 +9,16 @@ ProtocolTypes Protocol::getProtocol() const
 	return m_protocolType;
 }
 
+void Protocol::setNextProtocol(std::unique_ptr<Protocol> next)
+{
+	m_nextProtocol = std::move(next);
+}
+
+Protocol* Protocol::getNextProtocol()
+{
+	return m_nextProtocol.get();
+}
+
 size_t Protocol::getLayersSize() const
 {
 	size_t size = getSize();

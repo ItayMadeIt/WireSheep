@@ -4,23 +4,28 @@
 #include <vector>
 #include "Ethernet.h"
 #include "Helper.h"
+#include "ProtocolStackBuilder.h"
 
 int main()
 {
 	using namespace address;
 
-	addrMac macDst = addrMac::fromString("E8:AD:A6:FB:FC:74");
-	addrMac macSrc = addrMac::fromString("74:56:3C:73:67:B0");
+	addrMac macDst1 = addrMac::fromString("AA:BB:CC:DD:EE:FF");
+	addrMac macSrc1 = addrMac::fromString("FF:EE:DD:CC:BB:AA");
 
-	// Create Ethernet layers
-    auto ether = std::make_unique<Ethernet>(macSrc, macDst, 0x0800);
-    auto ether2 = std::make_unique<Ethernet>(macDst, macSrc, 0x0123, std::move(ether));
+	addrMac macDst2 = addrMac::fromString("11:22:11:22:11:22");
+	addrMac macSrc2 = addrMac::fromString("44:33:44:33:44:33");
 
-    // Serialize the stack
-    std::vector<byte> buffer;
-    ether2->serialize(buffer);
+	ProtocolStackBuilder builder;
+	builder.push<Ethernet>(macSrc1, macDst1, 0x0800);
+	builder.push<Ethernet>(macSrc2, macDst2, 0x0123);
+	
+	std::unique_ptr<Protocol> prot1 = builder.first();
 
-	std::cout << "Ethernet bytes: " << std::endl << std::endl;
+	// Serialize the stack
+	std::vector<byte> buffer;
+	prot1->serialize(buffer);
+
+	std::cout << "Protocol bytes: " << std::endl << std::endl;
 	printByteArr(buffer.data(), buffer.size());
-
 }

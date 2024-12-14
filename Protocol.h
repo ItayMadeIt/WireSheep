@@ -28,6 +28,8 @@ public:
 	ProtocolTypes getProtocol() const;
 	virtual size_t getSize() const = 0;
 
+	void setNextProtocol(std::unique_ptr<Protocol> next);
+	Protocol* getNextProtocol();
 
 	virtual void serialize(std::vector<byte>& buffer, const size_t offset) const = 0;
 

@@ -160,6 +160,7 @@
     <ClCompile Include="Ethernet.cpp" />
     <ClCompile Include="Helper.cpp" />
     <ClCompile Include="Protocol.cpp" />
+    <ClCompile Include="ProtocolStackBuilder.cpp" />
     <ClCompile Include="SampleMain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +169,7 @@
     <ClInclude Include="Ethernet.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="Protocol.h" />
+    <ClInclude Include="ProtocolStackBuilder.h" />
     <ClInclude Include="WireDefs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
