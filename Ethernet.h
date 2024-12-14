@@ -10,9 +10,11 @@ constexpr size_t ETHER_LEN_TYPE = 2;
 
 class Ethernet final : public Protocol 
 {
-public:
+public: 
 	Ethernet();
 	Ethernet(const addrMac src, const addrMac dst, const byte2 type);
+	Ethernet(std::unique_ptr<Protocol> nextProtocol);
+	Ethernet(const addrMac src, const addrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
 	~Ethernet();
 
 	void src(const addrMac value);
@@ -24,20 +26,26 @@ public:
 	void type(const byte2 value);
 	byte2 type() const;
 
-	virtual void serialize(byte* ptr) const override;
-	virtual void deserialize(const byte* ptr) override;
+	virtual void serializeArr(byte* ptr) const override;
+	virtual void deserializeArr(const byte* ptr) override;
 
 	virtual size_t getSize() const override;
-	
-	friend std::ostream& operator<<(std::ostream& os, const Ethernet ether);
+
+	virtual void serialize(std::vector<byte>& buffer) const override;
+
+	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
+
+	virtual void serialize(std::vector<byte>& buffer, const size_t offset) const override;
 
 public:
 	const static size_t Size = 14;
 
 private:
+	const static size_t MinimumSize = 60;
 	addrMac m_dst;
 	addrMac m_src;
 	byte2 m_type;
+
 
 };
 

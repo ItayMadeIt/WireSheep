@@ -1,10 +1,19 @@
 #include "Ethernet.h"
 
-Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet, Ethernet::Size)
+Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr)
 { }
 
 Ethernet::Ethernet(const addrMac srcAddr, const addrMac dstAddr, const byte2 type)
-	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size), m_src(srcAddr), m_dst(dstAddr), m_type(type)
+	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr), m_src(srcAddr), m_dst(dstAddr), m_type(type)
+{ }
+
+Ethernet::Ethernet(std::unique_ptr<Protocol> nextProtocol) 
+	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol))
+{ }
+
+Ethernet::Ethernet(const addrMac srcAddr, const addrMac dstAddr, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
+	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol)),
+		m_src(srcAddr), m_dst(dstAddr), m_type(type)
 { }
 
 Ethernet::~Ethernet() = default;
@@ -36,7 +45,7 @@ byte2 Ethernet::type() const
 	return m_type;
 }
 
-void Ethernet::serialize(byte* ptr) const
+void Ethernet::serializeArr(byte* ptr) const
 {
 	memcpy(ptr, &m_dst , ADDR_MAC_BYTES);
 	ptr += ADDR_MAC_BYTES;
@@ -48,7 +57,7 @@ void Ethernet::serialize(byte* ptr) const
 	memcpy(ptr, &netType, ETHER_LEN_TYPE);
 }
 
-void Ethernet::deserialize(const byte* ptr)
+void Ethernet::deserializeArr(const byte* ptr)
 {
 	memcpy(&m_dst, ptr, ADDR_MAC_BYTES);
 	ptr += ADDR_MAC_BYTES;
@@ -65,7 +74,43 @@ size_t Ethernet::getSize() const
 	return Ethernet::Size;
 }
 
-std::ostream& operator<<(std::ostream& os, const Ethernet ether)
+void Ethernet::serialize(std::vector<byte>& buffer) const
+{
+	// Reserve the size
+	size_t size = getLayersSize();
+	buffer.reserve(size);
+
+	// Add ethernet data to the array
+	buffer.resize(buffer.size() + Ethernet::Size);
+	serializeArr(buffer.data());
+
+	// Continue to serialize the data for the following protocols
+	if (m_nextProtocol)
+	{
+		m_nextProtocol->serialize(buffer, Ethernet::Size);
+	}
+
+	// Ensure there are at minimum 60 bytes (12 for both MACs, 2 for the length/type and at minimum 46 bytes of data) 
+	if (buffer.size() < Ethernet::MinimumSize)
+	{
+		buffer.resize(Ethernet::MinimumSize);
+	}
+}
+
+void Ethernet::serialize(std::vector<byte>& buffer, const size_t offset) const
+{
+	// Add ethernet data to the array
+	buffer.resize(buffer.size() + Ethernet::Size);
+	serializeArr(buffer.data() + offset);
+
+	// Continue to serialize the data for the following protocols
+	if (m_nextProtocol)
+	{
+		m_nextProtocol->serialize(buffer, offset + Ethernet::Size);
+	}
+}
+
+std::ostream& operator<<(std::ostream& os, const Ethernet& ether)
 {
 	os << "[Ethernet]" << std::endl;
 
