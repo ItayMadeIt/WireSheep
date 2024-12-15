@@ -159,8 +159,9 @@
     <ClCompile Include="EndianHandler.cpp" />
     <ClCompile Include="Ethernet.cpp" />
     <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Protocol.cpp" />
-    <ClCompile Include="ProtocolStackBuilder.cpp" />
+    <ClCompile Include="PacketBuilder.cpp" />
     <ClCompile Include="SampleMain.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,8 +169,9 @@
     <ClInclude Include="EndianHandler.h" />
     <ClInclude Include="Ethernet.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
-    <ClInclude Include="ProtocolStackBuilder.h" />
+    <ClInclude Include="PacketBuilder.h" />
     <ClInclude Include="WireDefs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<byte>& vector)
 	return os;
 }
 
-void printByteArr(byte* arr, size_t len)
+void printByteArr(const byte* arr, size_t len)
 {
 	constexpr size_t HEX_LEN = 2;
 

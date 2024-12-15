@@ -5,6 +5,6 @@
 #include <vector>
 #include <iomanip>
 
-void printByteArr(byte* arr, size_t len);
+void printByteArr(const byte* arr, size_t len);
 std::ostream& operator<<(std::ostream& os, const std::vector<byte>& vector);
 

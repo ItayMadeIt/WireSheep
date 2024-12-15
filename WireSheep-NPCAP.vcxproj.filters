@@ -33,7 +33,10 @@
     <ClCompile Include="EndianHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ProtocolStackBuilder.cpp">
+    <ClCompile Include="PacketBuilder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -56,7 +59,10 @@
     <ClInclude Include="EndianHandler.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ProtocolStackBuilder.h">
+    <ClInclude Include="PacketBuilder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

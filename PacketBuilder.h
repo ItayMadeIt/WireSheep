@@ -1,17 +1,19 @@
 #pragma once
 
 #include "Protocol.h"
+#include "Packet.h"
 
-class ProtocolStackBuilder
+class PacketBuilder
 {
 public:
-	ProtocolStackBuilder() = default;
-	~ProtocolStackBuilder() = default;
+	PacketBuilder() = default;
+	~PacketBuilder() = default;
 
 	template<typename Layer, typename... Args>
-	ProtocolStackBuilder& push(Args&&... args);
+	PacketBuilder& push(Args&&... args);
 
-	std::unique_ptr<Protocol> first();
+	Packet build();
+	void reset();
 
 private:
 	std::unique_ptr<Protocol> firstProtocol;
@@ -20,7 +22,7 @@ private:
 };
 
 template<typename Layer, typename ...Args>
-inline ProtocolStackBuilder& ProtocolStackBuilder::push(Args && ...args)
+inline PacketBuilder& PacketBuilder::push(Args && ...args)
 {
 	// Create protocol instance
 	std::unique_ptr<Layer> newProtocol =
