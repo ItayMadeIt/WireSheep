@@ -27,7 +27,7 @@ int main()
 	std::string fileName = getFirstLineInFile("C:\\Users\\User\\Documents\\device.txt");
 
 	Device device(fileName);
-	/*
+	
 	// Sample mac addresses
 	addrMac macDst1 = addrMac::fromString("AA:BB:CC:DD:EE:FF");
 	addrMac macSrc1 = addrMac::fromString("FF:EE:DD:CC:BB:AA");
@@ -51,5 +51,7 @@ int main()
 	// Print it
 	std::cout << "Protocol bytes: " << std::endl << std::endl;
 	printByteArr(buffer.data(), buffer.size());
-	*/
+	
+	device << pack1 << pack1;
+	
 }

@@ -29,3 +29,21 @@ Device::~Device()
 		pcap_close(m_devicePtr);
 	}
 }
+
+void Device::sendPacket(const Packet& packet)
+{
+	const std::vector<byte>& buffer = packet;
+
+	// Send the packet
+	if (pcap_sendpacket(m_devicePtr, buffer.data(), buffer.size()) != 0)
+	{
+		throw std::exception("Failed to send packet.");
+	}
+}
+
+Device& operator<<(Device& device, const Packet& packet)
+{
+	device.sendPacket(packet);
+
+	return device;
+}

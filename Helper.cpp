@@ -11,7 +11,7 @@ std::ostream& operator<<(std::ostream& os, const std::vector<byte>& vector)
 		os << std::setw(HEX_LEN) << (int)vector[i] << ' ';
 	}
 
-	std::cout << std::endl << std::setfill(' ') << std::dec;
+	os << std::endl << std::setfill(' ') << std::dec;
 
 	return os;
 }
