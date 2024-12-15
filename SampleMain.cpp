@@ -1,15 +1,33 @@
 #include <pcap.h>
 #include <memory>
+#include <fstream>
 #include <iostream>
 #include <vector>
+#include <string>
 #include "Ethernet.h"
 #include "Helper.h"
 #include "PacketBuilder.h"
+#include "Device.h"
+
+std::string getFirstLineInFile(const std::string& filename)
+{
+	std::string result;
+
+	std::ifstream file(filename);
+
+	std::getline(file, result);
+
+	return result;
+}
 
 int main()
 {
 	using namespace address;
 
+	std::string fileName = getFirstLineInFile("C:\\Users\\User\\Documents\\device.txt");
+
+	Device device(fileName);
+	/*
 	// Sample mac addresses
 	addrMac macDst1 = addrMac::fromString("AA:BB:CC:DD:EE:FF");
 	addrMac macSrc1 = addrMac::fromString("FF:EE:DD:CC:BB:AA");
@@ -33,4 +51,5 @@ int main()
 	// Print it
 	std::cout << "Protocol bytes: " << std::endl << std::endl;
 	printByteArr(buffer.data(), buffer.size());
+	*/
 }
