@@ -13,8 +13,10 @@ class Ethernet final : public Protocol
 public: 
 	Ethernet();
 	Ethernet(const addrMac src, const addrMac dst, const byte2 type);
+	Ethernet(const std::string& src, const std::string& dst, const byte2 type);
 	Ethernet(std::unique_ptr<Protocol> nextProtocol);
 	Ethernet(const addrMac src, const addrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
+	Ethernet(const std::string& src, const std::string& dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
 	~Ethernet();
 
 	void src(const addrMac value);

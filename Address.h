@@ -12,6 +12,9 @@ namespace address
 
 	struct addrIPv4
 	{
+		addrIPv4();
+		addrIPv4(const std::string& ipv4Str);
+
 		byte m_data[ADDR_IP4_BYTES];
 
 		byte& operator[](const size_t index);
@@ -25,6 +28,9 @@ namespace address
 
 	struct addrIPv6
 	{
+		addrIPv6();
+		addrIPv6(const std::string& ipv6Str);
+
 		byte m_data[ADDR_IP6_BYTES];
 
 		byte& operator[](const size_t index);
@@ -38,6 +44,9 @@ namespace address
 	
 	struct addrMac
 	{
+		addrMac();
+		addrMac(const std::string& macStr);
+
 		byte m_data[ADDR_MAC_BYTES];
 
 		byte& operator[](const size_t index);

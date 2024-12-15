@@ -3,17 +3,26 @@
 Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr)
 { }
 
-Ethernet::Ethernet(const addrMac srcAddr, const addrMac dstAddr, const byte2 type)
-	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr), m_src(srcAddr), m_dst(dstAddr), m_type(type)
+Ethernet::Ethernet(const addrMac src, const addrMac dst, const byte2 type)
+	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr), m_src(src), m_dst(dst), m_type(type)
+{ }
+
+Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2 type) 
+	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr), m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::Ethernet(std::unique_ptr<Protocol> nextProtocol) 
 	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol))
 { }
 
-Ethernet::Ethernet(const addrMac srcAddr, const addrMac dstAddr, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
+Ethernet::Ethernet(const addrMac src, const addrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
 	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol)),
-		m_src(srcAddr), m_dst(dstAddr), m_type(type)
+		m_src(src), m_dst(dst), m_type(type)
+{ }
+
+Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
+	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol)),
+	m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::~Ethernet() = default;

@@ -28,30 +28,23 @@ int main()
 
 	Device device(fileName);
 	
-	// Sample mac addresses
-	addrMac macDst1 = addrMac::fromString("AA:BB:CC:DD:EE:FF");
-	addrMac macSrc1 = addrMac::fromString("FF:EE:DD:CC:BB:AA");
-
-	addrMac macDst2 = addrMac::fromString("11:22:11:22:11:22");
-	addrMac macSrc2 = addrMac::fromString("44:33:44:33:44:33");
-
 	// Create packet
 	PacketBuilder packetBuilder;
 
 	// Push 2 ethernet layers onto the packet
-	packetBuilder.push<Ethernet>(macSrc1, macDst1, 0x0800)
-				 .push<Ethernet>(macSrc2, macDst2, 0x0700);
+	packetBuilder.push<Ethernet>("AA:BB:CC:DD:EE:FF", "FF:EE:DD:CC:BB:AA", 0x0100)
+				 .push<Ethernet>("11:22:11:22:11:22", "44:33:44:33:44:33", 0x0100);
 
 	// Make it into a packet
 	Packet pack1 = packetBuilder.build();	
 
-	// Serialize the stack into a buffer
-	const std::vector<byte>& buffer = pack1;
+	// Push 2 different ethernet layers onto a new packet
+	packetBuilder.push<Ethernet>("FF:FF:FF:EE:EE:EE", "EE:EE:EE:FF:FF:FF", 0x0200)
+				 .push<Ethernet>("DD:DD:DD:CC:CC:CC", "CC:CC:CC:DD:DD:DD", 0x0200);
 
-	// Print it
-	std::cout << "Protocol bytes: " << std::endl << std::endl;
-	printByteArr(buffer.data(), buffer.size());
-	
-	device << pack1 << pack1;
+	Packet pack2 = packetBuilder.build();	
+
+	// Send the 2 packets (both packets have 2 ethernet protocols which are not really useful)
+	device << pack1 << pack2;
 	
 }
