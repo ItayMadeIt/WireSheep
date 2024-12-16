@@ -7,6 +7,7 @@
 #include "PacketBuilder.h"
 #include "Ethernet.h"
 #include "IPv4.h"
+#include "UDP.h"
 
 std::string getFirstLineInFile(const std::string& filename)
 {
@@ -41,19 +42,21 @@ int main()
 		.src({ "127.0.0.1" })
 		.dst({ "8.8.8.8" })
 		.protocol(IPv4::IPProtocols::UDP);
+
+	UDP udpLayer;
+	udpLayer
+		.src(100)
+		.dst(200);
 			 
 
 
-	// Push 2 ethernet layers onto the packet
-	packetBuilder << etherLayer << ipv4Layer;
-
 	// Make it into a packet
-	Packet pack1 = packetBuilder.build();	
+	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer).build();
 
 	// Send the 2 packets (both packets have 2 ethernet protocols which are not really useful)
 	for (size_t i = 0; i < 10; i++)
 	{
-		device << pack1;
+		device << pack;
 	}
 	
 }
