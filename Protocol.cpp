@@ -1,8 +1,10 @@
 #include "Protocol.h"
 
-Protocol::Protocol(const ProtocolTypes protocol, const size_t size, std::unique_ptr<Protocol> nextProtocol)
-	: m_protocolType(protocol), m_size(size), m_nextProtocol(std::move(nextProtocol))
+Protocol::Protocol(const ProtocolTypes protocol, std::unique_ptr<Protocol> nextProtocol)
+	: m_protocolType(protocol), m_nextProtocol(std::move(nextProtocol))
 { }
+
+Protocol::Protocol(Protocol&& other) = default;
 
 ProtocolTypes Protocol::getProtocol() const
 {

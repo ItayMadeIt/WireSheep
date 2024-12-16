@@ -42,12 +42,13 @@ public:
 public:
 	const static size_t Size = 14;
 
-private:
-	const static size_t MinimumSize = 60;
+protected:
 	addrMac m_dst;
 	addrMac m_src;
 	byte2 m_type;
 
+private:
+	const static size_t MinimumSize = 60;
 
 };
 

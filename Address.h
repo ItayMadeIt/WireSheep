@@ -19,6 +19,8 @@ namespace address
 
 		byte& operator[](const size_t index);
 
+		void operator=(const addrIPv4& other);
+
 		std::string toString() const;
 
 		static addrIPv4 fromString(const std::string& addr);

@@ -1,27 +1,27 @@
 #include "Ethernet.h"
 
-Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr)
+Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet, nullptr)
 { }
 
 Ethernet::Ethernet(const addrMac src, const addrMac dst, const byte2 type)
-	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr), m_src(src), m_dst(dst), m_type(type)
+	: Protocol(ProtocolTypes::Ethernet, nullptr), m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2 type) 
-	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, nullptr), m_src(src), m_dst(dst), m_type(type)
+	: Protocol(ProtocolTypes::Ethernet, nullptr), m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::Ethernet(std::unique_ptr<Protocol> nextProtocol) 
-	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol))
+	: Protocol(ProtocolTypes::Ethernet, std::move(nextProtocol))
 { }
 
 Ethernet::Ethernet(const addrMac src, const addrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
-	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol)),
+	: Protocol(ProtocolTypes::Ethernet, std::move(nextProtocol)),
 		m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
-	: Protocol(ProtocolTypes::Ethernet, Ethernet::Size, std::move(nextProtocol)),
+	: Protocol(ProtocolTypes::Ethernet, std::move(nextProtocol)),
 	m_src(src), m_dst(dst), m_type(type)
 { }
 

@@ -1,13 +1,12 @@
 #include <pcap.h>
-#include <memory>
 #include <fstream>
 #include <iostream>
 #include <vector>
 #include <string>
-#include "Ethernet.h"
-#include "Helper.h"
-#include "PacketBuilder.h"
 #include "Device.h"
+#include "PacketBuilder.h"
+#include "Ethernet.h"
+#include "IPv4.h"
 
 std::string getFirstLineInFile(const std::string& filename)
 {
@@ -31,20 +30,24 @@ int main()
 	// Create packet
 	PacketBuilder packetBuilder;
 
+	addrIPv4 ipv4("127.0.0.1");
+
+	IPv4 ipv4Layer(ipv4, ipv4);
+	ipv4Layer.version(4);
+	ipv4Layer.protocol(6); // set to not real protocol
+
 	// Push 2 ethernet layers onto the packet
-	packetBuilder.push<Ethernet>("AA:BB:CC:DD:EE:FF", "FF:EE:DD:CC:BB:AA", 0x0100)
-				 .push<Ethernet>("11:22:11:22:11:22", "44:33:44:33:44:33", 0x0100);
+	packetBuilder.push<Ethernet>("AA:BB:CC:DD:EE:FF", "FF:EE:DD:CC:BB:AA", 0x0800)
+				 .push<IPv4>(std::move(ipv4Layer));
 
 	// Make it into a packet
 	Packet pack1 = packetBuilder.build();	
 
 	// Push 2 different ethernet layers onto a new packet
-	packetBuilder.push<Ethernet>("FF:FF:FF:EE:EE:EE", "EE:EE:EE:FF:FF:FF", 0x0200)
-				 .push<Ethernet>("DD:DD:DD:CC:CC:CC", "CC:CC:CC:DD:DD:DD", 0x0200);
-
-	Packet pack2 = packetBuilder.build();	
+	//packetBuilder.push<Ethernet>("FF:FF:FF:EE:EE:EE", "EE:EE:EE:FF:FF:FF", 0x0200)
+	//			 .push<IPv4>("127.0.0.1", "127.0.0.1");
 
 	// Send the 2 packets (both packets have 2 ethernet protocols which are not really useful)
-	device << pack1 << pack2;
+	device << pack1 ;
 	
 }

@@ -7,8 +7,9 @@
 class Protocol
 {
 public:
-	Protocol(const ProtocolTypes protocol, const size_t size, std::unique_ptr<Protocol> nextProtocol);
+	Protocol(const ProtocolTypes protocol, std::unique_ptr<Protocol> nextProtocol);
 	virtual ~Protocol() = default;
+	Protocol(Protocol&& other);
 
 	/// <summary>
 	/// Serialize protocol data from the class into the array (ptr)
@@ -40,6 +41,5 @@ protected:
 
 private:
 	ProtocolTypes m_protocolType;
-	size_t m_size;
 };
 

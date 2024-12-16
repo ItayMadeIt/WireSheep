@@ -30,6 +30,14 @@ byte& addrIPv4::operator[](const size_t index)
 	return m_data[index];
 }
 
+void address::addrIPv4::operator=(const addrIPv4& other)
+{
+	for (size_t i = 0; i < ADDR_IP4_BYTES; i++)
+	{
+		m_data[i] = other.m_data[i];
+	}
+}
+
 
 std::string addrIPv4::toString() const
 {

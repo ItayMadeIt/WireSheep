@@ -160,6 +160,7 @@
     <ClCompile Include="EndianHandler.cpp" />
     <ClCompile Include="Ethernet.cpp" />
     <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="IPv4.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="PacketBuilder.cpp" />
@@ -171,6 +172,7 @@
     <ClInclude Include="EndianHandler.h" />
     <ClInclude Include="Ethernet.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="IPv4.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="PacketBuilder.h" />
