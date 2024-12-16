@@ -10,6 +10,8 @@ IPv4::IPv4(const addrIPv4 src, const addrIPv4 dst, std::unique_ptr<Protocol> nex
 
 IPv4::IPv4(IPv4&& other) = default;
 
+IPv4::IPv4(const IPv4& other) = default;
+
 void IPv4::serializeArr(byte* ptr) const
 {
     byte4 word = 0;

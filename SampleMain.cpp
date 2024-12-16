@@ -30,15 +30,18 @@ int main()
 	// Create packet
 	PacketBuilder packetBuilder;
 
-	addrIPv4 ipv4("127.0.0.1");
+	addrIPv4 src4("127.0.0.1");
+	addrIPv4 dst4("8.8.8.8");
 
-	IPv4 ipv4Layer(ipv4, ipv4);
+	IPv4 ipv4Layer(src4, dst4);
 	ipv4Layer.version(4);
-	ipv4Layer.protocol(6); // set to not real protocol
+	ipv4Layer.protocol(IPv4::IPProtocols::ENCAP); // set to not real protocol
+	ipv4Layer.ttl(64);
+	ipv4Layer.ecn(0b10);
 
 	// Push 2 ethernet layers onto the packet
-	packetBuilder.push<Ethernet>("AA:BB:CC:DD:EE:FF", "FF:EE:DD:CC:BB:AA", 0x0800)
-				 .push<IPv4>(std::move(ipv4Layer));
+	packetBuilder.push<Ethernet>("C4:4A:00:51:0C:CD", "01:00:5E:7F:FF:FB", 0x0800)
+				 .push<IPv4>(ipv4Layer);
 
 	// Make it into a packet
 	Packet pack1 = packetBuilder.build();	
@@ -48,6 +51,9 @@ int main()
 	//			 .push<IPv4>("127.0.0.1", "127.0.0.1");
 
 	// Send the 2 packets (both packets have 2 ethernet protocols which are not really useful)
-	device << pack1 ;
+	for (size_t i = 0; i < 10; i++)
+	{
+		device << pack1;
+	}
 	
 }

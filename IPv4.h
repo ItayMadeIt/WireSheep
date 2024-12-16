@@ -9,9 +9,22 @@ using namespace address;
 class IPv4 : public Protocol
 {
 public:
+	enum class IPProtocols : byte
+	{
+		ICMP = 1,      // Internet Control Message Protocol (ICMP)
+		IGMP = 2,      // Internet Group Management Protocol (IGMP)
+		TCP = 6,	   // Transmission Control Protocol (TCP)
+		UDP = 17,	   // User Datagram Protocol (UDP)
+		ENCAP = 41,	   // IPv6 Encapsulation (ENCAP)
+		OSPF = 89,	   // Open Shortest Path First (OSPF)
+		SCTP = 132,	   // Stream Control Transmission Protocol (SCTP)
+	};
+
+public:
 	IPv4(const addrIPv4 srcAddr, const addrIPv4 dstAddr);
 	IPv4(const addrIPv4 srcAddr, const addrIPv4 dstAddr, std::unique_ptr<Protocol> nextProtocol);
 	IPv4(IPv4&& other);
+	IPv4(const IPv4& other);
 
 	// Protocol override functions
 	void serializeArr(byte* ptr) const override;
@@ -44,8 +57,9 @@ public:
 	void ttl(const byte value) { m_ttl = value; }
 	byte ttl() const { return m_ttl; }
 
+	void protocol(const IPProtocols value) { m_protocol = (byte)value; }
 	void protocol(const byte value) { m_protocol = value; }
-	byte protocol() const { return m_protocol; }
+	IPProtocols protocol() const { return (IPProtocols)m_protocol; }
 
 public:
 	const static size_t Size = 14;

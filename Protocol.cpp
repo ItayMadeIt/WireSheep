@@ -4,6 +4,12 @@ Protocol::Protocol(const ProtocolTypes protocol, std::unique_ptr<Protocol> nextP
 	: m_protocolType(protocol), m_nextProtocol(std::move(nextProtocol))
 { }
 
+Protocol::Protocol(const Protocol & other)
+{
+	m_protocolType = other.m_protocolType;
+	m_nextProtocol = nullptr;
+}
+
 Protocol::Protocol(Protocol&& other) = default;
 
 ProtocolTypes Protocol::getProtocol() const
