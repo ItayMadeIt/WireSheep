@@ -19,13 +19,13 @@ public:
 	Ethernet(const std::string& src, const std::string& dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
 	~Ethernet();
 
-	void src(const addrMac value);
+	Ethernet& src(const addrMac value);
 	addrMac src() const;
 
-	void dst(const addrMac value);
+	Ethernet& dst(const addrMac value);
 	addrMac dst() const;
 
-	void type(const byte2 value);
+	Ethernet& type(const byte2 value);
 	byte2 type() const;
 
 	virtual void serializeArr(byte* ptr) const override;

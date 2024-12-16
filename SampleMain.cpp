@@ -26,29 +26,29 @@ int main()
 	std::string fileName = getFirstLineInFile("C:\\Users\\User\\Documents\\device.txt");
 
 	Device device(fileName);
-	
+
 	// Create packet
 	PacketBuilder packetBuilder;
 
-	addrIPv4 src4("127.0.0.1");
-	addrIPv4 dst4("8.8.8.8");
+	Ethernet etherLayer;
+	etherLayer
+		.src({"C4:4A:00:51:0C:CD"})
+		.dst({"01:00:5E:7F:FF:FB"})
+		.type(0x0800);
 
-	IPv4 ipv4Layer(src4, dst4);
-	ipv4Layer.version(4);
-	ipv4Layer.protocol(IPv4::IPProtocols::ENCAP); // set to not real protocol
-	ipv4Layer.ttl(64);
-	ipv4Layer.ecn(0b10);
+	IPv4 ipv4Layer;
+	ipv4Layer
+		.src({ "127.0.0.1" })
+		.dst({ "8.8.8.8" })
+		.protocol(IPv4::IPProtocols::UDP);
+			 
+
 
 	// Push 2 ethernet layers onto the packet
-	packetBuilder.push<Ethernet>("C4:4A:00:51:0C:CD", "01:00:5E:7F:FF:FB", 0x0800)
-				 .push<IPv4>(ipv4Layer);
+	packetBuilder << etherLayer << ipv4Layer;
 
 	// Make it into a packet
 	Packet pack1 = packetBuilder.build();	
-
-	// Push 2 different ethernet layers onto a new packet
-	//packetBuilder.push<Ethernet>("FF:FF:FF:EE:EE:EE", "EE:EE:EE:FF:FF:FF", 0x0200)
-	//			 .push<IPv4>("127.0.0.1", "127.0.0.1");
 
 	// Send the 2 packets (both packets have 2 ethernet protocols which are not really useful)
 	for (size_t i = 0; i < 10; i++)

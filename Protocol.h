@@ -7,7 +7,7 @@
 class Protocol
 {
 public:
-	Protocol(const ProtocolTypes protocol, std::unique_ptr<Protocol> nextProtocol);
+	Protocol(const ProtocolTypes protocol, std::unique_ptr<Protocol> nextProtocol=nullptr);
 	Protocol(const Protocol& other);
 	virtual ~Protocol() = default;
 	Protocol(Protocol&& other);

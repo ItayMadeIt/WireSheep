@@ -3,6 +3,7 @@
 #include "EndianHandler.h"
 #include "Address.h"
 #include "Protocol.h"
+#include <optional>
 
 using namespace address;
 
@@ -21,8 +22,9 @@ public:
 	};
 
 public:
-	IPv4(const addrIPv4 srcAddr, const addrIPv4 dstAddr);
-	IPv4(const addrIPv4 srcAddr, const addrIPv4 dstAddr, std::unique_ptr<Protocol> nextProtocol);
+	IPv4();
+	IPv4(const addrIPv4 src, const addrIPv4 dst);
+	IPv4(const std::string& src, const std::string& dst);
 	IPv4(IPv4&& other);
 	IPv4(const IPv4& other);
 
@@ -36,33 +38,39 @@ public:
 
 	void serialize(std::vector<byte>& buffer, const size_t offset) const override;
 
-	void version(const byte value) { m_version = value; }
+	IPv4& src(const addrIPv4 value) { m_src = value; return *this; }
+	addrIPv4 src() const { return m_src; }
+
+	IPv4& dst(const addrIPv4 value) { m_dst = value;return *this; }
+	addrIPv4 dst() const { return m_dst; }
+
+	IPv4& version(const byte value) { m_version = value; return *this;}
 	byte version() const { return m_version; };
 
-	void dscp(const byte value) { m_dscp = value; }
+	IPv4& dscp(const byte value) { m_dscp = value; return *this;}
 	byte dscp() const { return m_dscp; }
 
-	void ecn(const byte value) { m_ecn = value; };
+	IPv4& ecn(const byte value) { m_ecn = value; return *this;};
 	byte ecn() const { return m_ecn; };
 
-	void identifcation(const byte2 value) { m_identification = value; }
+	IPv4& identifcation(const byte2 value) { m_identification = value; return *this;}
 	byte2 identification() const { return m_identification; }
 
-	void flags(const byte value) { m_flags = value; }
+	IPv4& flags(const byte value) { m_flags = value; }
 	byte flags() const { return m_flags; }
 
-	void fragmentOffset(const byte2 value) { m_fragmentOffset = value; }
+	IPv4& fragmentOffset(const byte2 value) { m_fragmentOffset = value; return *this;}
 	byte2  fragmentOffset() const { return m_fragmentOffset; }
 
-	void ttl(const byte value) { m_ttl = value; }
+	IPv4& ttl(const byte value) { m_ttl = value; }
 	byte ttl() const { return m_ttl; }
 
-	void protocol(const IPProtocols value) { m_protocol = (byte)value; }
-	void protocol(const byte value) { m_protocol = value; }
+	IPv4& protocol(const IPProtocols value) { m_protocol = (byte)value; return *this;}
+	IPv4& protocol(const byte value) { m_protocol = value; }
 	IPProtocols protocol() const { return (IPProtocols)m_protocol; }
 
 public:
-	const static size_t Size = 14;
+	const static size_t Size = 20; // min size of 20 bytes
 
 protected: // So people can make their own IPv4 and modify those vars
 

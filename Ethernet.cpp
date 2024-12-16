@@ -27,26 +27,30 @@ Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2
 
 Ethernet::~Ethernet() = default;
 
-void Ethernet::dst(const addrMac value)
+Ethernet& Ethernet::dst(const addrMac value)
 {
 	m_dst = value;
+	return *this;
 }
 addrMac Ethernet::dst() const
 {
 	return m_dst;
 }
-void Ethernet::src(const addrMac value)
+Ethernet& Ethernet::src(const addrMac value)
 {
 	m_src = value;
+	return *this;
+
 }
 addrMac Ethernet::src() const
 {
 	return m_src;
 }
 
-void Ethernet::type(const byte2 value)
+Ethernet& Ethernet::type(const byte2 value)
 {
 	m_type = value;
+	return *this;
 }
 
 byte2 Ethernet::type() const

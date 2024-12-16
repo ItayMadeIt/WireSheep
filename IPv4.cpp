@@ -1,11 +1,19 @@
 #include "IPv4.h"
 
-IPv4::IPv4(const addrIPv4 src, const addrIPv4 dst) :
-    Protocol(ProtocolTypes::IPv4, nullptr), m_src(src), m_dst(dst), m_ihl(5)
+
+IPv4::IPv4()
+    : Protocol(ProtocolTypes::IPv4), m_src("0.0.0.0"), m_dst("0.0.0.0"), m_version(4), m_ihl(5), m_dscp(0), m_ecn(0b10),
+    m_totalLength(20), m_identification(0), m_flags(0), m_fragmentOffset(0), m_ttl(64), m_protocol(0), m_checksum(0), m_options{0}
 { }
 
-IPv4::IPv4(const addrIPv4 src, const addrIPv4 dst, std::unique_ptr<Protocol> nextProtocol) :
-    Protocol(ProtocolTypes::IPv4, std::move(nextProtocol)), m_src(src), m_dst(dst), m_ihl(5)
+IPv4::IPv4(const addrIPv4 src, const addrIPv4 dst)
+    : Protocol(ProtocolTypes::IPv4), m_src(src), m_dst(dst), m_version(4), m_ihl(5), m_dscp(0), m_ecn(0b10),
+    m_totalLength(20), m_identification(0), m_flags(0), m_fragmentOffset(0), m_ttl(64), m_protocol(0), m_checksum(0), m_options{ 0 }
+{ }
+
+IPv4::IPv4(const std::string& src, const std::string& dst)
+    : Protocol(ProtocolTypes::IPv4), m_src(src), m_dst(dst), m_version(4), m_ihl(5), m_dscp(0), m_ecn(0b10),
+    m_totalLength(20), m_identification(0), m_flags(0), m_fragmentOffset(0), m_ttl(64), m_protocol(0), m_checksum(0), m_options{ 0 }
 { }
 
 IPv4::IPv4(IPv4&& other) = default;
