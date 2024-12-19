@@ -56,7 +56,7 @@ public:
 	IPv4& identifcation(const byte2 value) { m_identification = value; return *this;}
 	byte2 identification() const { return m_identification; }
 
-	IPv4& flags(const byte value) { m_flags = value; }
+	IPv4& flags(const byte value) { m_flags = value; return *this; }
 	byte flags() const { return m_flags; }
 
 	IPv4& fragmentOffset(const byte2 value) { m_fragmentOffset = value; return *this;}
@@ -66,11 +66,12 @@ public:
 	byte ttl() const { return m_ttl; }
 
 	IPv4& protocol(const IPProtocols value) { m_protocol = (byte)value; return *this;}
-	IPv4& protocol(const byte value) { m_protocol = value; }
+	IPv4& protocol(const byte value) { m_protocol = value; return *this; }
 	IPProtocols protocol() const { return (IPProtocols)m_protocol; }
 
 	IPv4& checksum(const byte2 value) { m_checksum = value; return *this; }
 	byte2 checksum() const { return m_checksum; }
+	void calcChecksum();
 
 	IPv4& totalLength(const byte2 value) { m_totalLength = value; return *this; }
 	byte2 totalLength() const { return m_totalLength; }

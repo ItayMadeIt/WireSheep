@@ -85,3 +85,22 @@ void IPv4::serialize(std::vector<byte>& buffer, const size_t offset) const
         m_nextProtocol->serialize(buffer, offset + getSize());
     }
 }
+
+void IPv4::calcChecksum()
+{
+    std::vector<byte> curData(getSize());
+    
+    serializeArr(curData.data());
+
+    byte4 checksumVal = 0;
+
+    byte2* iter = (byte2*)(curData.data());
+    byte2* end = (byte2*)(curData.data() + curData.size());
+    for (; iter < end; iter++)
+    {
+        std::cout << std::hex << std::setfill('0') << std::setw(4) << EndiannessHandler::fromNetworkEndian(*iter) << std::endl;
+        checksumVal += EndiannessHandler::fromNetworkEndian(*iter);
+    }
+    byte2 checksumCarry = (checksumVal & 0xFFFF0000) >> 16;
+    m_checksum = ~( (checksumVal & 0xFFFF) + checksumCarry );
+}

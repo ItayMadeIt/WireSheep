@@ -43,25 +43,28 @@ int main()
 	ipv4Layer
 		.src({"192.168.1.44"})
 		.dst({"8.8.8.8"})
-		.protocol(IPv4::IPProtocols::UDP)
+		.protocol(0x11)
 		.ecn(0)
 		.dscp(0)
-		.ttl(128)
-		.identifcation(0x1111)
-		.totalLength(5 * 4 + 8 + 28); 
+		.ttl(64)
+		.fragmentOffset(0)
+		.flags(2)
+		.identifcation(0x123)
+		.totalLength(4*5+8+28); 
+	ipv4Layer.calcChecksum();
 
 	UDP udpLayer;
 	udpLayer
 		.length(8+28)
-		.src(6124)
+		.src(6244)
 		.dst(53);
 	
 	const char* rawData = ("\xFF\xFE\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03\dns\x06google\x00\x00\x01\x00\x01");
-	Raw raw;
-	raw.push_back((const byte*)rawData, 28);
+	Raw rawLayer;
+	rawLayer.push_back((const byte*)rawData, 28);
 
 	// Make it into a packet
-	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << raw).build();
+	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << rawLayer).build();
 
 	std::cout << pack << std::endl;
 
