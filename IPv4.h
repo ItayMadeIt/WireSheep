@@ -10,6 +10,16 @@ using namespace address;
 class IPv4 : public Protocol
 {
 public:
+	// All IPv4 Flags (3 bits but reserved is no explicitly used)
+	enum class IPFlags : byte
+	{
+		NONE  = 0b000,
+		MF    = 0b001,
+		DF    = 0b010,
+		MF_DF = 0b011,
+	};
+
+	// All IPv4 protocols
 	enum class IPProtocols : byte
 	{
 		ICMP = 1,      // Internet Control Message Protocol (ICMP)
@@ -57,6 +67,7 @@ public:
 	byte2 identification() const { return m_identification; }
 
 	IPv4& flags(const byte value) { m_flags = value; return *this; }
+	IPv4& flags(const IPFlags value) { m_flags = (byte)value; return *this; }
 	byte flags() const { return m_flags; }
 
 	IPv4& fragmentOffset(const byte2 value) { m_fragmentOffset = value; return *this;}

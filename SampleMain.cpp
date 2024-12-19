@@ -43,13 +43,13 @@ int main()
 	ipv4Layer
 		.src({"192.168.1.44"})
 		.dst({"8.8.8.8"})
-		.protocol(0x11)
+		.protocol(IPv4::IPProtocols::UDP)
 		.ecn(0)
 		.dscp(0)
 		.ttl(64)
 		.fragmentOffset(0)
-		.flags(2)
-		.identifcation(0x123)
+		.flags(IPv4::IPFlags::DF)
+		.identifcation(0xABCD)
 		.totalLength(4*5+8+28); 
 	ipv4Layer.calcChecksum();
 
@@ -58,7 +58,7 @@ int main()
 		.length(8+28)
 		.src(6244)
 		.dst(53);
-	
+
 	const char* rawData = ("\xFF\xFE\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03\dns\x06google\x00\x00\x01\x00\x01");
 	Raw rawLayer;
 	rawLayer.push_back((const byte*)rawData, 28);

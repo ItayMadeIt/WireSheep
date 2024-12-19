@@ -22,6 +22,8 @@ public:
 	UDP& checksum(const byte2 value) { m_checksum = value; return *this; }
 	byte2 checksum() { return m_checksum; }
 
+	void calcChecksum();
+
 protected:
 	byte2 m_src;            // source port (16 bits)
 	byte2 m_dst;            // destination port (16 bits)

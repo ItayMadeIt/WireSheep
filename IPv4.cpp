@@ -98,7 +98,6 @@ void IPv4::calcChecksum()
     byte2* end = (byte2*)(curData.data() + curData.size());
     for (; iter < end; iter++)
     {
-        std::cout << std::hex << std::setfill('0') << std::setw(4) << EndiannessHandler::fromNetworkEndian(*iter) << std::endl;
         checksumVal += EndiannessHandler::fromNetworkEndian(*iter);
     }
     byte2 checksumCarry = (checksumVal & 0xFFFF0000) >> 16;

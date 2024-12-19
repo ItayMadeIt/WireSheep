@@ -10,6 +10,24 @@ UDP::UDP(const byte2 src, const byte2 dst)
 	m_src(src), m_dst(dst), m_length(8), m_checksum(0)
 {}
 
+void UDP::calcChecksum()
+{
+	std::vector<byte> curData(getSize());
+
+	serializeArr(curData.data());
+
+	byte4 checksumVal = 0;
+
+	byte2* iter = (byte2*)(curData.data());
+	byte2* end = (byte2*)(curData.data() + curData.size());
+	for (; iter < end; iter++)
+	{
+		checksumVal += EndiannessHandler::fromNetworkEndian(*iter);
+	}
+	byte2 checksumCarry = (checksumVal & 0xFFFF0000) >> 16;
+	m_checksum = ~((checksumVal & 0xFFFF) + checksumCarry);
+}
+
 void UDP::serializeArr(byte * ptr) const
 {
 	// Input ports
