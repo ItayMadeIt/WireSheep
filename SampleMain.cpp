@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include "Device.h"
+#include "NetworkUtils.h"
 #include "PacketBuilder.h"
 #include "Ethernet.h"
 #include "IPv4.h"
@@ -24,17 +25,17 @@ int main()
 {
 	using namespace address;
 
-	std::string fileName = getFirstLineInFile("C:\\Users\\User\\Documents\\device.txt");
+	std::string deviceName = getFirstLineInFile("C:\\Users\\User\\Documents\\device.txt");
 
-	Device device(fileName);
-
+	Device device(deviceName);
+	
 	// Create packet
 	PacketBuilder packetBuilder;
 
 	Ethernet etherLayer;
 	etherLayer
-		.src({"C4:4A:00:51:0C:CD"})
-		.dst({"01:00:5E:7F:FF:FB"})
+		.src(device.getDeviceMac())
+		.dst(device.getRouterMac())
 		.type(0x0800);
 
 	IPv4 ipv4Layer;
@@ -45,6 +46,8 @@ int main()
 
 	UDP udpLayer;
 	udpLayer
+		.length(10)
+		.checksum(0x1234)
 		.src(100)
 		.dst(200);
 			 

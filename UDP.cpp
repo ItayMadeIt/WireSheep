@@ -27,7 +27,8 @@ void UDP::serializeArr(byte * ptr) const
 	ptr += sizeof(byte2);
 
 	// Put Checksum
-	memcpy(ptr, &m_checksum, sizeof(byte2));
+	val = EndiannessHandler::toNetworkEndian(m_checksum);
+	memcpy(ptr, &val, sizeof(byte2));
 }
 
 void UDP::deserializeArr(const byte* ptr)

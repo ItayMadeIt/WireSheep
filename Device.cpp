@@ -19,6 +19,8 @@ Device::Device(const std::string& deviceName)
 		pcap_close(m_devicePtr);
 		throw std::runtime_error(errBuffer);
 	}
+
+	m_macs = NetworkUtils::getDeviceMacs(deviceName);
 }
 
 Device::~Device()
@@ -28,6 +30,16 @@ Device::~Device()
 	{
 		pcap_close(m_devicePtr);
 	}
+}
+
+addrMac Device::getDeviceMac() const
+{
+	return m_macs.self;
+}
+
+addrMac Device::getRouterMac() const
+{
+	return m_macs.router;
 }
 
 void Device::sendPacket(const Packet& packet)
