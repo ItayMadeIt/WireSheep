@@ -30,7 +30,7 @@ void IPv4::serializeArr(byte* ptr) const
         ((m_ihl & 0xF) << 24)           |    // IHL          (4 bits)
         ((m_dscp & 0x3F) << 18)         |    // DSCP         (6 bits)
         ((m_ecn & 0x3) << 16)           |    // ECN          (3 bits)
-        ((m_totalLength& 0xFFFF) << 28)      // Total Length (16 bits)
+        ((m_totalLength& 0xFFFF))            // Total Length (16 bits)
     );
     memcpy(ptr, &word, sizeof(byte4));
     ptr += sizeof(byte4);

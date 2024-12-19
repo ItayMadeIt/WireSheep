@@ -169,6 +169,7 @@
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="PacketBuilder.cpp" />
+    <ClCompile Include="Raw.cpp" />
     <ClCompile Include="SampleMain.cpp" />
     <ClCompile Include="UDP.cpp" />
   </ItemGroup>
@@ -183,6 +184,7 @@
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="PacketBuilder.h" />
+    <ClInclude Include="Raw.h" />
     <ClInclude Include="UDP.h" />
     <ClInclude Include="WireDefs.h" />
   </ItemGroup>

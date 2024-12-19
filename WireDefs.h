@@ -11,11 +11,12 @@ using byte8 = uint64_t;
 enum class ProtocolTypes : byte
 {
 	Invalid = -1,
-	Ethernet = 0,
-	IPv4 = 1,
-	IPv6 = 2,
-	UDP = 3,
-	TCP = 4,
-	DNS = 5,
-	HTTP = 6,
+	Raw = 0,
+	Ethernet = 1,
+	IPv4 = 2,
+	IPv6 = 3,
+	UDP = 4,
+	TCP = 5,
+	DNS = 6,
+	HTTP = 7,
 };

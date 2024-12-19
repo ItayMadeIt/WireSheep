@@ -60,7 +60,7 @@ size_t UDP::getSize() const
 
 void UDP::serialize(std::vector<byte>& buffer, const size_t offset) const
 {
-	// Add ethernet data to the array
+	// Add UDP data to the array
 	buffer.resize(buffer.size() + UDP::Size);
 	serializeArr(buffer.data() + offset);
 

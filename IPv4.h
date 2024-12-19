@@ -62,12 +62,18 @@ public:
 	IPv4& fragmentOffset(const byte2 value) { m_fragmentOffset = value; return *this;}
 	byte2  fragmentOffset() const { return m_fragmentOffset; }
 
-	IPv4& ttl(const byte value) { m_ttl = value; }
+	IPv4& ttl(const byte value) { m_ttl = value; return *this; }
 	byte ttl() const { return m_ttl; }
 
 	IPv4& protocol(const IPProtocols value) { m_protocol = (byte)value; return *this;}
 	IPv4& protocol(const byte value) { m_protocol = value; }
 	IPProtocols protocol() const { return (IPProtocols)m_protocol; }
+
+	IPv4& checksum(const byte2 value) { m_checksum = value; return *this; }
+	byte2 checksum() const { return m_checksum; }
+
+	IPv4& totalLength(const byte2 value) { m_totalLength = value; return *this; }
+	byte2 totalLength() const { return m_totalLength; }
 
 public:
 	const static size_t Size = 20; // min size of 20 bytes
