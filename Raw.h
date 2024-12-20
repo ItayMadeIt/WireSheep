@@ -15,9 +15,15 @@ private:
 
 	std::vector<byte> m_data;
 
-	void serializeArr(byte* ptr) const override;
-	void deserializeArr(const byte* ptr) override;
-	void serialize(std::vector<byte>& buffer) const override;
+	virtual void serializeArr(byte* ptr) const override;
+	virtual void deserializeArr(const byte* ptr) override;
+
+	virtual void serialize(std::vector<byte>& buffer) override;
+	virtual void serialize(std::vector<byte>& buffer, const size_t offset) override;
+	
+	virtual void serializeRaw(std::vector<byte>& buffer) const override;
+	virtual void serializeRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	
 	size_t getSize() const override;
-	void serialize(std::vector<byte>& buffer, const size_t offset) override;
+
 };

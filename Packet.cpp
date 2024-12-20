@@ -45,6 +45,13 @@ const std::vector<byte>& Packet::compile()
     return m_bytes;
 }
 
+const std::vector<byte>& Packet::compileRaw()
+{
+    m_firstLayer->serializeRaw(m_bytes);
+
+    return m_bytes;
+}
+
 Packet::operator std::vector<byte>() const
 {
     return m_bytes;

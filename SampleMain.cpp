@@ -45,7 +45,7 @@ int main()
 		.dst({ "8.8.8.8" })
 		.protocol(IPv4::IPProtocols::UDP)
 		.flags(IPv4::IPFlags::NONE)
-		.ecn(0);
+		.ecn(0b10);
 
 	UDP udpLayer;
 	udpLayer
@@ -59,8 +59,17 @@ int main()
 	// Make it into a packet
 	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << rawLayer).build();
 
-	std::cout << pack << std::endl;
+	// Make it in a raw way into a nice packet
+	ipv4Layer.totalLength(5 * 4 + 2 * 4 + 28);
+	ipv4Layer.calcChecksum();
+	udpLayer.length(2 * 4 + 28);
+	Packet packRaw = (packetBuilder << etherLayer << ipv4Layer << udpLayer << rawLayer).buildRaw();
 
-	device << pack;
+	// Print both packets bytes
+	std::cout << pack << std::endl;
+	std::cout << packRaw << std::endl;
+
+	// Send both packets
+	device << pack << packRaw; // both will work
 	
 }

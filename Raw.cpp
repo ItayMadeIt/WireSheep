@@ -41,7 +41,7 @@ void Raw::deserializeArr(const byte* ptr)
 {
 }
 
-void Raw::serialize(std::vector<byte>& buffer) const
+void Raw::serialize(std::vector<byte>& buffer) 
 {
     // Reserve the size
     size_t size = getLayersSize();
@@ -58,12 +58,7 @@ void Raw::serialize(std::vector<byte>& buffer) const
     }
 }
 
-size_t Raw::getSize() const
-{
-    return m_data.size();
-}
-
-void Raw::serialize(std::vector<byte>& buffer, const size_t offset) 
+void Raw::serialize(std::vector<byte>& buffer, const size_t offset)
 {
     // Add data to the array
     buffer.resize(buffer.size() + getSize());
@@ -74,4 +69,39 @@ void Raw::serialize(std::vector<byte>& buffer, const size_t offset)
     {
         m_nextProtocol->serialize(buffer, getSize());
     }
+}
+
+void Raw::serializeRaw(std::vector<byte>& buffer) const
+{
+    // Reserve the size
+    size_t size = getLayersSize();
+    buffer.reserve(size);
+
+    // Add ethernet data to the array
+    buffer.resize(buffer.size() + getSize());
+    serializeArr(buffer.data());
+
+    // Continue to serialize the data for the following protocols
+    if (m_nextProtocol)
+    {
+        m_nextProtocol->serializeRaw(buffer, getSize());
+    }
+}
+
+void Raw::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+{
+    // Add data to the array
+    buffer.resize(buffer.size() + getSize());
+    serializeArr(buffer.data() + offset);
+
+    // Continue to serialize the data for the following protocols
+    if (m_nextProtocol)
+    {
+        m_nextProtocol->serializeRaw(buffer, getSize());
+    }
+}
+
+size_t Raw::getSize() const
+{
+    return m_data.size();
 }

@@ -25,7 +25,8 @@ public:
 	/// <param name="ptr">data start position</param>
 	virtual void deserializeArr(const byte* ptr) = 0;
 
-	virtual void serialize   (std::vector<byte>& buffer) const = 0;
+	virtual void serialize   (std::vector<byte>& buffer) = 0;
+	virtual void serializeRaw(std::vector<byte>& buffer) const = 0;
 
 	ProtocolTypes getProtocol() const;
 	virtual size_t getSize() const = 0;
@@ -33,7 +34,8 @@ public:
 	void setNextProtocol(std::unique_ptr<Protocol> next);
 	Protocol* getNextProtocol();
 
-	virtual void serialize(std::vector<byte>& buffer, const size_t offset) = 0;
+	virtual void serialize   (std::vector<byte>& buffer, const size_t offset) = 0;
+	virtual void serializeRaw(std::vector<byte>& buffer, const size_t offset) const = 0;
 
 protected:
 	size_t getLayersSize() const;

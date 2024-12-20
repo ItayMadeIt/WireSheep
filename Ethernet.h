@@ -33,11 +33,13 @@ public:
 
 	virtual size_t getSize() const override;
 
-	virtual void serialize(std::vector<byte>& buffer) const override;
+	virtual void serialize(std::vector<byte>& buffer) override;
+	virtual void serialize(std::vector<byte>& buffer, const size_t offset) override;
+
+	virtual void serializeRaw(std::vector<byte>& buffer) const override;
+	virtual void serializeRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
-
-	virtual void serialize(std::vector<byte>& buffer, const size_t offset) override;
 
 public:
 	const static size_t Size = 14;

@@ -87,7 +87,7 @@ size_t Ethernet::getSize() const
 	return Ethernet::Size;
 }
 
-void Ethernet::serialize(std::vector<byte>& buffer) const
+void Ethernet::serialize(std::vector<byte>& buffer) 
 {
 	// Reserve the size
 	size_t size = getLayersSize();
@@ -120,6 +120,36 @@ void Ethernet::serialize(std::vector<byte>& buffer, const size_t offset)
 	if (m_nextProtocol)
 	{
 		m_nextProtocol->serialize(buffer, offset + Ethernet::Size);
+	}
+}
+
+void Ethernet::serializeRaw(std::vector<byte>& buffer) const
+{
+	// Reserve the size
+	size_t size = getLayersSize();
+	buffer.reserve(size);
+
+	// Add ethernet data to the array
+	buffer.resize(buffer.size() + Ethernet::Size);
+	serializeArr(buffer.data());
+
+	// Continue to serialize the data for the following protocols
+	if (m_nextProtocol)
+	{
+		m_nextProtocol->serializeRaw(buffer, Ethernet::Size);
+	}
+}
+
+void Ethernet::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+{
+	// Add ethernet data to the array
+	buffer.resize(buffer.size() + Ethernet::Size);
+	serializeArr(buffer.data() + offset);
+
+	// Continue to serialize the data for the following protocols
+	if (m_nextProtocol)
+	{
+		m_nextProtocol->serializeRaw(buffer, offset + Ethernet::Size);
 	}
 }
 

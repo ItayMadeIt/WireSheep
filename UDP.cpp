@@ -28,6 +28,7 @@ void UDP::calcChecksum()
 	m_checksum = ~((checksumVal & 0xFFFF) + checksumCarry);
 }
 
+
 void UDP::serializeArr(byte * ptr) const
 {
 	// Input ports
@@ -54,7 +55,27 @@ void UDP::deserializeArr(const byte* ptr)
 	// Will be implemented in the future
 }
 
-void UDP::serialize(std::vector<byte>& buffer) const
+void UDP::serialize(std::vector<byte>& buffer)
+{
+	// Reserve the size
+	size_t size = getLayersSize();
+	buffer.reserve(size);
+	
+	// Get the amount of bytes we have left to input
+	m_length = buffer.capacity() - buffer.size();
+
+	// Add ethernet data to the array
+	buffer.resize(buffer.size() + UDP::Size);
+	serializeArr(buffer.data());
+
+	// Continue to serialize the data for the following protocols
+	if (m_nextProtocol)
+	{
+		m_nextProtocol->serializeRaw(buffer, UDP::Size);
+	}
+}
+
+void UDP::serializeRaw(std::vector<byte>& buffer) const
 {
 	// Reserve the size
 	size_t size = getLayersSize();
@@ -67,13 +88,8 @@ void UDP::serialize(std::vector<byte>& buffer) const
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, UDP::Size);
+		m_nextProtocol->serializeRaw(buffer, UDP::Size);
 	}
-}
-
-size_t UDP::getSize() const
-{
-	return UDP::Size;
 }
 
 void UDP::serialize(std::vector<byte>& buffer, const size_t offset)
@@ -90,4 +106,23 @@ void UDP::serialize(std::vector<byte>& buffer, const size_t offset)
 	{
 		m_nextProtocol->serialize(buffer, offset + UDP::Size);
 	}
+}
+
+void UDP::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+{
+	// Add UDP data to the array
+	buffer.resize(buffer.size() + UDP::Size);
+	serializeArr(buffer.data() + offset);
+
+	// Continue to serialize the data for the following protocols
+	if (m_nextProtocol)
+	{
+		m_nextProtocol->serialize(buffer, offset + UDP::Size);
+	}
+}
+
+
+size_t UDP::getSize() const
+{
+	return UDP::Size;
 }

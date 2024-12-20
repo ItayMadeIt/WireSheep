@@ -38,15 +38,18 @@ public:
 	IPv4(IPv4&& other);
 	IPv4(const IPv4& other);
 
-	// Protocol override functions
 	void serializeArr(byte* ptr) const override;
 	void deserializeArr(const byte* ptr) override;
 
-	void serialize(std::vector<byte>& buffer) const override;
+	void serialize(std::vector<byte>& buffer) override;
+	void serialize(std::vector<byte>& buffer, const size_t offset) override;
+
+	void serializeRaw(std::vector<byte>& buffer) const override;
+	void serializeRaw(std::vector<byte>& buffer, const size_t offset) const override;
+
 
 	size_t getSize() const override;
 
-	void serialize(std::vector<byte>& buffer, const size_t offset) override;
 
 	IPv4& src(const addrIPv4 value) { m_src = value; return *this; }
 	addrIPv4 src() const { return m_src; }
@@ -82,6 +85,10 @@ public:
 
 	IPv4& checksum(const byte2 value) { m_checksum = value; return *this; }
 	byte2 checksum() const { return m_checksum; }
+
+	/// <summary>
+	/// Calculates and updates checksum based on the IP fields
+	/// </summary>
 	void calcChecksum();
 
 	IPv4& totalLength(const byte2 value) { m_totalLength = value; return *this; }
@@ -133,5 +140,7 @@ protected: // So people can make their own IPv4 and modify those vars
 	addrIPv4 m_dst;	// dest address | 32 bits
 
 	const byte IHL_MIN_SIZE = 5;
+
+	
 };
 

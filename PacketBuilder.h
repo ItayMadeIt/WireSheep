@@ -19,7 +19,28 @@ public:
 	template<typename Layer>
 	PacketBuilder& operator<<(const Layer& layer);
 
+
+	/// <summary>
+	/// Builds the packet by turning the protocol linked list
+	/// into a byte array and then into a packet.
+	/// 
+	/// This build doesnt modify any properties like length, checksum and other properties.
+	/// Everything depends on the user who created each layer, for a function that calculates
+	/// properties that depend on other layers use `build()`
+	/// </summary>
+	/// <returns>A new packet based on the protocols</returns>
+	Packet buildRaw();
+
+	/// <summary>
+	/// Builds the packet by turning the protocol linked list
+	/// into a byte array and then into a packet.
+	/// 
+	/// This build modifies properties like length, checksum and other properties
+	/// that depend on the other protocols, for a raw option use `buildRaw()`.
+	/// </summary>
+	/// <returns>A new packet based on the protocols</returns>
 	Packet build();
+
 	void reset();
 
 private:
