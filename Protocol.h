@@ -33,7 +33,7 @@ public:
 	void setNextProtocol(std::unique_ptr<Protocol> next);
 	Protocol* getNextProtocol();
 
-	virtual void serialize(std::vector<byte>& buffer, const size_t offset) const = 0;
+	virtual void serialize(std::vector<byte>& buffer, const size_t offset) = 0;
 
 protected:
 	size_t getLayersSize() const;

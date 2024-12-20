@@ -76,8 +76,11 @@ size_t UDP::getSize() const
 	return UDP::Size;
 }
 
-void UDP::serialize(std::vector<byte>& buffer, const size_t offset) const
+void UDP::serialize(std::vector<byte>& buffer, const size_t offset)
 {
+	// Get the amount of bytes we have left to input
+	m_length = buffer.capacity() - buffer.size();
+
 	// Add UDP data to the array
 	buffer.resize(buffer.size() + UDP::Size);
 	serializeArr(buffer.data() + offset);

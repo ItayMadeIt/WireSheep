@@ -37,7 +37,7 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
 
-	virtual void serialize(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual void serialize(std::vector<byte>& buffer, const size_t offset) override;
 
 public:
 	const static size_t Size = 14;

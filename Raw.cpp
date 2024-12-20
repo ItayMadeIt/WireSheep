@@ -63,7 +63,7 @@ size_t Raw::getSize() const
     return m_data.size();
 }
 
-void Raw::serialize(std::vector<byte>& buffer, const size_t offset) const
+void Raw::serialize(std::vector<byte>& buffer, const size_t offset) 
 {
     // Add data to the array
     buffer.resize(buffer.size() + getSize());

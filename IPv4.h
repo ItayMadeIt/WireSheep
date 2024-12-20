@@ -46,7 +46,7 @@ public:
 
 	size_t getSize() const override;
 
-	void serialize(std::vector<byte>& buffer, const size_t offset) const override;
+	void serialize(std::vector<byte>& buffer, const size_t offset) override;
 
 	IPv4& src(const addrIPv4 value) { m_src = value; return *this; }
 	addrIPv4 src() const { return m_src; }

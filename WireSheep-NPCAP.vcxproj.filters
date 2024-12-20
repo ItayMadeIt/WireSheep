@@ -13,87 +13,117 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\Protocols">
+      <UniqueIdentifier>{87d02601-4ac2-43b7-9481-cd8c531813a4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Devices">
+      <UniqueIdentifier>{c4aab736-a810-492d-b41a-09d070a28e4f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\NetworkSpecific">
+      <UniqueIdentifier>{f5169fe3-71f3-4a30-aca7-b0e39dace7b1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Utils">
+      <UniqueIdentifier>{a23962d6-1a96-4ea4-a7c2-752f9ed96bd7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Packets">
+      <UniqueIdentifier>{a62897ab-dae7-4c7b-b695-450874465233}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Devices">
+      <UniqueIdentifier>{731ea15e-678f-45ba-85ec-bae0cd331c93}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\NetworkSpecific">
+      <UniqueIdentifier>{ebb800f6-3087-4956-9226-098a9b1c873f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Packets">
+      <UniqueIdentifier>{39a27c97-7bf4-4375-9824-5ed027be5ff2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Utils">
+      <UniqueIdentifier>{c2980fd7-ce32-4484-a9f6-8dafdb3e9b34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Protocols">
+      <UniqueIdentifier>{3107d97f-8e4e-4140-8180-c202cd253d47}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SampleMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Helper.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Protocol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Ethernet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Address.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="EndianHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PacketBuilder.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Packet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Device.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
+    <ClCompile Include="Ethernet.cpp">
+      <Filter>Source Files\Protocols</Filter>
     </ClCompile>
     <ClCompile Include="IPv4.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="UDP.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="NetworkUtils.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Protocols</Filter>
     </ClCompile>
     <ClCompile Include="Raw.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Source Files\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="UDP.cpp">
+      <Filter>Source Files\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>Source Files\Protocols</Filter>
+    </ClCompile>
+    <ClCompile Include="Helper.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="EndianHandler.cpp">
+      <Filter>Source Files\NetworkSpecific</Filter>
+    </ClCompile>
+    <ClCompile Include="Packet.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="PacketBuilder.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="NetworkUtils.cpp">
+      <Filter>Source Files\NetworkSpecific</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Helper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="WireDefs.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Protocol.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Ethernet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Address.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="EndianHandler.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PacketBuilder.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Packet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Device.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Ethernet.h">
+      <Filter>Header Files\Protocols</Filter>
     </ClInclude>
     <ClInclude Include="IPv4.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Protocols</Filter>
     </ClInclude>
     <ClInclude Include="UDP.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="NetworkUtils.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Protocols</Filter>
     </ClInclude>
     <ClInclude Include="Raw.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="Device.h">
+      <Filter>Header Files\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="NetworkUtils.h">
+      <Filter>Header Files\NetworkSpecific</Filter>
+    </ClInclude>
+    <ClInclude Include="EndianHandler.h">
+      <Filter>Header Files\NetworkSpecific</Filter>
+    </ClInclude>
+    <ClInclude Include="Helper.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="WireDefs.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Header Files\Protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="Packet.h">
+      <Filter>Header Files\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="PacketBuilder.h">
+      <Filter>Header Files\Packets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

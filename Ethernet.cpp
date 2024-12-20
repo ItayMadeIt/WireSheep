@@ -110,7 +110,7 @@ void Ethernet::serialize(std::vector<byte>& buffer) const
 	}
 }
 
-void Ethernet::serialize(std::vector<byte>& buffer, const size_t offset) const
+void Ethernet::serialize(std::vector<byte>& buffer, const size_t offset) 
 {
 	// Add ethernet data to the array
 	buffer.resize(buffer.size() + Ethernet::Size);

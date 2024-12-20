@@ -34,6 +34,6 @@ protected:
 	void deserializeArr(const byte* ptr) override;
 	void serialize(std::vector<byte>& buffer) const override;
 	size_t getSize() const override;
-	void serialize(std::vector<byte>& buffer, const size_t offset) const override;
+	void serialize(std::vector<byte>& buffer, const size_t offset) override;
 };
 
