@@ -10,6 +10,7 @@
 #include "IPv4.h"
 #include "UDP.h"
 #include "Raw.h"
+#include "DNS.h"
 
 std::string getFirstLineInFile(const std::string& filename)
 {
@@ -43,8 +44,8 @@ int main()
 	ipv4Layer
 		.src({ "192.168.1.44" })
 		.dst({ "8.8.8.8" })
-		.protocol(IPv4::IPProtocols::UDP)
-		.flags(IPv4::IPFlags::NONE)
+		.protocol(IPv4::Protocols::UDP)
+		.flags(IPv4::Flags::NONE)
 		.ecn(0b10);
 
 	UDP udpLayer;
@@ -52,24 +53,23 @@ int main()
 		.src(6543)
 		.dst(53);
 
-	const char* rawData = ("\xBF\xFE\x01\x00\x00\x01\x00\x00\x00\x00\x00\x00\x03\dns\x06google\x00\x00\x01\x00\x01");
-	Raw rawLayer;
-	rawLayer.push_back((const byte*)rawData, 28);
+	DNS dnsLayer;
+	dnsLayer.addQuestion("dns.google", (byte2)DNS::RRType::AAAA, (byte2)DNS::RRClass::Internet);
 
 	// Make it into a packet
-	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << rawLayer).build();
+	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << dnsLayer).build();
 
 	// Make it in a raw way into a nice packet
-	ipv4Layer.totalLength(5 * 4 + 2 * 4 + 28);
-	ipv4Layer.calcChecksum();
-	udpLayer.length(2 * 4 + 28);
-	Packet packRaw = (packetBuilder << etherLayer << ipv4Layer << udpLayer << rawLayer).buildRaw();
+	//ipv4Layer.totalLength(5 * 4 + 2 * 4 + 28);
+	//ipv4Layer.calcChecksum();
+	//udpLayer.length(2 * 4 + 28);
+	//Packet packRaw = (packetBuilder << etherLayer << ipv4Layer << udpLayer << dnsLayer).buildRaw();
 
 	// Print both packets bytes
 	std::cout << pack << std::endl;
-	std::cout << packRaw << std::endl;
+	//std::cout << packRaw << std::endl;
 
 	// Send both packets
-	device << pack << packRaw; // both will work
+	device << pack;// << packRaw; // both will work
 	
 }

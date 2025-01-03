@@ -11,7 +11,7 @@ class IPv4 : public Protocol
 {
 public:
 	// All IPv4 Flags (3 bits but reserved is no explicitly used)
-	enum class IPFlags : byte
+	enum class Flags : byte
 	{
 		NONE  = 0b000,
 		MF    = 0b001,
@@ -20,7 +20,7 @@ public:
 	};
 
 	// All IPv4 protocols
-	enum class IPProtocols : byte
+	enum class Protocols : byte
 	{
 		ICMP = 1,      // Internet Control Message Protocol (ICMP)
 		IGMP = 2,      // Internet Group Management Protocol (IGMP)
@@ -70,7 +70,7 @@ public:
 	byte2 identification() const { return m_identification; }
 
 	IPv4& flags(const byte value) { m_flags = value; return *this; }
-	IPv4& flags(const IPFlags value) { m_flags = (byte)value; return *this; }
+	IPv4& flags(const Flags value) { m_flags = (byte)value; return *this; }
 	byte flags() const { return m_flags; }
 
 	IPv4& fragmentOffset(const byte2 value) { m_fragmentOffset = value; return *this;}
@@ -79,9 +79,9 @@ public:
 	IPv4& ttl(const byte value) { m_ttl = value; return *this; }
 	byte ttl() const { return m_ttl; }
 
-	IPv4& protocol(const IPProtocols value) { m_protocol = (byte)value; return *this;}
+	IPv4& protocol(const Protocols value) { m_protocol = (byte)value; return *this;}
 	IPv4& protocol(const byte value) { m_protocol = value; return *this; }
-	IPProtocols protocol() const { return (IPProtocols)m_protocol; }
+	Protocols protocol() const { return (Protocols)m_protocol; }
 
 	IPv4& checksum(const byte2 value) { m_checksum = value; return *this; }
 	byte2 checksum() const { return m_checksum; }
