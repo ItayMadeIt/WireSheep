@@ -74,6 +74,7 @@ addrMac NetworkUtils::getRouterMac(const std::string& deviceName)
     PIP_ADAPTER_INFO pCurrAdapter = adapterInfo;
     while (pCurrAdapter)
     {
+
         if (formattedDeviceName.empty() || formattedDeviceName == pCurrAdapter->AdapterName)
         {
             // Default gateway IP
@@ -88,12 +89,44 @@ addrMac NetworkUtils::getRouterMac(const std::string& deviceName)
                 // Use SendARP to get MAC
                 ULONG macAddr[2] = { 0 };
                 ULONG macAddrLen = 6; // MAC address length
-                if (SendARP(destAddr.sin_addr.s_addr, 0, macAddr, &macAddrLen) == NO_ERROR)
+                
+                memset(&macAddr, 0xff, sizeof(macAddr));
+
+                unsigned long retVal = SendARP(destAddr.sin_addr.s_addr, 0, &macAddr, &macAddrLen);
+
+                if (retVal == NO_ERROR)
                 {
                     addrMac mac;
                     memcpy(mac.m_data, macAddr, ADDR_MAC_BYTES);
                     free(adapterInfo);
                     return mac;
+                }
+                else {
+                    printf("Error: SendArp failed with error: %d", retVal);
+                    switch (retVal)
+                    {
+                        case ERROR_GEN_FAILURE:
+                            printf(" (ERROR_GEN_FAILURE)\n");
+                            break;
+                        case ERROR_INVALID_PARAMETER:
+                            printf(" (ERROR_INVALID_PARAMETER)\n");
+                            break;
+                        case ERROR_INVALID_USER_BUFFER:
+                            printf(" (ERROR_INVALID_USER_BUFFER)\n");
+                            break;
+                        case ERROR_BAD_NET_NAME:
+                            printf(" (ERROR_GEN_FAILURE)\n");
+                            break;
+                        case ERROR_BUFFER_OVERFLOW:
+                            printf(" (ERROR_BUFFER_OVERFLOW)\n");
+                            break;
+                        case ERROR_NOT_FOUND:
+                            printf(" (ERROR_NOT_FOUND)\n");
+                            break;
+                        default:
+                            printf("\n");
+                            break;
+                    }
                 }
             }
         }

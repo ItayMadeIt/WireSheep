@@ -87,6 +87,9 @@
     <ClCompile Include="DNS.cpp">
       <Filter>Source Files\Protocols</Filter>
     </ClCompile>
+    <ClCompile Include="DeviceList.cpp">
+      <Filter>Source Files\Devices</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Address.h">
@@ -130,6 +133,9 @@
     </ClInclude>
     <ClInclude Include="DNS.h">
       <Filter>Header Files\Protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="DeviceList.h">
+      <Filter>Header Files\Devices</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

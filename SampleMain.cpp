@@ -11,6 +11,7 @@
 #include "UDP.h"
 #include "Raw.h"
 #include "DNS.h"
+#include "DeviceList.h"
 
 std::string getFirstLineInFile(const std::string& filename)
 {
@@ -27,9 +28,10 @@ int main()
 {
 	using namespace address;
 
-	std::string deviceName = getFirstLineInFile("C:\\Users\\User\\Documents\\device.txt");
+	DeviceList devices;
+	std::cout << devices; 
 
-	Device device(deviceName);
+	Device device(devices[9 - 1]);
 	
 	// Create packet
 	PacketBuilder packetBuilder;
@@ -54,22 +56,15 @@ int main()
 		.dst(53);
 
 	DNS dnsLayer;
-	dnsLayer.addQuestion("dns.google", (byte2)DNS::RRType::AAAA, (byte2)DNS::RRClass::Internet);
+	dnsLayer.addQuestion("dns.google", (byte2)DNS::RRType::A, (byte2)DNS::RRClass::Internet);
 
 	// Make it into a packet
 	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << dnsLayer).build();
 
-	// Make it in a raw way into a nice packet
-	//ipv4Layer.totalLength(5 * 4 + 2 * 4 + 28);
-	//ipv4Layer.calcChecksum();
-	//udpLayer.length(2 * 4 + 28);
-	//Packet packRaw = (packetBuilder << etherLayer << ipv4Layer << udpLayer << dnsLayer).buildRaw();
-
 	// Print both packets bytes
 	std::cout << pack << std::endl;
-	//std::cout << packRaw << std::endl;
 
-	// Send both packets
-	device << pack;// << packRaw; // both will work
+	// Send packet
+	device << pack;
 	
 }

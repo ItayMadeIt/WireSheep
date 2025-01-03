@@ -12,6 +12,7 @@ class Device
 {
 public:
 	Device(const std::string& deviceName);
+	Device(const pcap_if_t* windowsDevicePtr);
 	~Device();
 
 	friend Device& operator<<(Device& device, const Packet& packet);

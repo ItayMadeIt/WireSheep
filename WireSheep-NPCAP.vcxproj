@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="Address.cpp" />
     <ClCompile Include="Device.cpp" />
+    <ClCompile Include="DeviceList.cpp" />
     <ClCompile Include="DNS.cpp" />
     <ClCompile Include="EndianHandler.cpp" />
     <ClCompile Include="Ethernet.cpp" />
@@ -177,6 +178,7 @@
   <ItemGroup>
     <ClInclude Include="Address.h" />
     <ClInclude Include="Device.h" />
+    <ClInclude Include="DeviceList.h" />
     <ClInclude Include="DNS.h" />
     <ClInclude Include="EndianHandler.h" />
     <ClInclude Include="Ethernet.h" />
