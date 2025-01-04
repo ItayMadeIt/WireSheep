@@ -38,7 +38,6 @@ void address::addrIPv4::operator=(const addrIPv4& other)
 	}
 }
 
-
 std::string addrIPv4::toString() const
 {
 	std::stringstream sstream;
@@ -79,6 +78,13 @@ addrIPv4 addrIPv4::fromString(const std::string& addr)
 
 	return result;
 }
+
+addrIPv4 addrIPv4::broadcast = addrIPv4("255.255.255.255");
+
+
+
+
+
 
 address::addrMac::addrMac() = default;
 addrMac::addrMac(const std::string& macStr)
@@ -146,6 +152,11 @@ addrMac addrMac::fromString(const std::string& addr)
 	
 	return result;
 }
+
+addrMac addrMac::broadcast = addrMac("FF:FF:FF:FF:FF:FF");
+
+
+
 
 addrIPv6::addrIPv6() = default;
 
@@ -218,6 +229,8 @@ addrIPv6 addrIPv6::fromString(const std::string& addr)
 
 	return result;
 }
+
+
 
 std::ostream& address::operator<<(std::ostream& os, const addrIPv4 ipv4)
 {

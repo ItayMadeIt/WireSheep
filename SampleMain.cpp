@@ -30,7 +30,6 @@ int main()
 	using namespace address;
 
 	DeviceList devices;
-	std::cout << devices; 
 
 	Device device(devices[5 - 1]);
 	
@@ -39,8 +38,8 @@ int main()
 
 	Ethernet etherLayer;
 	etherLayer
-		.src(device.getDeviceMac())//{ "FF:FF:FF:FF:FF:FF" })
-		.dst(device.getRouterMac())
+		.src(device.getDeviceMac())
+		.dst(addrMac::broadcast)
 		.type(Ethernet::ProtocolTypes::ARP);
 
 	ARP arpLayer;
