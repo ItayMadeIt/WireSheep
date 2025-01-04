@@ -19,7 +19,7 @@ Protocol* Packet::operator[](size_t index)
     return cur;
 }
 
-Protocol* Packet::operator[](ProtocolTypes protocolType)
+Protocol* Packet::operator[](AllProtocols protocolType)
 {
     Protocol* cur = m_firstLayer.get();
 

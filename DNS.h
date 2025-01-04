@@ -162,30 +162,30 @@ public:
 	
 	DNS();
 
-	void addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass);
+	DNS& addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass);
 	QuestionResourceRecord getQuestionResponse(const size_t index);
-	void popQuestion();
+	DNS& popQuestion();
 
-	void addAnswer(const std::string& aAddr, const byte2 aType, const byte2 aClass, const byte4 aTtl, const std::vector<byte>& aData);;
+	DNS& addAnswer(const std::string& aAddr, const byte2 aType, const byte2 aClass, const byte4 aTtl, const std::vector<byte>& aData);;
 	ResourceRecord getAnswerResponse(const size_t index);
-	void popAnswer();
+	DNS& popAnswer();
 
-	void addAuthResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData);
+	DNS& addAuthResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData);
 	ResourceRecord getAuthResponse(const size_t index);
-	void popAuthResponse();
+	DNS& popAuthResponse();
 
-	void addAdditionalResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData);
+	DNS& addAdditionalResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData);
 	ResourceRecord  getAdditionalResponse(const size_t index);
-	void popAdditionalResponse();
+	DNS& popAdditionalResponse();
 
-	void flags(byte2 newFlags);
-	void flags(FlagsIndices newFlags);
+	DNS& flags(byte2 newFlags);
+	DNS& flags(FlagsIndices newFlags);
 	byte2 flags();
 
-	void setQuestionLength    (const byte2 value);
-	void setAnswersLength     (const byte2 value);
-	void setAuthRRLength      (const byte2 value);
-	void setAdditionalRRLength(const byte2 value);
+	DNS& setQuestionLength    (const byte2 value);
+	DNS& setAnswersLength     (const byte2 value);
+	DNS& setAuthRRLength      (const byte2 value);
+	DNS& setAdditionalRRLength(const byte2 value);
 
 public:
 	const static size_t Size = 12; // min size of 12 bytes

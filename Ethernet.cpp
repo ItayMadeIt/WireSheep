@@ -1,27 +1,27 @@
 #include "Ethernet.h"
 
-Ethernet::Ethernet() : Protocol(ProtocolTypes::Ethernet, nullptr)
+Ethernet::Ethernet() : Protocol(AllProtocols::Ethernet, nullptr)
 { }
 
 Ethernet::Ethernet(const addrMac src, const addrMac dst, const byte2 type)
-	: Protocol(ProtocolTypes::Ethernet, nullptr), m_src(src), m_dst(dst), m_type(type)
+	: Protocol(AllProtocols::Ethernet, nullptr), m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2 type) 
-	: Protocol(ProtocolTypes::Ethernet, nullptr), m_src(src), m_dst(dst), m_type(type)
+	: Protocol(AllProtocols::Ethernet, nullptr), m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::Ethernet(std::unique_ptr<Protocol> nextProtocol) 
-	: Protocol(ProtocolTypes::Ethernet, std::move(nextProtocol))
+	: Protocol(AllProtocols::Ethernet, std::move(nextProtocol))
 { }
 
 Ethernet::Ethernet(const addrMac src, const addrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
-	: Protocol(ProtocolTypes::Ethernet, std::move(nextProtocol)),
+	: Protocol(AllProtocols::Ethernet, std::move(nextProtocol)),
 		m_src(src), m_dst(dst), m_type(type)
 { }
 
 Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol)
-	: Protocol(ProtocolTypes::Ethernet, std::move(nextProtocol)),
+	: Protocol(AllProtocols::Ethernet, std::move(nextProtocol)),
 	m_src(src), m_dst(dst), m_type(type)
 { }
 
@@ -50,6 +50,12 @@ addrMac Ethernet::src() const
 Ethernet& Ethernet::type(const byte2 value)
 {
 	m_type = value;
+	return *this;
+}
+
+Ethernet& Ethernet::type(const ProtocolTypes value)
+{
+	m_type = (byte2)value;
 	return *this;
 }
 
@@ -103,7 +109,7 @@ void Ethernet::serialize(std::vector<byte>& buffer)
 		m_nextProtocol->serialize(buffer, Ethernet::Size);
 	}
 
-	// Ensure there are at minimum 60 bytes (12 for both MACs, 2 for the length/type and at minimum 46 bytes of data) 
+	// Ensure there are at minimum 60 bytes (12 for both MACs, 2 for the length/type and at minimum 42 bytes of data) 
 	if (buffer.size() < Ethernet::MinimumSize)
 	{
 		buffer.resize(Ethernet::MinimumSize);

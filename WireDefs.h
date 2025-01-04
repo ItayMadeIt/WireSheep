@@ -8,7 +8,7 @@ using byte2 = uint16_t;
 using byte4 = uint32_t;
 using byte8 = uint64_t;
 
-enum class ProtocolTypes : byte
+enum class AllProtocols : byte
 {
 	Invalid = -1,
 	Raw = 0,
@@ -19,4 +19,5 @@ enum class ProtocolTypes : byte
 	TCP = 5,
 	DNS = 6,
 	HTTP = 7,
+	ARP = 8,
 };

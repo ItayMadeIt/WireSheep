@@ -1,6 +1,6 @@
 #include "Protocol.h"
 
-Protocol::Protocol(const ProtocolTypes protocol, std::unique_ptr<Protocol> nextProtocol)
+Protocol::Protocol(const AllProtocols protocol, std::unique_ptr<Protocol> nextProtocol)
 	: m_protocolType(protocol), m_nextProtocol(std::move(nextProtocol))
 { }
 
@@ -12,7 +12,7 @@ Protocol::Protocol(const Protocol & other)
 
 Protocol::Protocol(Protocol&& other) = default;
 
-ProtocolTypes Protocol::getProtocol() const
+AllProtocols Protocol::getProtocol() const
 {
 	return m_protocolType;
 }

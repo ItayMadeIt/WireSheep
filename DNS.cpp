@@ -41,13 +41,15 @@ std::vector<byte> DNS::formatDomain(const std::string& domain)
 }
 
 
-DNS::DNS() : Protocol(ProtocolTypes::DNS), m_flags(0)
+DNS::DNS() : Protocol(AllProtocols::DNS), m_flags(0)
 {
 }
 
-void DNS::addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass)
+DNS& DNS::addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass)
 {
     m_questions.emplace_back(DNS::formatDomain(qAddr), qType, qClass);
+
+    return *this;
 }
 
 DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index)
@@ -55,14 +57,18 @@ DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index)
     return m_questions[index];
 }
 
-void DNS::popQuestion()
+DNS& DNS::popQuestion()
 {
     m_questions.pop_back();
+
+    return *this;
 }
 
-void DNS::addAnswer(const std::string& aAddr, const byte2 aType, const byte2 aClass, const byte4 aTtl, const std::vector<byte>& aData)
+DNS& DNS::addAnswer(const std::string& aAddr, const byte2 aType, const byte2 aClass, const byte4 aTtl, const std::vector<byte>& aData)
 {
     m_answers.emplace_back(DNS::formatDomain(aAddr), aType, aClass, aTtl, aData);
+
+    return *this;
 }
 
 DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)
@@ -70,14 +76,18 @@ DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)
     return m_answers[index];
 }
 
-void DNS::popAnswer()
+DNS& DNS::popAnswer()
 {
     m_answers.pop_back();
+
+    return *this;
 }
 
-void DNS::addAuthResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData)
+DNS& DNS::addAuthResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData)
 {
     m_authRR.emplace_back(DNS::formatDomain(arAddr), arType, arClass, arTtl, arData);
+
+    return *this;
 }
 
 DNS::ResourceRecord DNS::getAuthResponse(const size_t index)
@@ -85,14 +95,18 @@ DNS::ResourceRecord DNS::getAuthResponse(const size_t index)
     return m_authRR[index];
 }
 
-void DNS::popAuthResponse()
+DNS& DNS::popAuthResponse()
 {
     m_authRR.pop_back();
+
+    return *this;
 }
 
-void DNS::addAdditionalResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData)
+DNS& DNS::addAdditionalResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData)
 {
     m_additionalRR.emplace_back(DNS::formatDomain(arAddr), arType, arClass, arTtl, arData);
+
+    return *this;
 }
 
 DNS::ResourceRecord DNS::getAdditionalResponse(const size_t index)
@@ -100,19 +114,25 @@ DNS::ResourceRecord DNS::getAdditionalResponse(const size_t index)
     return m_additionalRR[index];
 }
 
-void DNS::popAdditionalResponse()
+DNS& DNS::popAdditionalResponse()
 {
     m_additionalRR.pop_back();
+
+    return *this;
 }
 
-void DNS::flags(byte2 newFlags)
+DNS& DNS::flags(byte2 newFlags)
 {
     m_flags = newFlags;
+
+    return *this;
 }
 
-void DNS::flags(FlagsIndices newFlags)
+DNS& DNS::flags(FlagsIndices newFlags)
 {
     m_flags = (byte2)newFlags;
+
+    return *this;
 }
 
 byte2 DNS::flags()
@@ -120,24 +140,32 @@ byte2 DNS::flags()
     return m_flags;
 }
 
-void DNS::setQuestionLength(const byte2 value)
+DNS& DNS::setQuestionLength(const byte2 value)
 {
     m_questionLength = value;
+
+    return *this;
 }
 
-void DNS::setAnswersLength(const byte2 value)
+DNS& DNS::setAnswersLength(const byte2 value)
 {
     m_answerLength = value;
+
+    return *this;
 }
 
-void DNS::setAuthRRLength(const byte2 value)
+DNS& DNS::setAuthRRLength(const byte2 value)
 {
     m_authLength = value;
+
+    return *this;
 }
 
-void DNS::setAdditionalRRLength(const byte2 value)
+DNS& DNS::setAdditionalRRLength(const byte2 value)
 {
     m_additionalLength = value;
+
+    return *this;
 }
 
 void DNS::serializeArr(byte* ptr) const
@@ -171,43 +199,35 @@ void DNS::serializeArr(byte* ptr) const
 
     // Add the resource records
 
-    // If it's a question
-    if (!(m_flags & (byte)DNS::FlagsIndices::QR))
+    for (const DNS::QuestionResourceRecord& q : m_questions)
     {
-        for (const DNS::QuestionResourceRecord& q : m_questions)
-        {
-            // Copy the address
-            std::memcpy(ptr, q.m_address.data(), q.m_address.size());
-            ptr += q.m_address.size();
+        // Copy the address
+        std::memcpy(ptr, q.m_address.data(), q.m_address.size());
+        ptr += q.m_address.size();
 
-            // Copy all other question data
-            var = EndiannessHandler::toNetworkEndian(q.m_type);
-            std::memcpy(ptr, &var, sizeof(var));
-            ptr += sizeof(var);
+        // Copy all other question data
+        var = EndiannessHandler::toNetworkEndian(q.m_type);
+        std::memcpy(ptr, &var, sizeof(var));
+        ptr += sizeof(var);
 
-            var = EndiannessHandler::toNetworkEndian(q.m_class);
-            std::memcpy(ptr, &var, sizeof(var));
-            ptr += sizeof(var);
-        }
+        var = EndiannessHandler::toNetworkEndian(q.m_class);
+        std::memcpy(ptr, &var, sizeof(var));
+        ptr += sizeof(var);
     }
-    // If it's a responses
-    else
+    
+    for (const DNS::ResourceRecord& ans : m_answers)
     {
-        for (const DNS::ResourceRecord& ans : m_answers)
-        {
-            serializeArrRecord(ans, ptr);
-        }
-
-        for (const DNS::ResourceRecord rr : m_authRR)
-        {
-            serializeArrRecord(rr, ptr);
-        }
-
-        for (const DNS::ResourceRecord rr : m_additionalRR)
-        {
-            serializeArrRecord(rr, ptr);
-        }
+        serializeArrRecord(ans, ptr);
     }
+    for (const DNS::ResourceRecord rr : m_authRR)
+    {
+        serializeArrRecord(rr, ptr);
+    }
+    for (const DNS::ResourceRecord rr : m_additionalRR)
+    {
+        serializeArrRecord(rr, ptr);
+    }
+
 }
 
 void DNS::deserializeArr(const byte* ptr)

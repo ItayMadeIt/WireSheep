@@ -1,12 +1,12 @@
 #include "UDP.h"
 
 UDP::UDP() 
-	: Protocol(ProtocolTypes::UDP),
+	: Protocol(AllProtocols::UDP),
 	m_src(0), m_dst(0), m_length(8), m_checksum(0)
 {}
 
 UDP::UDP(const byte2 src, const byte2 dst)
-	: Protocol(ProtocolTypes::UDP),
+	: Protocol(AllProtocols::UDP),
 	m_src(src), m_dst(dst), m_length(8), m_checksum(0)
 {}
 

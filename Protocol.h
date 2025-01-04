@@ -7,7 +7,7 @@
 class Protocol
 {
 public:
-	Protocol(const ProtocolTypes protocol, std::unique_ptr<Protocol> nextProtocol=nullptr);
+	Protocol(const AllProtocols protocol, std::unique_ptr<Protocol> nextProtocol=nullptr);
 	Protocol(const Protocol& other);
 	virtual ~Protocol() = default;
 	Protocol(Protocol&& other);
@@ -28,7 +28,7 @@ public:
 	virtual void serialize   (std::vector<byte>& buffer) = 0;
 	virtual void serializeRaw(std::vector<byte>& buffer) const = 0;
 
-	ProtocolTypes getProtocol() const;
+	AllProtocols getProtocol() const;
 	virtual size_t getSize() const = 0;
 
 	void setNextProtocol(std::unique_ptr<Protocol> next);
@@ -43,6 +43,6 @@ protected:
 	std::unique_ptr<Protocol> m_nextProtocol; // Next protocol (shared list): Ether -> IPv4 -> TCP -> HTTP (example)
 
 private:
-	ProtocolTypes m_protocolType;
+	AllProtocols m_protocolType;
 };
 

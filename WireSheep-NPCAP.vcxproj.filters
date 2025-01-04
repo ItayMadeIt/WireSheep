@@ -90,6 +90,9 @@
     <ClCompile Include="DeviceList.cpp">
       <Filter>Source Files\Devices</Filter>
     </ClCompile>
+    <ClCompile Include="ARP.cpp">
+      <Filter>Source Files\Protocols</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Address.h">
@@ -136,6 +139,9 @@
     </ClInclude>
     <ClInclude Include="DeviceList.h">
       <Filter>Header Files\Devices</Filter>
+    </ClInclude>
+    <ClInclude Include="ARP.h">
+      <Filter>Header Files\Protocols</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

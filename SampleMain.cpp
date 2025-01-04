@@ -12,6 +12,7 @@
 #include "Raw.h"
 #include "DNS.h"
 #include "DeviceList.h"
+#include "ARP.h"
 
 std::string getFirstLineInFile(const std::string& filename)
 {
@@ -31,17 +32,32 @@ int main()
 	DeviceList devices;
 	std::cout << devices; 
 
-	Device device(devices[9 - 1]);
+	Device device(devices[5 - 1]);
 	
 	// Create packet
 	PacketBuilder packetBuilder;
 
 	Ethernet etherLayer;
 	etherLayer
-		.src(device.getDeviceMac())
+		.src(device.getDeviceMac())//{ "FF:FF:FF:FF:FF:FF" })
 		.dst(device.getRouterMac())
-		.type(0x0800);
+		.type(Ethernet::ProtocolTypes::ARP);
 
+	ARP arpLayer;
+	arpLayer
+		.opcode(ARP::OperationCode::REQUEST)
+		.hardwareType(ARP::HardwareType::Ether)
+		.protocolType(Ethernet::ProtocolTypes::IPv4)
+		.senderHardwareAddr(device.getDeviceMac())
+		.senderProtocolAddr({ "192.168.1.44" })
+		.targetHardwareAddr({ 0, 0, 0, 0, 0, 0 })
+		.targetProtocolAddr({ "192.168.1.1" });
+
+	Packet pack = (packetBuilder << etherLayer << arpLayer).build();
+
+	device << pack << pack << pack;
+
+	/*
 	IPv4 ipv4Layer;
 	ipv4Layer
 		.src({ "192.168.1.44" })
@@ -63,8 +79,8 @@ int main()
 
 	// Print both packets bytes
 	std::cout << pack << std::endl;
-
+	
 	// Send packet
 	device << pack;
-	
+	*/
 }

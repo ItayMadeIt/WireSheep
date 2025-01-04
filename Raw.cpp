@@ -1,6 +1,6 @@
 #include "Raw.h"
 
-Raw::Raw() : Protocol(ProtocolTypes::Raw)
+Raw::Raw() : Protocol(AllProtocols::Raw)
 {
 
 }

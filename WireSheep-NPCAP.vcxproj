@@ -160,6 +160,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Address.cpp" />
+    <ClCompile Include="ARP.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="DeviceList.cpp" />
     <ClCompile Include="DNS.cpp" />
@@ -177,6 +178,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Address.h" />
+    <ClInclude Include="ARP.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="DeviceList.h" />
     <ClInclude Include="DNS.h" />

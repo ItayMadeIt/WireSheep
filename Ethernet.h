@@ -11,6 +11,14 @@ constexpr size_t ETHER_LEN_TYPE = 2;
 class Ethernet final : public Protocol 
 {
 public: 
+	// full list: https://en.wikipedia.org/wiki/EtherType#Values
+	enum class ProtocolTypes
+	{
+		IPv4 = 0x0800,
+		ARP = 0x0806,
+		IPv6 = 0x86DD,
+	};
+
 	Ethernet();
 	Ethernet(const addrMac src, const addrMac dst, const byte2 type);
 	Ethernet(const std::string& src, const std::string& dst, const byte2 type);
@@ -26,6 +34,7 @@ public:
 	addrMac dst() const;
 
 	Ethernet& type(const byte2 value);
+	Ethernet& type(const ProtocolTypes value);
 	byte2 type() const;
 
 	virtual void serializeArr(byte* ptr) const override;
@@ -50,7 +59,7 @@ protected:
 	byte2 m_type;
 
 private:
-	const static size_t MinimumSize = 60;
+	const static size_t MinimumSize = 42+12+2;
 
 };
 

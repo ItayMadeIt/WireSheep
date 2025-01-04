@@ -12,7 +12,7 @@ public:
 
 	Protocol* operator[](size_t index);
 
-	Protocol* operator[](ProtocolTypes protocolType);
+	Protocol* operator[](AllProtocols protocolType);
 
 	/// <summary>
 	/// Turns the packet layers into a binary vector and returns
