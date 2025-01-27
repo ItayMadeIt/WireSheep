@@ -40,14 +40,14 @@ std::ostream& operator<<(std::ostream& os, const DeviceList& deviceList)
 	for (pcap_if_t* curDevice = deviceList.m_firstDevice;
 		curDevice != NULL; curDevice = curDevice->next)
 	{
-		os << " Device #" << ++index << '\n';
+		os << " Device #" << index++ << '\n';
 		os << "  Name: " << curDevice->name << '\n';
 		os << "  Description: " << curDevice->description << '\n';
 
 		// Will add addresses sometime later
 	}
 
-	os << '\n';
+	os << std::endl;
 
 	return os;
 }

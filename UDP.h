@@ -14,7 +14,7 @@ public:
 	static const size_t Size = 8;
 
 	UDP& src(const byte2 value) { m_src = value; return *this; }
-	byte2 src() { return m_src; }
+	byte2 src() { return m_src; } 
 	UDP& dst(const byte2 value) { m_dst = value; return *this; }
 	byte2 dst() { return m_dst; }
 	UDP& length(const byte2 value) { m_length = value; return *this; }
@@ -30,12 +30,12 @@ protected:
 	byte2 m_length;         // length (16 bits)
 	byte2 m_checksum;       // checksum (16 bits)
 	
-	virtual void serializeArr(byte* ptr) const override;
-	virtual void deserializeArr(const byte* ptr) override;
-	virtual void serialize(std::vector<byte>& buffer) override;
-	virtual void serialize(std::vector<byte>& buffer, const size_t offset) override;
-	virtual void serializeRaw(std::vector<byte>& buffer) const override;
-	virtual void serializeRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual void writeToBuffer(byte* ptr) const override;
+	virtual void readFromBuffer(const byte* ptr) override;
+	virtual void encodeLayer(std::vector<byte>& buffer) override;
+	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer) const override;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 	size_t getSize() const override;
 };

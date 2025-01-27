@@ -18,6 +18,6 @@ enum class AllProtocols : byte
 	UDP = 4,
 	TCP = 5,
 	DNS = 6,
-	HTTP = 7,
+	HTTP = 7, 
 	ARP = 8,
 };

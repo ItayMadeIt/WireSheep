@@ -31,6 +31,61 @@ public:
 		SCTP = 132,	   // Stream Control Transmission Protocol (SCTP)
 	};
 
+	// All Services (for DSCP)
+	enum class Services
+	{
+		// low latency data
+		AF21 = 18,
+		AF22 = 20,
+		AF23 = 22,
+
+		// High throughput data
+		AF11 = 10,
+		AF12 = 12,
+		AF13 = 14,
+
+		// Network Control
+		CS0 = 0,
+		
+		CS1 = 8,
+
+		// OAM
+		CS2 = 16,
+
+		// Broadcast video
+		CS3 = 24,
+		
+		// Real Time Interactive
+		CS4 = 32,
+		
+		// Signaling
+		CS5 = 40,
+		
+		CS6 = 48,
+		
+		CS7 = 56,
+
+		// Telphony
+		EF = 46,
+
+		// Multimedia conferencing
+		AF41 = 34,
+		AF42 = 36,
+		AF43 = 38,
+
+		// Multimedia streaming
+		AF31 = 26,
+		AF32 = 28,
+		AF33 = 30,
+
+		// Standard
+		DF = 0,
+
+		// Lower Effort
+		LE = 1
+
+	};
+
 public:
 	IPv4();
 	IPv4(const addrIPv4 src, const addrIPv4 dst);
@@ -38,14 +93,14 @@ public:
 	IPv4(IPv4&& other);
 	IPv4(const IPv4& other);
 
-	void serializeArr(byte* ptr) const override;
-	void deserializeArr(const byte* ptr) override;
+	void writeToBuffer(byte* ptr) const override;
+	void readFromBuffer(const byte* ptr) override;
 
-	void serialize(std::vector<byte>& buffer) override;
-	void serialize(std::vector<byte>& buffer, const size_t offset) override;
+	void encodeLayer(std::vector<byte>& buffer) override;
+	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
 
-	void serializeRaw(std::vector<byte>& buffer) const override;
-	void serializeRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	void encodeLayerRaw(std::vector<byte>& buffer) const override;
+	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 
 	size_t getSize() const override;
@@ -95,7 +150,7 @@ public:
 	byte2 totalLength() const { return m_totalLength; }
 
 public:
-	const static size_t Size = 20; // min size of 20 bytes
+	const static size_t SIZE = 20; // min size of 20 bytes
 
 protected: // So people can make their own IPv4 and modify those vars
 

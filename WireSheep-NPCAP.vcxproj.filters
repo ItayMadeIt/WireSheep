@@ -93,6 +93,9 @@
     <ClCompile Include="ARP.cpp">
       <Filter>Source Files\Protocols</Filter>
     </ClCompile>
+    <ClCompile Include="TCP.cpp">
+      <Filter>Source Files\Protocols</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Address.h">
@@ -141,6 +144,9 @@
       <Filter>Header Files\Devices</Filter>
     </ClInclude>
     <ClInclude Include="ARP.h">
+      <Filter>Header Files\Protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="TCP.h">
       <Filter>Header Files\Protocols</Filter>
     </ClInclude>
   </ItemGroup>

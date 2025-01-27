@@ -13,6 +13,7 @@
 #include "DNS.h"
 #include "DeviceList.h"
 #include "ARP.h"
+#include "TCP.h"
 
 std::string getFirstLineInFile(const std::string& filename)
 {
@@ -31,7 +32,9 @@ int main()
 
 	DeviceList devices;
 
-	Device device(devices[5 - 1]);
+	std::cout << devices;
+
+	Device device(devices[3]);
 	
 	// Create packet
 	PacketBuilder packetBuilder;
@@ -39,22 +42,40 @@ int main()
 	Ethernet etherLayer;
 	etherLayer
 		.src(device.getDeviceMac())
-		.dst(addrMac::broadcast)
-		.type(Ethernet::ProtocolTypes::ARP);
+		.dst(device.getRouterMac())
+		.type(Ethernet::ProtocolTypes::IPv4);
 
-	ARP arpLayer;
-	arpLayer
-		.opcode(ARP::OperationCode::REQUEST)
-		.hardwareType(ARP::HardwareType::Ether)
-		.protocolType(Ethernet::ProtocolTypes::IPv4)
-		.senderHardwareAddr(device.getDeviceMac())
-		.senderProtocolAddr({ "192.168.1.44" })
-		.targetHardwareAddr({ 0, 0, 0, 0, 0, 0 })
-		.targetProtocolAddr({ "192.168.1.1" });
+	IPv4 ipv4Layer;
+	ipv4Layer
+		.protocol(IPv4::Protocols::TCP)
+		.identifcation(0x8b34)
+		.flags(IPv4::Flags::DF)
+		.ecn(0)
+		.ttl(128)
+		.src({ "192.168.1.44" })
+		.dst({ "34.223.124.45" })
+		.dscp((byte)IPv4::Services::CS0);
 
-	Packet pack = (packetBuilder << etherLayer << arpLayer).build();
+	TCP tcpLayer;
+	tcpLayer
+		.seqNum(0xF1698C60)
+		.ackNum(0)
+		.srcPort(0x7938)
+		.dstPort(80)
+		.window(0xFFFF)
+		.flags((byte)TCP::Flags::SYN)
+		.addOption<TCP::OptionMaxSegmentSize>(1460)
+		.addOption<TCP::OptionNoOperation>()
+		.addOption<TCP::OptionWindowScale>(8)
+		.addOption<TCP::OptionNoOperation>()
+		.addOption<TCP::OptionNoOperation>()
+		.addOption<TCP::OptionSelectiveAckPermitted>();
 
-	device << pack << pack << pack;
+	Packet pack = (packetBuilder << etherLayer << ipv4Layer << tcpLayer).build();
+
+	std::cout << pack;
+
+	device << pack;
 
 	/*
 	IPv4 ipv4Layer;

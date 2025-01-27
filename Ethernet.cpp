@@ -64,7 +64,7 @@ byte2 Ethernet::type() const
 	return m_type;
 }
 
-void Ethernet::serializeArr(byte* ptr) const
+void Ethernet::writeToBuffer(byte* ptr) const
 {
 	memcpy(ptr, &m_dst , ADDR_MAC_BYTES);
 	ptr += ADDR_MAC_BYTES;
@@ -76,7 +76,7 @@ void Ethernet::serializeArr(byte* ptr) const
 	memcpy(ptr, &netType, ETHER_LEN_TYPE);
 }
 
-void Ethernet::deserializeArr(const byte* ptr)
+void Ethernet::readFromBuffer(const byte* ptr)
 {
 	memcpy(&m_dst, ptr, ADDR_MAC_BYTES);
 	ptr += ADDR_MAC_BYTES;
@@ -90,72 +90,78 @@ void Ethernet::deserializeArr(const byte* ptr)
 
 size_t Ethernet::getSize() const
 {
-	return Ethernet::Size;
+	return Ethernet::SIZE;
 }
 
-void Ethernet::serialize(std::vector<byte>& buffer) 
+void Ethernet::encodeLayer(std::vector<byte>& buffer) 
 {
 	// Reserve the size
 	size_t size = getLayersSize();
 	buffer.reserve(size);
 
 	// Add ethernet data to the array
-	buffer.resize(buffer.size() + Ethernet::Size);
-	serializeArr(buffer.data());
+	buffer.resize(buffer.size() + Ethernet::SIZE);
+	writeToBuffer(buffer.data());
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, Ethernet::Size);
+		m_nextProtocol->encodeLayer(buffer, Ethernet::SIZE);
 	}
 
 	// Ensure there are at minimum 60 bytes (12 for both MACs, 2 for the length/type and at minimum 42 bytes of data) 
-	if (buffer.size() < Ethernet::MinimumSize)
+	if (buffer.size() < Ethernet::MIN_SIZE)
 	{
-		buffer.resize(Ethernet::MinimumSize);
+		buffer.resize(Ethernet::MIN_SIZE);
 	}
 }
 
-void Ethernet::serialize(std::vector<byte>& buffer, const size_t offset) 
+void Ethernet::encodeLayer(std::vector<byte>& buffer, const size_t offset) 
 {
 	// Add ethernet data to the array
-	buffer.resize(buffer.size() + Ethernet::Size);
-	serializeArr(buffer.data() + offset);
+	buffer.resize(buffer.size() + Ethernet::SIZE);
+	writeToBuffer(buffer.data() + offset);
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, offset + Ethernet::Size);
+		m_nextProtocol->encodeLayer(buffer, offset + Ethernet::SIZE);
+	}
+
+	// Ensure there are at minimum 60 bytes (12 for both MACs, 2 for the length/type and at minimum 42 bytes of data) 
+	if (buffer.size() < Ethernet::MIN_SIZE)
+	{
+		buffer.resize(Ethernet::MIN_SIZE);
 	}
 }
 
-void Ethernet::serializeRaw(std::vector<byte>& buffer) const
+void Ethernet::encodeLayerRaw(std::vector<byte>& buffer) const
 {
 	// Reserve the size
 	size_t size = getLayersSize();
 	buffer.reserve(size);
 
 	// Add ethernet data to the array
-	buffer.resize(buffer.size() + Ethernet::Size);
-	serializeArr(buffer.data());
+	buffer.resize(buffer.size() + Ethernet::SIZE);
+	writeToBuffer(buffer.data());
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serializeRaw(buffer, Ethernet::Size);
+		m_nextProtocol->encodeLayerRaw(buffer, Ethernet::SIZE);
 	}
 }
 
-void Ethernet::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+void Ethernet::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
 	// Add ethernet data to the array
-	buffer.resize(buffer.size() + Ethernet::Size);
-	serializeArr(buffer.data() + offset);
+	buffer.resize(buffer.size() + Ethernet::SIZE);
+	writeToBuffer(buffer.data() + offset);
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serializeRaw(buffer, offset + Ethernet::Size);
+		m_nextProtocol->encodeLayerRaw(buffer, offset + Ethernet::SIZE);
 	}
 }
 

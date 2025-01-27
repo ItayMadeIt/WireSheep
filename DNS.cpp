@@ -168,7 +168,7 @@ DNS& DNS::setAdditionalRRLength(const byte2 value)
     return *this;
 }
 
-void DNS::serializeArr(byte* ptr) const
+void DNS::writeToBuffer(byte* ptr) const
 {
     byte2 var;
 
@@ -230,11 +230,11 @@ void DNS::serializeArr(byte* ptr) const
 
 }
 
-void DNS::deserializeArr(const byte* ptr)
+void DNS::readFromBuffer(const byte* ptr)
 {
 }
 
-void DNS::serialize(std::vector<byte>& buffer)
+void DNS::encodeLayer(std::vector<byte>& buffer)
 {
     // Reserve the size
     size_t size = getLayersSize();
@@ -242,7 +242,7 @@ void DNS::serialize(std::vector<byte>& buffer)
 
     // Add ethernet data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data());
+    writeToBuffer(buffer.data());
 
     // Specific to DNS
     // Set lengths
@@ -255,11 +255,11 @@ void DNS::serialize(std::vector<byte>& buffer)
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serialize(buffer, getSize());
+        m_nextProtocol->encodeLayer(buffer, getSize());
     }
 }
 
-void DNS::serializeRaw(std::vector<byte>& buffer) const
+void DNS::encodeLayerRaw(std::vector<byte>& buffer) const
 {
     // Reserve the size
     size_t size = getLayersSize();
@@ -267,12 +267,12 @@ void DNS::serializeRaw(std::vector<byte>& buffer) const
 
     // Add ethernet data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data());
+    writeToBuffer(buffer.data());
 
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serializeRaw(buffer, getSize());
+        m_nextProtocol->encodeLayerRaw(buffer, getSize());
     }
 }
 
@@ -313,14 +313,14 @@ size_t DNS::getSize() const
     return headerSize + payloadSize;
 }
 
-void DNS::serialize(std::vector<byte>& buffer, const size_t offset)
+void DNS::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 {
     // Get the amount of bytes we have left to input
     size_t bytesAmount = buffer.capacity() - buffer.size();
 
     // Add ipv4 data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data() + offset);
+    writeToBuffer(buffer.data() + offset);
 
     // Specific to DNS
     // Set lengths
@@ -332,20 +332,20 @@ void DNS::serialize(std::vector<byte>& buffer, const size_t offset)
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serialize(buffer, offset + getSize());
+        m_nextProtocol->encodeLayer(buffer, offset + getSize());
     }
 }
 
-void DNS::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+void DNS::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
     // Add ipv4 data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data() + offset);
+    writeToBuffer(buffer.data() + offset);
 
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serializeRaw(buffer, offset + getSize());
+        m_nextProtocol->encodeLayerRaw(buffer, offset + getSize());
     }
 }
 

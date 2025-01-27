@@ -20,7 +20,7 @@ IPv4::IPv4(IPv4&& other) = default;
 
 IPv4::IPv4(const IPv4& other) = default;
 
-void IPv4::serializeArr(byte* ptr) const
+void IPv4::writeToBuffer(byte* ptr) const
 {
     byte4 word = 0;
 
@@ -60,11 +60,11 @@ void IPv4::serializeArr(byte* ptr) const
     memcpy(ptr, &m_dst, sizeof(byte4));
 }
 
-void IPv4::deserializeArr(const byte* ptr)
+void IPv4::readFromBuffer(const byte* ptr)
 {
 }
 
-void IPv4::serialize(std::vector<byte>& buffer)
+void IPv4::encodeLayer(std::vector<byte>& buffer)
 {
     // Reserve the size
     size_t size = getLayersSize();
@@ -77,14 +77,14 @@ void IPv4::serialize(std::vector<byte>& buffer)
     // Calculate IPv4 checksum
     calcChecksum();
 
-    // Add ethernet data to the array
+    // Add IPv4 data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data());
+    writeToBuffer(buffer.data());
 
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serialize(buffer, getSize());
+        m_nextProtocol->encodeLayer(buffer, getSize());
     }
 }
 
@@ -93,7 +93,7 @@ size_t IPv4::getSize() const
     return m_ihl * 4;
 }
 
-void IPv4::serialize(std::vector<byte>& buffer, const size_t offset) 
+void IPv4::encodeLayer(std::vector<byte>& buffer, const size_t offset) 
 {
     // Get the amount of bytes we have left to input
     size_t bytesAmount = buffer.capacity() - buffer.size();
@@ -104,12 +104,12 @@ void IPv4::serialize(std::vector<byte>& buffer, const size_t offset)
 
     // Add ipv4 data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data() + offset);
+    writeToBuffer(buffer.data() + offset);
     
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serialize(buffer, offset + getSize());
+        m_nextProtocol->encodeLayer(buffer, offset + getSize());
     }
 }
 
@@ -117,7 +117,7 @@ void IPv4::calcChecksum()
 {
     std::vector<byte> curData(getSize());
     
-    serializeArr(curData.data());
+    writeToBuffer(curData.data());
 
     byte4 checksumVal = 0;
 
@@ -131,7 +131,7 @@ void IPv4::calcChecksum()
     m_checksum = ~( (checksumVal & 0xFFFF) + checksumCarry );
 }
 
-void IPv4::serializeRaw(std::vector<byte>& buffer) const
+void IPv4::encodeLayerRaw(std::vector<byte>& buffer) const
 {
     // Reserve the size
     size_t size = getLayersSize();
@@ -139,24 +139,24 @@ void IPv4::serializeRaw(std::vector<byte>& buffer) const
 
     // Add ethernet data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data());
+    writeToBuffer(buffer.data());
 
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serializeRaw(buffer, getSize());
+        m_nextProtocol->encodeLayerRaw(buffer, getSize());
     }
 }
 
-void IPv4::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+void IPv4::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
     // Add ipv4 data to the array
     buffer.resize(buffer.size() + getSize());
-    serializeArr(buffer.data() + offset);
+    writeToBuffer(buffer.data() + offset);
 
     // Continue to serialize the data for the following protocols
     if (m_nextProtocol)
     {
-        m_nextProtocol->serializeRaw(buffer, offset + getSize());
+        m_nextProtocol->encodeLayerRaw(buffer, offset + getSize());
     }
 }

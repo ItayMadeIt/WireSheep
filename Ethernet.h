@@ -37,21 +37,21 @@ public:
 	Ethernet& type(const ProtocolTypes value);
 	byte2 type() const;
 
-	virtual void serializeArr(byte* ptr) const override;
-	virtual void deserializeArr(const byte* ptr) override;
+	virtual void writeToBuffer(byte* ptr) const override;
+	virtual void readFromBuffer(const byte* ptr) override;
 
 	virtual size_t getSize() const override;
 
-	virtual void serialize(std::vector<byte>& buffer) override;
-	virtual void serialize(std::vector<byte>& buffer, const size_t offset) override;
+	virtual void encodeLayer(std::vector<byte>& buffer) override;
+	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
 
-	virtual void serializeRaw(std::vector<byte>& buffer) const override;
-	virtual void serializeRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer) const override;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
 
 public:
-	const static size_t Size = 14;
+	const static size_t SIZE = 14;
 
 protected:
 	addrMac m_dst;
@@ -59,7 +59,7 @@ protected:
 	byte2 m_type;
 
 private:
-	const static size_t MinimumSize = 42+12+2;
+	const static size_t MIN_SIZE = 42+12+2;
 
 };
 

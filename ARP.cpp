@@ -1,6 +1,6 @@
 #include "ARP.h"
 #include "EndianHandler.h"
-void ARP::serializeArr(byte* ptr) const
+void ARP::writeToBuffer(byte* ptr) const
 {
 	byte2 var = EndiannessHandler::toNetworkEndian(m_hardwareType);
 	std::memcpy(ptr, &var, sizeof(var));
@@ -36,11 +36,11 @@ void ARP::serializeArr(byte* ptr) const
 
 }
 
-void ARP::deserializeArr(const byte* ptr)
+void ARP::readFromBuffer(const byte* ptr)
 {
 }
 
-void ARP::serialize(std::vector<byte>& buffer)
+void ARP::encodeLayer(std::vector<byte>& buffer)
 {
 	// Reserve the size
 	size_t size = getLayersSize();
@@ -48,7 +48,7 @@ void ARP::serialize(std::vector<byte>& buffer)
 
 	// Add ethernet data to the array
 	buffer.resize(buffer.size() + getSize());
-	serializeArr(buffer.data());
+	writeToBuffer(buffer.data());
 
 	// Specific to ARP
 	if (m_senderHardwareAddr.size() != m_targetHardwareAddr.size())
@@ -66,11 +66,11 @@ void ARP::serialize(std::vector<byte>& buffer)
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, getSize());
+		m_nextProtocol->encodeLayer(buffer, getSize());
 	}
 }
 
-void ARP::serializeRaw(std::vector<byte>& buffer) const
+void ARP::encodeLayerRaw(std::vector<byte>& buffer) const
 {
 	// Reserve the size
 	size_t size = getLayersSize();
@@ -78,19 +78,18 @@ void ARP::serializeRaw(std::vector<byte>& buffer) const
 
 	// Add ethernet data to the array
 	buffer.resize(buffer.size() + getSize());
-	serializeArr(buffer.data());
+	writeToBuffer(buffer.data());
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, getSize());
+		m_nextProtocol->encodeLayer(buffer, getSize());
 	}
 }
 
 size_t ARP::getSize() const
 {
-	size_t size = 0;
-	size += sizeof(byte4) * 2; // header
+	size_t size = ARP::SIZE; // header
 
 	size += m_senderHardwareAddr.size();
 
@@ -103,7 +102,7 @@ size_t ARP::getSize() const
 	return size;
 }
 
-void ARP::serialize(std::vector<byte>& buffer, const size_t offset)
+void ARP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 {
 	// Get the amount of bytes we have left to input
 	size_t bytesAmount = buffer.capacity() - buffer.size();
@@ -123,16 +122,16 @@ void ARP::serialize(std::vector<byte>& buffer, const size_t offset)
 
 	// Add data to the array
 	buffer.resize(buffer.size() + getSize());
-	serializeArr(buffer.data() + offset);
+	writeToBuffer(buffer.data() + offset);
 	
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, offset + getSize());
+		m_nextProtocol->encodeLayer(buffer, offset + getSize());
 	}
 }
 
-void ARP::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+void ARP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
 	// Reserve the size
 	size_t size = getLayersSize();
@@ -140,12 +139,12 @@ void ARP::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
 
 	// Add ethernet data to the array
 	buffer.resize(buffer.size() + getSize());
-	serializeArr(buffer.data());
+	writeToBuffer(buffer.data());
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, getSize());
+		m_nextProtocol->encodeLayer(buffer, getSize());
 	}
 }
 

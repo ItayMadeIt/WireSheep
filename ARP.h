@@ -81,15 +81,17 @@ public:
 	std::vector<byte> targetProtocolAddr();
 
 protected:
-	void serializeArr(byte* ptr) const override;
-	void deserializeArr(const byte* ptr) override;
-	void serialize(std::vector<byte>& buffer) override;
-	void serializeRaw(std::vector<byte>& buffer) const override;
+	void writeToBuffer(byte* ptr) const override;
+	void readFromBuffer(const byte* ptr) override;
+	void encodeLayer(std::vector<byte>& buffer) override;
+	void encodeLayerRaw(std::vector<byte>& buffer) const override;
 	size_t getSize() const override;
-	void serialize(std::vector<byte>& buffer, const size_t offset) override;
-	void serializeRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 	
 protected:
+	const static int SIZE = 8;
+
 	byte2 m_hardwareType;
 	byte2 m_protocolType;
 

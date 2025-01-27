@@ -40,14 +40,14 @@ Protocol* Packet::operator[](AllProtocols protocolType)
 
 const std::vector<byte>& Packet::compile()
 {
-    m_firstLayer->serialize(m_bytes);
+    m_firstLayer->encodeLayer(m_bytes);
 
     return m_bytes;
 }
 
 const std::vector<byte>& Packet::compileRaw()
 {
-    m_firstLayer->serializeRaw(m_bytes);
+    m_firstLayer->encodeLayerRaw(m_bytes);
 
     return m_bytes;
 }

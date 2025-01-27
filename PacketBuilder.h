@@ -72,7 +72,7 @@ inline PacketBuilder& PacketBuilder::push(Args && ...args)
 }
 
 template<typename Layer>
-inline PacketBuilder& PacketBuilder::push(const Layer& layer)
+PacketBuilder& PacketBuilder::push(const Layer& layer)
 {
 	static_assert(std::is_copy_constructible<Layer>::value, 
 		"Pushed layer must be copy constructible!");

@@ -14,7 +14,7 @@ void UDP::calcChecksum()
 {
 	std::vector<byte> curData(getSize());
 
-	serializeArr(curData.data());
+	writeToBuffer(curData.data());
 
 	byte4 checksumVal = 0;
 
@@ -29,7 +29,7 @@ void UDP::calcChecksum()
 }
 
 
-void UDP::serializeArr(byte * ptr) const
+void UDP::writeToBuffer(byte * ptr) const
 {
 	// Input ports
 	byte2 val = EndiannessHandler::toNetworkEndian(m_src);
@@ -50,12 +50,12 @@ void UDP::serializeArr(byte * ptr) const
 	memcpy(ptr, &val, sizeof(byte2));
 }
 
-void UDP::deserializeArr(const byte* ptr)
+void UDP::readFromBuffer(const byte* ptr)
 {
 	// Will be implemented in the future
 }
 
-void UDP::serialize(std::vector<byte>& buffer)
+void UDP::encodeLayer(std::vector<byte>& buffer)
 {
 	// Reserve the size
 	size_t size = getLayersSize();
@@ -66,16 +66,16 @@ void UDP::serialize(std::vector<byte>& buffer)
 
 	// Add ethernet data to the array
 	buffer.resize(buffer.size() + UDP::Size);
-	serializeArr(buffer.data());
+	writeToBuffer(buffer.data());
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serializeRaw(buffer, UDP::Size);
+		m_nextProtocol->encodeLayerRaw(buffer, UDP::Size);
 	}
 }
 
-void UDP::serializeRaw(std::vector<byte>& buffer) const
+void UDP::encodeLayerRaw(std::vector<byte>& buffer) const
 {
 	// Reserve the size
 	size_t size = getLayersSize();
@@ -83,41 +83,41 @@ void UDP::serializeRaw(std::vector<byte>& buffer) const
 
 	// Add ethernet data to the array
 	buffer.resize(buffer.size() + UDP::Size);
-	serializeArr(buffer.data());
+	writeToBuffer(buffer.data());
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serializeRaw(buffer, UDP::Size);
+		m_nextProtocol->encodeLayerRaw(buffer, UDP::Size);
 	}
 }
 
-void UDP::serialize(std::vector<byte>& buffer, const size_t offset)
+void UDP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 {
 	// Get the amount of bytes we have left to input
 	m_length = buffer.capacity() - buffer.size();
 
 	// Add UDP data to the array
 	buffer.resize(buffer.size() + UDP::Size);
-	serializeArr(buffer.data() + offset);
+	writeToBuffer(buffer.data() + offset);
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, offset + UDP::Size);
+		m_nextProtocol->encodeLayer(buffer, offset + UDP::Size);
 	}
 }
 
-void UDP::serializeRaw(std::vector<byte>& buffer, const size_t offset) const
+void UDP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
 	// Add UDP data to the array
 	buffer.resize(buffer.size() + UDP::Size);
-	serializeArr(buffer.data() + offset);
+	writeToBuffer(buffer.data() + offset);
 
 	// Continue to serialize the data for the following protocols
 	if (m_nextProtocol)
 	{
-		m_nextProtocol->serialize(buffer, offset + UDP::Size);
+		m_nextProtocol->encodeLayer(buffer, offset + UDP::Size);
 	}
 }
 

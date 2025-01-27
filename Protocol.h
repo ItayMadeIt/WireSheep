@@ -16,17 +16,17 @@ public:
 	/// Serialize protocol data from the class into the array (ptr)
 	/// </summary>
 	/// <param name="ptr">data start position</param>
-	virtual void serializeArr(byte* ptr) const = 0;
+	virtual void writeToBuffer (byte* ptr) const = 0;
 
 	/// <summary>
 	/// Deserialize protocol data from the array (ptr) into the class.
 	/// This does not modify the original array.
 	/// </summary>
 	/// <param name="ptr">data start position</param>
-	virtual void deserializeArr(const byte* ptr) = 0;
+	virtual void readFromBuffer(const byte* ptr) = 0;
 
-	virtual void serialize   (std::vector<byte>& buffer) = 0;
-	virtual void serializeRaw(std::vector<byte>& buffer) const = 0;
+	virtual void encodeLayer   (std::vector<byte>& buffer) = 0;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer) const = 0;
 
 	AllProtocols getProtocol() const;
 	virtual size_t getSize() const = 0;
@@ -34,8 +34,10 @@ public:
 	void setNextProtocol(std::unique_ptr<Protocol> next);
 	Protocol* getNextProtocol();
 
-	virtual void serialize   (std::vector<byte>& buffer, const size_t offset) = 0;
-	virtual void serializeRaw(std::vector<byte>& buffer, const size_t offset) const = 0;
+	virtual void encodeLayer   (std::vector<byte>& buffer, const size_t offset) = 0;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const = 0;
+
+	bool m_includesChecksum;
 
 protected:
 	size_t getLayersSize() const;
