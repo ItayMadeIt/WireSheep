@@ -168,113 +168,73 @@ DNS& DNS::setAdditionalRRLength(const byte2 value)
     return *this;
 }
 
-void DNS::writeToBuffer(byte* ptr) const
+void DNS::writeToBuffer(byte* buffer) const
 {
     byte2 var;
 
     // Add values in the header: 
     var = EndiannessHandler::toNetworkEndian(m_transcationID);
-    std::memcpy(ptr, &var, sizeof(m_transcationID));
-    ptr += sizeof(m_transcationID);
+    std::memcpy(buffer, &var, sizeof(m_transcationID));
+    buffer += sizeof(m_transcationID);
 
     var = EndiannessHandler::toNetworkEndian(m_flags);
-    std::memcpy(ptr, &var, sizeof(m_flags));
-    ptr += sizeof(var);
+    std::memcpy(buffer, &var, sizeof(m_flags));
+    buffer += sizeof(var);
 
     var = EndiannessHandler::toNetworkEndian(static_cast<byte2>(m_questions.size()));
-    std::memcpy(ptr, &var, sizeof(var));
-    ptr += sizeof(var);
+    std::memcpy(buffer, &var, sizeof(var));
+    buffer += sizeof(var);
 
     var = EndiannessHandler::toNetworkEndian(m_answers.size());
-    std::memcpy(ptr, &var, sizeof(m_answers));
-    ptr += sizeof(var);
+    std::memcpy(buffer, &var, sizeof(m_answers));
+    buffer += sizeof(var);
 
     var = EndiannessHandler::toNetworkEndian(m_authRR.size());
-    std::memcpy(ptr, &var, sizeof(m_authRR));
-    ptr += sizeof(var);
+    std::memcpy(buffer, &var, sizeof(m_authRR));
+    buffer += sizeof(var);
 
     var = EndiannessHandler::toNetworkEndian(m_additionalRR.size());
-    std::memcpy(ptr, &var, sizeof(m_additionalRR));
-    ptr += sizeof(var);
+    std::memcpy(buffer, &var, sizeof(m_additionalRR));
+    buffer += sizeof(var);
 
     // Add the resource records
 
     for (const DNS::QuestionResourceRecord& q : m_questions)
     {
         // Copy the address
-        std::memcpy(ptr, q.m_address.data(), q.m_address.size());
-        ptr += q.m_address.size();
+        std::memcpy(buffer, q.m_address.data(), q.m_address.size());
+        buffer += q.m_address.size();
 
         // Copy all other question data
         var = EndiannessHandler::toNetworkEndian(q.m_type);
-        std::memcpy(ptr, &var, sizeof(var));
-        ptr += sizeof(var);
+        std::memcpy(buffer, &var, sizeof(var));
+        buffer += sizeof(var);
 
         var = EndiannessHandler::toNetworkEndian(q.m_class);
-        std::memcpy(ptr, &var, sizeof(var));
-        ptr += sizeof(var);
+        std::memcpy(buffer, &var, sizeof(var));
+        buffer += sizeof(var);
     }
     
     for (const DNS::ResourceRecord& ans : m_answers)
     {
-        serializeArrRecord(ans, ptr);
+        encodeRecord(ans, buffer);
     }
     for (const DNS::ResourceRecord rr : m_authRR)
     {
-        serializeArrRecord(rr, ptr);
+        encodeRecord(rr, buffer);
     }
     for (const DNS::ResourceRecord rr : m_additionalRR)
     {
-        serializeArrRecord(rr, ptr);
+        encodeRecord(rr, buffer);
     }
 
 }
 
-void DNS::readFromBuffer(const byte* ptr)
+void DNS::readFromBuffer(const byte* buffer, const size_t size)
 {
+    // Not implemented yet
 }
 
-void DNS::encodeLayer(std::vector<byte>& buffer)
-{
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Add ethernet data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    // Specific to DNS
-    // Set lengths
-    m_questionLength = (byte2)m_questions.size();
-    m_additionalLength = (byte2)m_additionalRR.size();
-    m_authLength = (byte2)m_authRR.size();
-    m_answerLength = (byte2)m_answers.size();
-
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayer(buffer, getSize());
-    }
-}
-
-void DNS::encodeLayerRaw(std::vector<byte>& buffer) const
-{
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Add ethernet data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayerRaw(buffer, getSize());
-    }
-}
 
 size_t DNS::getSize() const
 {
@@ -315,41 +275,25 @@ size_t DNS::getSize() const
 
 void DNS::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 {
-    // Get the amount of bytes we have left to input
-    size_t bytesAmount = buffer.capacity() - buffer.size();
-
-    // Add ipv4 data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data() + offset);
-
-    // Specific to DNS
     // Set lengths
     m_questionLength = (byte2)m_questions.size();
     m_additionalLength = (byte2)m_additionalRR.size();
     m_authLength = (byte2)m_authRR.size();
     m_answerLength = (byte2)m_answers.size();
 
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayer(buffer, offset + getSize());
-    }
+    // Add DNS data to the array
+    buffer.resize(buffer.size() + getSize());
+    writeToBuffer(buffer.data() + offset);
 }
 
 void DNS::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
-    // Add ipv4 data to the array
+    // Add DNS data to the array
     buffer.resize(buffer.size() + getSize());
     writeToBuffer(buffer.data() + offset);
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayerRaw(buffer, offset + getSize());
-    }
 }
 
-void DNS::serializeArrRecord(const DNS::ResourceRecord& record, byte*& ptr) const
+void DNS::encodeRecord(const DNS::ResourceRecord& record, byte*& ptr) const
 {
     byte2 val;
     std::memcpy(ptr, record.m_address.data(), record.m_address.size());
@@ -362,7 +306,6 @@ void DNS::serializeArrRecord(const DNS::ResourceRecord& record, byte*& ptr) cons
     val = EndiannessHandler::toNetworkEndian(record.m_class);
     std::memcpy(ptr, &val, sizeof(val));
     ptr += sizeof(val);
-
 
     val = EndiannessHandler::toNetworkEndian(record.m_ttl);
     std::memcpy(ptr, &val, sizeof(val));

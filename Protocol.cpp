@@ -1,7 +1,7 @@
 #include "Protocol.h"
 
-Protocol::Protocol(const AllProtocols protocol, std::unique_ptr<Protocol> nextProtocol)
-	: m_protocolType(protocol), m_nextProtocol(std::move(nextProtocol))
+Protocol::Protocol(const AllProtocols protocol)
+	: m_protocolType(protocol)
 {
 	switch (m_protocolType)
 	{
@@ -20,36 +20,28 @@ Protocol::Protocol(const AllProtocols protocol, std::unique_ptr<Protocol> nextPr
 	}
 }
 
-Protocol::Protocol(const Protocol & other)
-{
-	m_protocolType = other.m_protocolType;
-	m_includesChecksum = other.m_includesChecksum;
-	m_nextProtocol = nullptr;
-}
+Protocol::Protocol(const Protocol& other) = default;
 
 Protocol::Protocol(Protocol&& other) = default;
+
+// Invalid implementation
+void Protocol::calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol)
+{
+	throw std::exception("Cannot calculate checksum for this protocol.");
+}
+
+// Will do nothing unless overridden
+void Protocol::encodeLayerPost   (std::vector<byte>& buffer, const size_t offset) {};
+
+// Will do nothing unless overridden
+void Protocol::encodeLayerPostRaw(std::vector<byte>& buffer, const size_t offset) const {};
 
 AllProtocols Protocol::getProtocol() const
 {
 	return m_protocolType;
 }
 
-void Protocol::setNextProtocol(std::unique_ptr<Protocol> next)
+bool Protocol::includesChecksum() const
 {
-	m_nextProtocol = std::move(next);
-}
-
-Protocol* Protocol::getNextProtocol()
-{
-	return m_nextProtocol.get();
-}
-
-size_t Protocol::getLayersSize() const
-{
-	size_t size = getSize();
-	if (m_nextProtocol)
-	{
-		size += m_nextProtocol->getLayersSize();
-	}
-	return size;
+	return m_includesChecksum;
 }

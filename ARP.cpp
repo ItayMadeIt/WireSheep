@@ -1,95 +1,78 @@
 #include "ARP.h"
 #include "EndianHandler.h"
-void ARP::writeToBuffer(byte* ptr) const
+
+void ARP::writeToBuffer(byte* buffer) const
 {
 	byte2 var = EndiannessHandler::toNetworkEndian(m_hardwareType);
-	std::memcpy(ptr, &var, sizeof(var));
-	ptr += sizeof(var);
+	std::memcpy(buffer, &var, sizeof(var));
+	buffer += sizeof(var);
 
 	var = EndiannessHandler::toNetworkEndian(m_protocolType);
-	std::memcpy(ptr, &var, sizeof(var));
-	ptr += sizeof(var);
+	std::memcpy(buffer, &var, sizeof(var));
+	buffer += sizeof(var);
 
-	std::memcpy(ptr, &m_hardwareLength, sizeof(m_hardwareLength));
-	ptr += sizeof(m_hardwareLength);
+	std::memcpy(buffer, &m_hardwareLength, sizeof(m_hardwareLength));
+	buffer += sizeof(m_hardwareLength);
 
-	std::memcpy(ptr, &m_protocolLength, sizeof(m_protocolLength));
-	ptr += sizeof(m_protocolLength);
+	std::memcpy(buffer, &m_protocolLength, sizeof(m_protocolLength));
+	buffer += sizeof(m_protocolLength);
 
 	var = EndiannessHandler::toNetworkEndian(m_operation);
-	std::memcpy(ptr, &var, sizeof(var));
-	ptr += sizeof(var);
+	std::memcpy(buffer, &var, sizeof(var));
+	buffer += sizeof(var);
 
 
-	std::memcpy(ptr, m_senderHardwareAddr.data(), m_senderHardwareAddr.size());
-	ptr += m_senderHardwareAddr.size();
+	std::memcpy(buffer, m_senderHardwareAddr.data(), m_senderHardwareAddr.size());
+	buffer += m_senderHardwareAddr.size();
 
-	std::memcpy(ptr, m_senderProtocolAddr.data(), m_senderProtocolAddr.size());
-	ptr += m_senderProtocolAddr.size();
+	std::memcpy(buffer, m_senderProtocolAddr.data(), m_senderProtocolAddr.size());
+	buffer += m_senderProtocolAddr.size();
 
-	std::memcpy(ptr, m_targetHardwareAddr.data(), m_targetHardwareAddr.size());
-	ptr += m_targetHardwareAddr.size();
+	std::memcpy(buffer, m_targetHardwareAddr.data(), m_targetHardwareAddr.size());
+	buffer += m_targetHardwareAddr.size();
 
-	std::memcpy(ptr, m_targetProtocolAddr.data(), m_targetProtocolAddr.size());
-	ptr += m_targetProtocolAddr.size();
-
-
+	std::memcpy(buffer, m_targetProtocolAddr.data(), m_targetProtocolAddr.size());
+	buffer += m_targetProtocolAddr.size();
 }
 
-void ARP::readFromBuffer(const byte* ptr)
+void ARP::readFromBuffer(const byte* buffer, const size_t size)
 {
+	// No implementation
 }
 
-void ARP::encodeLayer(std::vector<byte>& buffer)
+void ARP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 {
-	// Reserve the size
-	size_t size = getLayersSize();
-	buffer.reserve(size);
-
-	// Add ethernet data to the array
-	buffer.resize(buffer.size() + getSize());
-	writeToBuffer(buffer.data());
-
-	// Specific to ARP
+	// verify addresses are the same size/type
 	if (m_senderHardwareAddr.size() != m_targetHardwareAddr.size())
 	{
+		// (Will later throw exception)
 		std::cerr << "Unmatched sizes for sender and target hardware addresses (using sender for length)" << std::endl;
 	}
-	m_hardwareLength = m_senderHardwareAddr.size();
-
 	if (m_senderProtocolAddr.size() != m_targetProtocolAddr.size())
 	{
+		// (Will later throw exception)
 		std::cerr << "Unmatched sizes for sender and target protocol addresses (using sender for length)" << std::endl;
 	}
-	m_hardwareLength = m_senderProtocolAddr.size();
 
-	// Continue to serialize the data for the following protocols
-	if (m_nextProtocol)
-	{
-		m_nextProtocol->encodeLayer(buffer, getSize());
-	}
+	// set lengths
+	m_hardwareLength = m_senderHardwareAddr.size();
+	m_protocolLength = m_senderProtocolAddr.size();
+
+	// Add ARP data to the buffer
+	buffer.resize(buffer.size() + getSize());
+	writeToBuffer(buffer.data() + offset);
 }
 
-void ARP::encodeLayerRaw(std::vector<byte>& buffer) const
+void ARP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
-	// Reserve the size
-	size_t size = getLayersSize();
-	buffer.reserve(size);
-
-	// Add ethernet data to the array
+	// Add ARP data to the buffer
 	buffer.resize(buffer.size() + getSize());
-	writeToBuffer(buffer.data());
-
-	// Continue to serialize the data for the following protocols
-	if (m_nextProtocol)
-	{
-		m_nextProtocol->encodeLayer(buffer, getSize());
-	}
+	writeToBuffer(buffer.data() + offset);
 }
 
 size_t ARP::getSize() const
 {
-	size_t size = ARP::SIZE; // header
+	size_t size = ARP::SIZE_NO_ADDR; // header
 
 	size += m_senderHardwareAddr.size();
 
@@ -100,52 +83,6 @@ size_t ARP::getSize() const
 	size += m_targetProtocolAddr.size();
 
 	return size;
-}
-
-void ARP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
-{
-	// Get the amount of bytes we have left to input
-	size_t bytesAmount = buffer.capacity() - buffer.size();
-
-	// Specific to ARP
-	if (m_senderHardwareAddr.size() != m_targetHardwareAddr.size())
-	{
-		std::cerr << "Unmatched sizes for sender and target hardware addresses (using sender for length)" << std::endl;
-	}
-	m_hardwareLength = m_senderHardwareAddr.size();
-
-	if (m_senderProtocolAddr.size() != m_targetProtocolAddr.size())
-	{
-		std::cerr << "Unmatched sizes for sender and target protocol addresses (using sender for length)" << std::endl;
-	}
-	m_protocolLength = m_senderProtocolAddr.size();
-
-	// Add data to the array
-	buffer.resize(buffer.size() + getSize());
-	writeToBuffer(buffer.data() + offset);
-	
-	// Continue to serialize the data for the following protocols
-	if (m_nextProtocol)
-	{
-		m_nextProtocol->encodeLayer(buffer, offset + getSize());
-	}
-}
-
-void ARP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
-{
-	// Reserve the size
-	size_t size = getLayersSize();
-	buffer.reserve(size);
-
-	// Add ethernet data to the array
-	buffer.resize(buffer.size() + getSize());
-	writeToBuffer(buffer.data());
-
-	// Continue to serialize the data for the following protocols
-	if (m_nextProtocol)
-	{
-		m_nextProtocol->encodeLayer(buffer, getSize());
-	}
 }
 
 ARP::ARP() : Protocol(AllProtocols::ARP)
@@ -166,7 +103,7 @@ ARP& ARP::opcode(const OperationCode value)
 	return *this;
 }
 
-byte2 ARP::opcode()
+byte2 ARP::opcode() const
 {
 	return m_operation;
 }
@@ -185,26 +122,26 @@ ARP& ARP::hardwareType(const HardwareType value)
 	return *this;
 }
 
-byte2 ARP::hardwareType()
+byte2 ARP::hardwareType() const
 {
 	return m_hardwareType;
 }
 
-ARP& ARP::protocolType(const byte2 value)
+ARP& ARP::protocol(const byte2 value)
 {
 	m_protocolType = value;
 
 	return *this;
 }
 
-ARP& ARP::protocolType(const Ethernet::ProtocolTypes value)
+ARP& ARP::protocol(const Ethernet::Protocols value)
 {
 	m_protocolType = (byte2)value;
 
 	return *this;
 }
 
-byte2 ARP::protocolType()
+byte2 ARP::protocol() const
 {
 	return m_protocolType;
 }
@@ -216,7 +153,7 @@ ARP& ARP::hardwareLength(const byte value)
 	return *this;
 }
 
-byte ARP::hardwareLength()
+byte ARP::hardwareLength() const
 {
 	return m_hardwareLength;
 }
@@ -228,7 +165,7 @@ ARP& ARP::protocolLength(const byte value)
 	return *this;
 }
 
-byte ARP::protocolLength()
+byte ARP::protocolLength() const
 {
 	return m_protocolLength;
 }
@@ -249,7 +186,7 @@ ARP& ARP::senderHardwareAddr(const std::vector<byte> addr)
 	return *this;
 }
 
-std::vector<byte> ARP::senderHardwareAddr()
+std::vector<byte> ARP::senderHardwareAddr() const
 {
 	return m_senderHardwareAddr;
 }
@@ -263,14 +200,14 @@ ARP& ARP::senderProtocolAddr(const address::addrIPv4 ipv4)
 	return *this;
 }
 
-ARP& ARP::senderProtocolAddr(const std::vector<byte> addr)
+ARP& ARP::senderProtocolAddr(const std::vector<byte> addr) 
 {
 	m_senderProtocolAddr = addr;
 
 	return *this;
 }
 
-std::vector<byte> ARP::senderProtocolAddr()
+std::vector<byte> ARP::senderProtocolAddr() const
 {
 	return m_senderProtocolAddr;
 }
@@ -284,14 +221,14 @@ ARP& ARP::targetHardwareAddr(const address::addrMac mac)
 	return *this;
 }
 
-ARP& ARP::targetHardwareAddr(const std::vector<byte> addr)
+ARP& ARP::targetHardwareAddr(const std::vector<byte> addr) 
 {
 	m_targetHardwareAddr = addr;
 
 	return *this;
 }
 
-std::vector<byte> ARP::targetHardwareAddr()
+std::vector<byte> ARP::targetHardwareAddr() const
 {
 	return m_targetHardwareAddr;
 }
@@ -312,7 +249,7 @@ ARP& ARP::targetProtocolAddr(const std::vector<byte> addr)
 	return *this;
 }
 
-std::vector<byte> ARP::targetProtocolAddr()
+std::vector<byte> ARP::targetProtocolAddr() const
 {
 	return m_targetProtocolAddr;
 }

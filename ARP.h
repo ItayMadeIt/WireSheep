@@ -49,48 +49,48 @@ public:
 
 	ARP& opcode(const byte2 value);
 	ARP& opcode(const OperationCode value);
-	byte2 opcode();
+	byte2 opcode() const;
 	
 	ARP& hardwareType(const byte2 value);
 	ARP& hardwareType(const HardwareType value);
-	byte2 hardwareType();
+	byte2 hardwareType() const;
 
-	ARP& protocolType(const byte2 value);
-	ARP& protocolType(const Ethernet::ProtocolTypes value);
-	byte2 protocolType();
+	ARP& protocol(const byte2 value);
+	ARP& protocol(const Ethernet::Protocols value);
+	byte2 protocol() const;
 
 	ARP& hardwareLength(const byte value);
-	byte hardwareLength();
+	byte hardwareLength() const;
 	ARP& protocolLength(const byte value);
-	byte protocolLength();
+	byte protocolLength() const;
 
 	ARP& senderHardwareAddr(const address::addrMac mac);
 	ARP& senderHardwareAddr(const std::vector<byte> addr);
-	std::vector<byte> senderHardwareAddr();
+	std::vector<byte> senderHardwareAddr() const;
 
 	ARP& senderProtocolAddr(const address::addrIPv4 ipv4);
 	ARP& senderProtocolAddr(const std::vector<byte> addr);
-	std::vector<byte> senderProtocolAddr();
+	std::vector<byte> senderProtocolAddr() const;
 
 	ARP& targetHardwareAddr(const address::addrMac mac);
 	ARP& targetHardwareAddr(const std::vector<byte> addr);
-	std::vector<byte> targetHardwareAddr();
+	std::vector<byte> targetHardwareAddr() const;
 
 	ARP& targetProtocolAddr(const address::addrIPv4 ipv4);
 	ARP& targetProtocolAddr(const std::vector<byte> addr);
-	std::vector<byte> targetProtocolAddr();
+	std::vector<byte> targetProtocolAddr() const;
 
-protected:
-	void writeToBuffer(byte* ptr) const override;
-	void readFromBuffer(const byte* ptr) override;
-	void encodeLayer(std::vector<byte>& buffer) override;
-	void encodeLayerRaw(std::vector<byte>& buffer) const override;
 	size_t getSize() const override;
+
 	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
 	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
-	
+
 protected:
-	const static int SIZE = 8;
+	void writeToBuffer(byte* buffer) const override;
+	void readFromBuffer(const byte* buffer, const size_t size) override;
+
+protected:
+	const static int SIZE_NO_ADDR = 8;
 
 	byte2 m_hardwareType;
 	byte2 m_protocolType;

@@ -48,82 +48,43 @@ void TCP::writeToBuffer(byte* ptr) const
     }
 }
 
-void TCP::readFromBuffer(const byte* ptr)
+void TCP::readFromBuffer(const byte* buffer, const size_t size)
 {
 }
 
-void TCP::encodeLayer(std::vector<byte>& buffer)
+
+void TCP::calculateOptionsSize()
 {
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Calculate how many 4 bytes group the packet has
-    m_dataOffset = (TCP::SIZE + m_optionsSize + 3) / 4;
-
-    // Add TCP data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    addOptionsPadding(buffer.data() + TCP::SIZE);
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
+    m_optionsSize = 0;
+    for (const auto& option : m_options)
     {
-        m_nextProtocol->encodeLayer(buffer, getSize());
+        m_optionsSize += option->BASE_LENGTH;
     }
-}
 
-void TCP::encodeLayerRaw(std::vector<byte>& buffer) const
-{
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Add ethernet data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    // Adds padding for the options, (To disable should recalculate m_optionSize to 8 * k)
-    addOptionsPadding (buffer.data() + TCP::SIZE);
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayerRaw(buffer, getSize());
-    }
+    // allign to multiples of 4
+    m_optionsSize = (m_optionsSize + 3) / 4;
 }
 
 size_t TCP::getSize() const
 {
-    byte2 optionsSize = 0;
-    for (const auto& option : m_options)
-    {
-        optionsSize += option->BASE_LENGTH;
-    }
-
-    // allign to multiples of 8
-    optionsSize = (optionsSize + 3) & ~3;
-
-    return TCP::SIZE + optionsSize;
+    return TCP::SIZE + m_optionsSize;
 }
 
 void TCP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 {
-    m_dataOffset = (TCP::SIZE + m_optionsSize + 3) / 4 ; //+5 for header
+    calculateOptionsSize();
+
+    m_dataOffset = (TCP::SIZE + (m_optionsSize + 3)) / 4;
+    m_checksum = 0;
 
     // Add TCP data to the array
     buffer.resize(buffer.size() + getSize());
     writeToBuffer(buffer.data() + offset);
 
-    // Adds padding for the options, (To disable should recalculate m_optionSize to 8 * k)
-    addOptionsPadding(buffer.data() + offset + TCP::SIZE + m_optionsSize);
+    // calculateChecksum(buffer);
 
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayer(buffer, offset + getSize());
-    }
+    // Adds padding for the options
+    addOptionsPadding(buffer.data() + offset + TCP::SIZE + m_optionsSize);
 }
 
 void TCP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
@@ -132,19 +93,19 @@ void TCP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
     buffer.resize(buffer.size() + getSize());
     writeToBuffer(buffer.data() + offset);
 
-    // Adds padding for the options, (To disable should recalculate m_optionSize to 8 * k)
-    addOptionsPadding(buffer.data() + TCP::SIZE);
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayerRaw(buffer, offset + getSize());
-    }
+    // Adds padding for the options, (To disable should set m_optionSize to 0)
+    addOptionsPadding(buffer.data() + offset + TCP::SIZE + m_optionsSize);
 }
 
 void TCP::addOptionsPadding(byte* ptr) const
 {
-    byte2 paddingLength = (4 - m_optionsSize & 3) & 3;
+    // If option size == 0, it's invalid, meaning no padding
+    if (m_optionsSize == 0)
+    {
+        return;
+    }
+
+    byte2 paddingLength = (4 - m_optionsSize % 4);
 
     std::memset(ptr, 0, paddingLength);
 }
@@ -172,6 +133,33 @@ TCP::TCP(const TCP& other) : Protocol(AllProtocols::TCP),
     {
         m_options.emplace_back(option->clone());
     }
+}
+
+void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol)
+{
+    if (!protocol)
+    {
+        // will throw exception
+        return;
+    }
+    AllProtocols otherProtocol = protocol->getProtocol();
+    if (otherProtocol == AllProtocols::IPv4)
+    {
+        // isn't implemented yet
+    }
+    else if (otherProtocol == AllProtocols::IPv6)
+    {
+        // isn't implemented yet
+    }
+    else
+    {
+        // Will throw exception
+        return;
+    }
+
+    byte* tcpPtr = buffer.data() + offset;
+
+    // isn't implemented yet
 }
 
 TCP& TCP::srcPort(const byte2 value)

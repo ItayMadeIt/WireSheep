@@ -12,7 +12,7 @@ class Ethernet final : public Protocol
 {
 public: 
 	// full list: https://en.wikipedia.org/wiki/EtherType#Values
-	enum class ProtocolTypes
+	enum class Protocols
 	{
 		IPv4 = 0x0800,
 		ARP = 0x0806,
@@ -34,19 +34,15 @@ public:
 	addrMac dst() const;
 
 	Ethernet& type(const byte2 value);
-	Ethernet& type(const ProtocolTypes value);
+	Ethernet& type(const Protocols value);
 	byte2 type() const;
-
-	virtual void writeToBuffer(byte* ptr) const override;
-	virtual void readFromBuffer(const byte* ptr) override;
 
 	virtual size_t getSize() const override;
 
-	virtual void encodeLayer(std::vector<byte>& buffer) override;
 	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
-
-	virtual void encodeLayerRaw(std::vector<byte>& buffer) const override;
 	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+
+	virtual void encodeLayerPost(std::vector<byte>& buffer, const size_t offset) override;
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
 
@@ -54,12 +50,15 @@ public:
 	const static size_t SIZE = 14;
 
 protected:
+	virtual void writeToBuffer(byte* buffer) const override;
+	virtual void readFromBuffer(const byte* buffer, const size_t size) override;
+
+protected:
+	const static size_t MIN_SIZE = 42+12+2;
+	
 	addrMac m_dst;
 	addrMac m_src;
 	byte2 m_type;
-
-private:
-	const static size_t MIN_SIZE = 42+12+2;
 
 };
 

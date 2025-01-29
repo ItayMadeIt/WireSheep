@@ -7,7 +7,7 @@
 class PacketBuilder
 {
 public:
-	PacketBuilder() = default;
+	PacketBuilder();
 	~PacketBuilder() = default;
 
 	template<typename Layer, typename... Args>
@@ -44,8 +44,7 @@ public:
 	void reset();
 
 private:
-	std::unique_ptr<Protocol> firstProtocol;
-	Protocol* curProtocol;
+	std::unique_ptr<ProtocolNode> m_protocolList;
 
 };
 
@@ -53,19 +52,15 @@ template<typename Layer, typename ...Args>
 inline PacketBuilder& PacketBuilder::push(Args && ...args)
 {
 	// Create protocol instance
-	std::unique_ptr<Layer> newProtocol =
-		std::make_unique<Layer>(std::forward<Args>(args)...);
+	Layer* newProtocol = new Layer(std::forward<Args>(args)...);
 
-	// Set next protocol 
-	if (curProtocol)
+	if (!m_protocolList)
 	{
-		curProtocol->setNextProtocol(std::move(newProtocol));
-		curProtocol = curProtocol->getNextProtocol();
+		m_protocolList = std::make_unique(nullptr, newProtocol, nullptr);
 	}
 	else
 	{
-		firstProtocol = std::move(newProtocol);
-		curProtocol = firstProtocol.get();
+		m_protocolList->insert(newProtocol);
 	}
 
 	return *this;
@@ -76,20 +71,17 @@ PacketBuilder& PacketBuilder::push(const Layer& layer)
 {
 	static_assert(std::is_copy_constructible<Layer>::value, 
 		"Pushed layer must be copy constructible!");
-
+	
 	// Create protocol instance
-	std::unique_ptr<Layer> newProtocol = std::make_unique<Layer>(layer);
+	Layer* newProtocol = new Layer(layer);
 
-	// Set next protocol 
-	if (curProtocol)
+	if (!m_protocolList)
 	{
-		curProtocol->setNextProtocol(std::move(newProtocol));
-		curProtocol = curProtocol->getNextProtocol();
+		m_protocolList = std::make_unique<ProtocolNode>(nullptr, newProtocol, nullptr);
 	}
 	else
 	{
-		firstProtocol = std::move(newProtocol);
-		curProtocol = firstProtocol.get();
+		m_protocolList->insert(newProtocol);
 	}
 
 	return *this;

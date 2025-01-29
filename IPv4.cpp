@@ -20,7 +20,12 @@ IPv4::IPv4(IPv4&& other) = default;
 
 IPv4::IPv4(const IPv4& other) = default;
 
-void IPv4::writeToBuffer(byte* ptr) const
+size_t IPv4::getSize() const
+{
+    return m_ihl * 4;
+}
+
+void IPv4::writeToBuffer(byte* buffer) const
 {
     byte4 word = 0;
 
@@ -32,8 +37,8 @@ void IPv4::writeToBuffer(byte* ptr) const
         ((m_ecn & 0x3) << 16)           |    // ECN          (3 bits)
         ((m_totalLength& 0xFFFF))            // Total Length (16 bits)
     );
-    memcpy(ptr, &word, sizeof(byte4));
-    ptr += sizeof(byte4);
+    memcpy(buffer, &word, sizeof(byte4));
+    buffer += sizeof(byte4);
 
 
     // second 32 bits
@@ -42,8 +47,8 @@ void IPv4::writeToBuffer(byte* ptr) const
         ((m_flags & 0x7) << 13)             | // Flags (3 bits)
         (m_fragmentOffset & 0x1FFF)           // Fragment Offset (13 bits)
     );         
-    memcpy(ptr, &word, sizeof(byte4));
-    ptr += sizeof(byte4);
+    memcpy(buffer, &word, sizeof(byte4));
+    buffer += sizeof(byte4);
 
     // third 32 bits
     word = EndiannessHandler::toNetworkEndian(
@@ -51,101 +56,31 @@ void IPv4::writeToBuffer(byte* ptr) const
         ((m_protocol & 0xFF) << 16) | // Protocol (8 bits)
         (m_checksum & 0xFFFF)         // Header checksum (16 bits)
     );
-    memcpy(ptr, &word, sizeof(byte4));
-    ptr += sizeof(byte4);
+    memcpy(buffer, &word, sizeof(byte4));
+    buffer += sizeof(byte4);
 
     // Addresses
-    memcpy(ptr, &m_src, sizeof(byte4));
-    ptr += sizeof(byte4);
-    memcpy(ptr, &m_dst, sizeof(byte4));
+    memcpy(buffer, &m_src, sizeof(byte4));
+    buffer += sizeof(byte4);
+    memcpy(buffer, &m_dst, sizeof(byte4));
 }
 
-void IPv4::readFromBuffer(const byte* ptr)
+void IPv4::readFromBuffer(const byte* buffer, const size_t size)
 {
-}
-
-void IPv4::encodeLayer(std::vector<byte>& buffer)
-{
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Get the amount of bytes we have left to input
-    size_t bytesAmount = buffer.capacity() - buffer.size();
-    m_totalLength = (byte2)bytesAmount;
-
-    // Calculate IPv4 checksum
-    calcChecksum();
-
-    // Add IPv4 data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayer(buffer, getSize());
-    }
-}
-
-size_t IPv4::getSize() const
-{
-    return m_ihl * 4;
+    // Not implemented
 }
 
 void IPv4::encodeLayer(std::vector<byte>& buffer, const size_t offset) 
 {
-    // Get the amount of bytes we have left to input
-    size_t bytesAmount = buffer.capacity() - buffer.size();
-    m_totalLength = (byte2)bytesAmount;
-
     // Calculate IPv4 checksum
-    calcChecksum();
+    // calculateChecksum();
+    m_totalLength = buffer.capacity() - offset;
+    m_version = 4;
+    m_checksum = 0;
 
     // Add ipv4 data to the array
     buffer.resize(buffer.size() + getSize());
     writeToBuffer(buffer.data() + offset);
-    
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayer(buffer, offset + getSize());
-    }
-}
-
-void IPv4::calcChecksum()
-{
-    std::vector<byte> curData(getSize());
-    
-    writeToBuffer(curData.data());
-
-    byte4 checksumVal = 0;
-
-    byte2* iter = (byte2*)(curData.data());
-    byte2* end = (byte2*)(curData.data() + curData.size());
-    for (; iter < end; iter++)
-    {
-        checksumVal += EndiannessHandler::fromNetworkEndian(*iter);
-    }
-    byte2 checksumCarry = (checksumVal & 0xFFFF0000) >> 16;
-    m_checksum = ~( (checksumVal & 0xFFFF) + checksumCarry );
-}
-
-void IPv4::encodeLayerRaw(std::vector<byte>& buffer) const
-{
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Add ethernet data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayerRaw(buffer, getSize());
-    }
 }
 
 void IPv4::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
@@ -153,10 +88,33 @@ void IPv4::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
     // Add ipv4 data to the array
     buffer.resize(buffer.size() + getSize());
     writeToBuffer(buffer.data() + offset);
+}
 
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
+
+void IPv4::calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol)
+{
+    // (Will ignore protocol, it doesn't depend on anything...)
+
+    byte4 checksumVal = 0;
+
+    // Calculate checksum
+    byte2* iter = (byte2*)(buffer.data() + offset);
+    byte2* end = (byte2*)(buffer.data() + offset + getSize());
+
+    for (; iter < end; iter++)
     {
-        m_nextProtocol->encodeLayerRaw(buffer, offset + getSize());
+        checksumVal += EndiannessHandler::fromNetworkEndian(*iter);
     }
+
+    byte2 checksumCarry = (checksumVal & 0xFFFF0000) >> 16;
+    m_checksum = ~((checksumVal & 0xFFFF) + checksumCarry);
+
+    // Get it in the correct endianness
+    byte2 networkChecksum = EndiannessHandler::toNetworkEndian(m_checksum);
+    
+    // Copy the new checksum value to the network buffer
+    size_t headerChecksumOffset = offset + 10; // 10 = header checksum position relative to IPv4 start of the packet
+    byte* checksumPtr = buffer.data() + headerChecksumOffset;
+
+    std::memcpy(checksumPtr, &networkChecksum, sizeof(networkChecksum));
 }

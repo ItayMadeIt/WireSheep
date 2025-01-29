@@ -1,18 +1,17 @@
 #pragma once
 
 #include "Protocol.h"
+#include "ProtocolNode.h"
+#include <unordered_map>
 
 class Packet
 {
 public:
-	
-	Packet(std::unique_ptr<Protocol> firstLayer);
+	Packet(std::unique_ptr<ProtocolNode> firstLayer);
 
-	Protocol* getFirstLayer() const;
+	Protocol* operator[](const size_t index);
 
-	Protocol* operator[](size_t index);
-
-	Protocol* operator[](AllProtocols protocolType);
+	Protocol* operator[](const AllProtocols protocolType);
 
 	/// <summary>
 	/// Turns the packet layers into a binary vector and returns
@@ -40,7 +39,11 @@ public:
 	operator std::vector<byte>() const ;
 
 private:
-	std::unique_ptr<Protocol> m_firstLayer;
-	std::vector<byte> m_bytes;
+	std::unique_ptr<ProtocolNode> m_head; // first layer
+	ProtocolNode* m_tail; // last layer 
+
+	std::unordered_map<AllProtocols, short> m_protocolsAmount;
+
+	std::vector<byte> m_buffer;
 };
 

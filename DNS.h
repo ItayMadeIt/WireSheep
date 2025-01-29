@@ -192,10 +192,10 @@ public:
 
 protected:
 	byte2 m_transcationID;
-	std::vector< QuestionResourceRecord> m_questions; // Include length
-	std::vector< ResourceRecord> m_answers; // Include length
-	std::vector< ResourceRecord> m_authRR; // Include length
-	std::vector< ResourceRecord> m_additionalRR; // Include length
+	std::vector<QuestionResourceRecord> m_questions; // Include length
+	std::vector<ResourceRecord> m_answers; // Include length
+	std::vector<ResourceRecord> m_authRR; // Include length
+	std::vector<ResourceRecord> m_additionalRR; // Include length
 	byte2 m_flags;
 
 	// Length
@@ -204,15 +204,15 @@ protected:
 	byte2 m_authLength;
 	byte2 m_additionalLength;
 
-	// Inherited via Protocol
-	void writeToBuffer(byte* ptr) const override;
-	void readFromBuffer(const byte* ptr) override;
-	void encodeLayer(std::vector<byte>& buffer) override;
-	void encodeLayerRaw(std::vector<byte>& buffer) const override;
 	size_t getSize() const override;
-	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+
+	void encodeLayer   (std::vector<byte>& buffer, const size_t offset) override;
 	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
-	void serializeArrRecord(const DNS::ResourceRecord& record, byte*& ptr) const;
+protected:
+	void writeToBuffer(byte* buffer) const override;
+	void readFromBuffer(const byte* buffer, const size_t size) override;
+
+	void encodeRecord(const DNS::ResourceRecord& record, byte*& ptr) const;
 };
 

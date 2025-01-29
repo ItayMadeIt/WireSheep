@@ -48,9 +48,6 @@
     <ClCompile Include="SampleMain.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Address.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Device.cpp">
       <Filter>Source Files\Devices</Filter>
     </ClCompile>
@@ -64,9 +61,6 @@
       <Filter>Source Files\Protocols</Filter>
     </ClCompile>
     <ClCompile Include="UDP.cpp">
-      <Filter>Source Files\Protocols</Filter>
-    </ClCompile>
-    <ClCompile Include="Protocol.cpp">
       <Filter>Source Files\Protocols</Filter>
     </ClCompile>
     <ClCompile Include="Helper.cpp">
@@ -96,11 +90,17 @@
     <ClCompile Include="TCP.cpp">
       <Filter>Source Files\Protocols</Filter>
     </ClCompile>
+    <ClCompile Include="Address.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Protocol.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="ProtocolNode.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Address.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Ethernet.h">
       <Filter>Header Files\Protocols</Filter>
     </ClInclude>
@@ -128,9 +128,6 @@
     <ClInclude Include="WireDefs.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Protocol.h">
-      <Filter>Header Files\Protocols</Filter>
-    </ClInclude>
     <ClInclude Include="Packet.h">
       <Filter>Header Files\Packets</Filter>
     </ClInclude>
@@ -148,6 +145,15 @@
     </ClInclude>
     <ClInclude Include="TCP.h">
       <Filter>Header Files\Protocols</Filter>
+    </ClInclude>
+    <ClInclude Include="Address.h">
+      <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Header Files\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="ProtocolNode.h">
+      <Filter>Header Files\Packets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

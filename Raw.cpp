@@ -32,30 +32,13 @@ Raw& Raw::push_back(const std::vector<byte>& values)
     return *this;
 }
 
-void Raw::writeToBuffer(byte* ptr) const
+void Raw::writeToBuffer(byte* buffer) const
 {
-    memcpy(ptr, m_data.data(), m_data.size());
+    memcpy(buffer, m_data.data(), m_data.size());
 }
 
-void Raw::readFromBuffer(const byte* ptr)
+void Raw::readFromBuffer(const byte* buffer, const size_t size)
 {
-}
-
-void Raw::encodeLayer(std::vector<byte>& buffer) 
-{
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Add raw data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayer(buffer, getSize());
-    }
 }
 
 void Raw::encodeLayer(std::vector<byte>& buffer, const size_t offset)
@@ -63,29 +46,6 @@ void Raw::encodeLayer(std::vector<byte>& buffer, const size_t offset)
     // Add data to the array
     buffer.resize(buffer.size() + getSize());
     writeToBuffer(buffer.data() + offset);
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayer(buffer, getSize());
-    }
-}
-
-void Raw::encodeLayerRaw(std::vector<byte>& buffer) const
-{
-    // Reserve the size
-    size_t size = getLayersSize();
-    buffer.reserve(size);
-
-    // Add ethernet data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data());
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayerRaw(buffer, getSize());
-    }
 }
 
 void Raw::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
@@ -93,12 +53,6 @@ void Raw::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
     // Add data to the array
     buffer.resize(buffer.size() + getSize());
     writeToBuffer(buffer.data() + offset);
-
-    // Continue to serialize the data for the following protocols
-    if (m_nextProtocol)
-    {
-        m_nextProtocol->encodeLayerRaw(buffer, getSize());
-    }
 }
 
 size_t Raw::getSize() const

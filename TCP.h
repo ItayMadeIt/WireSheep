@@ -111,6 +111,9 @@ public:
 	TCP();
 	TCP(const TCP& other);
 
+public:
+	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
+
 	TCP& srcPort(const byte2 value);
 	byte2 srcPort() const;
 
@@ -151,32 +154,17 @@ public:
 	template<typename OptionType, typename... Args>
 	TCP& addOption(Args&&... args);
 
-	// Note: Serialize does not include
-	void writeToBuffer(byte* ptr) const override;
-
-	void readFromBuffer(const byte* ptr) override;
-
-	void encodeLayer(std::vector<byte>& buffer) override;
 	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
-
-	void encodeLayerRaw(std::vector<byte>& buffer) const override;
 	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 	size_t getSize() const override;
 
+	void calculateOptionsSize();
+
 protected:
-	/// <summary>
-	/// Calculates and updates checksum based on the TCP fields
-	/// The buffer is a buffer for the full buffer, used to gather
-	/// IPv4/IPv6 buffer and get the checksum fields such as addresses, 
-	/// version and so on.
-	/// This means that the buffer created must already have the ETHER
-	/// protocol + the IPv4/IPv6 protocol attached.
-	/// If there is a problem (Mac protocol wasn't IPv4/IPv6, there aren't enough
-	/// bytes for the fulle IP protocols) it will set checksum to 0
-	/// </summary>
-	/// <param name="buffer">Buffer that includes Ether/IPv4</param>
-	void calcChecksum(const std::vector<byte>& buffer);
+
+	void writeToBuffer(byte* buffer) const override;
+	void readFromBuffer(const byte* buffer, const size_t size) override;
 
 	byte4 getTCPChecksum();
 

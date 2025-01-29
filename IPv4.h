@@ -93,18 +93,7 @@ public:
 	IPv4(IPv4&& other);
 	IPv4(const IPv4& other);
 
-	void writeToBuffer(byte* ptr) const override;
-	void readFromBuffer(const byte* ptr) override;
-
-	void encodeLayer(std::vector<byte>& buffer) override;
-	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
-
-	void encodeLayerRaw(std::vector<byte>& buffer) const override;
-	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
-
-
-	size_t getSize() const override;
-
+public:
 
 	IPv4& src(const addrIPv4 value) { m_src = value; return *this; }
 	addrIPv4 src() const { return m_src; }
@@ -138,22 +127,26 @@ public:
 	IPv4& protocol(const byte value) { m_protocol = value; return *this; }
 	Protocols protocol() const { return (Protocols)m_protocol; }
 
-	IPv4& checksum(const byte2 value) { m_checksum = value; return *this; }
-	byte2 checksum() const { return m_checksum; }
-
-	/// <summary>
-	/// Calculates and updates checksum based on the IP fields
-	/// </summary>
-	void calcChecksum();
-
 	IPv4& totalLength(const byte2 value) { m_totalLength = value; return *this; }
 	byte2 totalLength() const { return m_totalLength; }
 
+	IPv4& checksum(const byte2 value) { m_checksum = value; return *this; }
+	byte2 checksum() const { return m_checksum; }
+
+	size_t getSize() const override;
+
+	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+
+	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
 public:
 	const static size_t SIZE = 20; // min size of 20 bytes
 
-protected: // So people can make their own IPv4 and modify those vars
+protected:
+	void writeToBuffer(byte* buffer) const override;
+	void readFromBuffer(const byte* buffer, const size_t size) override;
 
+protected:
 	// in IPv4 setup has to be the value 4 (but you physically can modify it) | 4 bits
 	byte m_version = 4; 
 	

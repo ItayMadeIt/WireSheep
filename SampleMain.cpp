@@ -34,16 +34,72 @@ int main()
 
 	std::cout << devices;
 
-	Device device(devices[3]);
+	Device device(devices[7]);
 	
 	// Create packet
 	PacketBuilder packetBuilder;
+
+
+	/*
+	Ethernet etherLayer;
+	etherLayer
+		.src(device.getDeviceMac())
+		.dst(device.getRouterMac())
+		.type(Ethernet::Protocols::ARP);
+
+	ARP arpLayer;
+	arpLayer
+		.hardwareType(ARP::HardwareType::Ether)
+		.senderHardwareAddr(device.getDeviceMac())
+		.targetHardwareAddr(addrMac::broadcast)
+		.senderProtocolAddr({ "192.168.1.41" })
+		.targetProtocolAddr({ "192.168.1.1" });
+
+	// Make it into a packet
+	Packet pack = (packetBuilder << etherLayer << arpLayer).build();
+
+	// Print both packets bytes
+	std::cout << pack << std::endl;
+
+	// Send packet
+	device << pack;*/
 
 	Ethernet etherLayer;
 	etherLayer
 		.src(device.getDeviceMac())
 		.dst(device.getRouterMac())
-		.type(Ethernet::ProtocolTypes::IPv4);
+		.type(Ethernet::Protocols::IPv4);
+
+	IPv4 ipv4Layer;
+	ipv4Layer
+		.src({ "192.168.1.41" })
+		.dst({ "8.8.8.8" })
+		.protocol(IPv4::Protocols::UDP)
+		.flags(IPv4::Flags::NONE)
+		.ecn(0b10);
+
+	UDP udpLayer;
+	udpLayer
+		.src(49999)
+		.dst(53);
+
+	DNS dnsLayer;
+	dnsLayer.addQuestion("example.com", (byte2)DNS::RRType::A, (byte2)DNS::RRClass::Internet);
+
+	// Make it into a packet
+	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << dnsLayer).build();
+
+	// Print both packets bytes
+	std::cout << pack << std::endl;
+	
+	// Send packet
+	device << pack;
+	/*
+	Ethernet etherLayer;
+	etherLayer
+		.src(device.getDeviceMac())
+		.dst(device.getRouterMac())
+		.type(Ethernet::Protocols::IPv4);
 
 	IPv4 ipv4Layer;
 	ipv4Layer
@@ -75,32 +131,6 @@ int main()
 
 	std::cout << pack;
 
-	device << pack;
-
-	/*
-	IPv4 ipv4Layer;
-	ipv4Layer
-		.src({ "192.168.1.44" })
-		.dst({ "8.8.8.8" })
-		.protocol(IPv4::Protocols::UDP)
-		.flags(IPv4::Flags::NONE)
-		.ecn(0b10);
-
-	UDP udpLayer;
-	udpLayer
-		.src(6543)
-		.dst(53);
-
-	DNS dnsLayer;
-	dnsLayer.addQuestion("dns.google", (byte2)DNS::RRType::A, (byte2)DNS::RRClass::Internet);
-
-	// Make it into a packet
-	Packet pack = (packetBuilder << etherLayer << ipv4Layer << udpLayer << dnsLayer).build();
-
-	// Print both packets bytes
-	std::cout << pack << std::endl;
-	
-	// Send packet
 	device << pack;
 	*/
 }

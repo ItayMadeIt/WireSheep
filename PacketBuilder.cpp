@@ -1,12 +1,15 @@
 #include "PacketBuilder.h"
 
+PacketBuilder::PacketBuilder() : m_protocolList(nullptr)
+{
+	
+}
+
 Packet PacketBuilder::buildRaw()
 {
-	std::unique_ptr<Protocol> layer = std::move(firstProtocol);
-
 	reset();
 
-	Packet pack = Packet(std::move(layer));
+	Packet pack = Packet(std::move(m_protocolList));
 
 	pack.compileRaw();
 
@@ -15,7 +18,7 @@ Packet PacketBuilder::buildRaw()
 
 Packet PacketBuilder::build()
 {
-	std::unique_ptr<Protocol> layer = std::move(firstProtocol);
+	std::unique_ptr<ProtocolNode> layer = std::move(m_protocolList);
 
 	reset();
 
@@ -28,6 +31,5 @@ Packet PacketBuilder::build()
 
 void PacketBuilder::reset()
 {
-	firstProtocol = nullptr;
-	curProtocol = nullptr;
+	m_protocolList = nullptr;
 }

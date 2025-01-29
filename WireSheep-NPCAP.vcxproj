@@ -172,6 +172,7 @@
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="PacketBuilder.cpp" />
+    <ClCompile Include="ProtocolNode.cpp" />
     <ClCompile Include="Raw.cpp" />
     <ClCompile Include="SampleMain.cpp" />
     <ClCompile Include="TCP.cpp" />
@@ -191,6 +192,7 @@
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="PacketBuilder.h" />
+    <ClInclude Include="ProtocolNode.h" />
     <ClInclude Include="Raw.h" />
     <ClInclude Include="TCP.h" />
     <ClInclude Include="UDP.h" />

@@ -9,9 +9,8 @@ public:
 	UDP();
 	UDP(const byte2 src, const byte2 dst);
 
-
 public:
-	static const size_t Size = 8;
+	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
 
 	UDP& src(const byte2 value) { m_src = value; return *this; }
 	byte2 src() { return m_src; } 
@@ -22,7 +21,10 @@ public:
 	UDP& checksum(const byte2 value) { m_checksum = value; return *this; }
 	byte2 checksum() { return m_checksum; }
 
-	void calcChecksum();
+	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+public:
+	static const size_t Size = 8;
 
 protected:
 	byte2 m_src;            // source port (16 bits)
@@ -30,12 +32,8 @@ protected:
 	byte2 m_length;         // length (16 bits)
 	byte2 m_checksum;       // checksum (16 bits)
 	
-	virtual void writeToBuffer(byte* ptr) const override;
-	virtual void readFromBuffer(const byte* ptr) override;
-	virtual void encodeLayer(std::vector<byte>& buffer) override;
-	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
-	virtual void encodeLayerRaw(std::vector<byte>& buffer) const override;
-	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual void writeToBuffer(byte* buffer) const override;
+	virtual void readFromBuffer(const byte* buffer, const size_t size) override;
 
 	size_t getSize() const override;
 };

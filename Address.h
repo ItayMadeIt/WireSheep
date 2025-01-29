@@ -6,6 +6,8 @@
 
 namespace address
 {
+
+
 	constexpr size_t ADDR_IP4_BYTES = 4;
 	constexpr size_t ADDR_IP6_BYTES = 16;
 	constexpr size_t ADDR_MAC_BYTES = 6;
@@ -15,6 +17,11 @@ namespace address
 		addrIPv4();
 		addrIPv4(const std::string& ipv4Str);
 
+		/// <summary>
+		/// Array to store IPv4 (4 bytes).
+		/// Data stored in network order.
+		/// Big endian.
+		/// </summary>
 		byte m_data[ADDR_IP4_BYTES];
 
 		byte& operator[](const size_t index);
@@ -35,6 +42,11 @@ namespace address
 		addrIPv6();
 		addrIPv6(const std::string& ipv6Str);
 
+		/// <summary>
+		/// Array to store IPv6 (6 bytes).
+		/// Data stored in network order.
+		/// Big endian.
+		/// </summary>
 		byte m_data[ADDR_IP6_BYTES];
 
 		byte& operator[](const size_t index);
@@ -51,6 +63,11 @@ namespace address
 		addrMac();
 		addrMac(const std::string& macStr);
 
+		/// <summary>
+		/// Array to store IPv6 (6 bytes).
+		/// Data stored in network order.
+		/// Big endian.
+		/// </summary>
 		byte m_data[ADDR_MAC_BYTES];
 
 		byte& operator[](const size_t index);
