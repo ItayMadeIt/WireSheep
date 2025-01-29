@@ -111,7 +111,7 @@ void IPv4::calculateChecksum(std::vector<byte>& buffer, const size_t offset, con
 
     // Get it in the correct endianness
     byte2 networkChecksum = EndiannessHandler::toNetworkEndian(m_checksum);
-    
+
     // Copy the new checksum value to the network buffer
     size_t headerChecksumOffset = offset + 10; // 10 = header checksum position relative to IPv4 start of the packet
     byte* checksumPtr = buffer.data() + headerChecksumOffset;

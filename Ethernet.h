@@ -54,7 +54,7 @@ protected:
 	virtual void readFromBuffer(const byte* buffer, const size_t size) override;
 
 protected:
-	const static size_t MIN_SIZE = 42+12+2;
+	const static size_t MIN_SIZE = 0x40;
 	
 	addrMac m_dst;
 	addrMac m_src;

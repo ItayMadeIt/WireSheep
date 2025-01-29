@@ -8,7 +8,7 @@ Protocol::Protocol(const AllProtocols protocol)
 	case AllProtocols::IPv4:
 		m_includesChecksum = true;
 		break;
-	case AllProtocols::IPv6:
+	case AllProtocols::UDP:
 		m_includesChecksum = true;
 		break;
 	case AllProtocols::TCP:

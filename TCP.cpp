@@ -1,6 +1,7 @@
 #include "TCP.h"
 #include "EndianHandler.h"
 #include "Ethernet.h"
+#include "IPv4.h"
 
 void TCP::writeToBuffer(byte* ptr) const
 {
@@ -55,26 +56,24 @@ void TCP::readFromBuffer(const byte* buffer, const size_t size)
 
 void TCP::calculateOptionsSize()
 {
+    // Sum of all option sizes (no allignemt)
     m_optionsSize = 0;
     for (const auto& option : m_options)
     {
         m_optionsSize += option->BASE_LENGTH;
     }
-
-    // allign to multiples of 4
-    m_optionsSize = (m_optionsSize + 3) / 4;
 }
 
 size_t TCP::getSize() const
 {
-    return TCP::SIZE + m_optionsSize;
+    return TCP::SIZE + ((m_optionsSize + 3) & ~3);
 }
 
 void TCP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 {
     calculateOptionsSize();
 
-    m_dataOffset = (TCP::SIZE + (m_optionsSize + 3)) / 4;
+    m_dataOffset = (TCP::SIZE + (m_optionsSize+3)) / 4;
     m_checksum = 0;
 
     // Add TCP data to the array
@@ -99,8 +98,8 @@ void TCP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 
 void TCP::addOptionsPadding(byte* ptr) const
 {
-    // If option size == 0, it's invalid, meaning no padding
-    if (m_optionsSize == 0)
+    // If option size % 4 == 0, it's invalid, meaning no padding
+    if (m_optionsSize % 4 == 0)
     {
         return;
     }
@@ -139,27 +138,79 @@ void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, cons
 {
     if (!protocol)
     {
-        // will throw exception
-        return;
-    }
-    AllProtocols otherProtocol = protocol->getProtocol();
-    if (otherProtocol == AllProtocols::IPv4)
-    {
-        // isn't implemented yet
-    }
-    else if (otherProtocol == AllProtocols::IPv6)
-    {
-        // isn't implemented yet
-    }
-    else
-    {
         // Will throw exception
         return;
     }
 
-    byte* tcpPtr = buffer.data() + offset;
+    byte4 checksumVal = 0;
 
-    // isn't implemented yet
+    byte2 tcpLength = buffer.size() - offset;
+    checksumVal += tcpLength;
+
+    if (protocol->getProtocol() == AllProtocols::IPv4)
+    {
+        // Assume it will work
+        const IPv4* ipv4 = dynamic_cast<const IPv4*>(protocol);
+
+        size_t ipv4Offset = offset - ipv4->getSize();
+
+        // Add psuedo header
+
+        addrIPv4 addr = ipv4->src();
+        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
+        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
+
+        addr = ipv4->dst();
+        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
+        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
+
+        checksumVal += (byte2)(ipv4->protocol());
+
+    }
+    else if (protocol->getProtocol() == AllProtocols::IPv6)
+    {
+        // Assume it will work
+        // const IPv6* ipv6 = dynamic_cast<const IPv6*>(protocol);
+
+        // Not implemented yet
+    }
+    else
+    {
+        return;
+    }
+
+    bool isOdd = (tcpLength - getSize()) % 2 != 0;
+
+    // Iterate through 16-bit words
+    byte2* iter = reinterpret_cast<byte2*>(buffer.data() + offset);
+    byte2* end = reinterpret_cast<byte2*>(buffer.data() + offset + tcpLength - (isOdd ? 1 : 0));
+
+    for (; iter < end; iter++)
+    {
+        checksumVal += EndiannessHandler::fromNetworkEndian(*iter);
+    }
+
+    // Handle the last leftover byte if the payload length is odd
+    if (isOdd)
+    {
+        // Get the last byte
+        byte lastByte = *(buffer.data() + offset + tcpLength - 1);
+        byte2 paddedWord = (lastByte << 8);
+        checksumVal += paddedWord;
+    }
+
+    while (checksumVal >> 16)
+    {
+        checksumVal = (checksumVal & 0xFFFF) + (checksumVal >> 16);
+    }
+    m_checksum = ~checksumVal;
+
+    byte2 networkChecksum = EndiannessHandler::toNetworkEndian(m_checksum);
+
+    size_t headerChecksumOffset = offset + 16; // 6 = header checksum position relative to UDP start of the packet
+    byte* checksumPtr = buffer.data() + headerChecksumOffset;
+
+    std::memcpy(checksumPtr, &networkChecksum, sizeof(networkChecksum));
 }
 
 TCP& TCP::srcPort(const byte2 value)

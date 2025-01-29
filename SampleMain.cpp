@@ -34,11 +34,43 @@ int main()
 
 	std::cout << devices;
 
-	Device device(devices[7]);
+	Device device(devices[4]);
 	
 	// Create packet
 	PacketBuilder packetBuilder;
+	
+	/*
+	Ethernet ether;
+	ether
+		.src(device.getDeviceMac())
+		.dst(device.getRouterMac())
+		.type(Ethernet::Protocols::IPv4);
 
+	IPv4 ipv4;
+	ipv4
+		.src({ "192.168.1.41" })
+		.dst({ "8.8.8.8" })
+		.protocol(IPv4::Protocols::UDP)
+		.flags(IPv4::Flags::NONE)
+		.ecn(0b10);
+
+	UDP udp;
+	udp
+		.src(120)
+		.dst(80);
+
+	Raw raw;
+	raw.push_back('H');
+	raw.push_back('i');
+	raw.push_back('!');
+
+	Packet packet = (packetBuilder << ether << ipv4 << udp << raw).build();
+	// Print both packets bytes
+	std::cout << packet << std::endl;
+
+	// Send packet
+	device << packet;
+	*/
 
 	/*
 	Ethernet etherLayer;
@@ -64,6 +96,7 @@ int main()
 	// Send packet
 	device << pack;*/
 
+	/*
 	Ethernet etherLayer;
 	etherLayer
 		.src(device.getDeviceMac())
@@ -94,7 +127,8 @@ int main()
 	
 	// Send packet
 	device << pack;
-	/*
+	*/
+	
 	Ethernet etherLayer;
 	etherLayer
 		.src(device.getDeviceMac())
@@ -104,22 +138,22 @@ int main()
 	IPv4 ipv4Layer;
 	ipv4Layer
 		.protocol(IPv4::Protocols::TCP)
-		.identifcation(0x8b34)
+		.identifcation(0x0)
 		.flags(IPv4::Flags::DF)
 		.ecn(0)
 		.ttl(128)
-		.src({ "192.168.1.44" })
-		.dst({ "34.223.124.45" })
+		.src({ "192.168.1.41" })
+		.dst({ "8.8.8.8" })
 		.dscp((byte)IPv4::Services::CS0);
 
 	TCP tcpLayer;
 	tcpLayer
-		.seqNum(0xF1698C60)
+		.seqNum(0)
 		.ackNum(0)
-		.srcPort(0x7938)
+		.srcPort(54321)
 		.dstPort(80)
-		.window(0xFFFF)
-		.flags((byte)TCP::Flags::SYN)
+		.window(0xF0)
+		.flags((byte2)TCP::Flags::SYN)
 		.addOption<TCP::OptionMaxSegmentSize>(1460)
 		.addOption<TCP::OptionNoOperation>()
 		.addOption<TCP::OptionWindowScale>(8)
@@ -132,5 +166,4 @@ int main()
 	std::cout << pack;
 
 	device << pack;
-	*/
 }

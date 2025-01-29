@@ -166,8 +166,6 @@ protected:
 	void writeToBuffer(byte* buffer) const override;
 	void readFromBuffer(const byte* buffer, const size_t size) override;
 
-	byte4 getTCPChecksum();
-
 	/// <summary>
 	/// Adds (optionLength % rowSize) 0 bytes
 	/// </summary>
@@ -220,7 +218,7 @@ TCP& TCP::addOption(const OptionType& option)
 {
 	m_options.emplace_back(std::make_unique<OptionType>(option));
 
-	m_optionsSize += m_options.back()->BASE_LENGTH;
+	calculateOptionsSize();
 
 	return *this;
 }
@@ -230,7 +228,7 @@ TCP& TCP::addOption(OptionType&& option)
 {
 	m_options.emplace_back(std::make_unique<OptionType>(std::move(option)));
 
-	m_optionsSize += m_options.back()->BASE_LENGTH;
+	calculateOptionsSize();
 
 	return *this;
 }
@@ -243,7 +241,7 @@ TCP& TCP::addOption(Args&&... args)
 		std::make_unique<OptionType>(std::forward<Args>(args)...)
 	);
 
-	m_optionsSize += m_options.back()->m_length;
+	calculateOptionsSize();
 
 	return *this;
 }
