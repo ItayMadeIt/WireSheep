@@ -3,7 +3,7 @@
 Ethernet::Ethernet() : Protocol(AllProtocols::Ethernet)
 { }
 
-Ethernet::Ethernet(const addrMac src, const addrMac dst, const byte2 type)
+Ethernet::Ethernet(const AddrMac src, const AddrMac dst, const byte2 type)
 	: Protocol(AllProtocols::Ethernet), m_src(src), m_dst(dst), m_type(type)
 { }
 
@@ -13,22 +13,22 @@ Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2
 
 Ethernet::~Ethernet() = default;
 
-Ethernet& Ethernet::dst(const addrMac value)
+Ethernet& Ethernet::dst(const AddrMac value)
 {
 	m_dst = value;
 	return *this;
 }
-addrMac Ethernet::dst() const
+AddrMac Ethernet::dst() const
 {
 	return m_dst;
 }
-Ethernet& Ethernet::src(const addrMac value)
+Ethernet& Ethernet::src(const AddrMac value)
 {
 	m_src = value;
 	return *this;
 
 }
-addrMac Ethernet::src() const
+AddrMac Ethernet::src() const
 {
 	return m_src;
 }

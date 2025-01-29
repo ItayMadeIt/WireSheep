@@ -170,7 +170,7 @@ byte ARP::protocolLength() const
 	return m_protocolLength;
 }
 
-ARP& ARP::senderHardwareAddr(const address::addrMac mac)
+ARP& ARP::senderHardwareAddr(const address::AddrMac mac)
 {
 	// Copy bytes from the mac address to the send hardware address
 	m_senderHardwareAddr.resize(sizeof(mac));
@@ -191,7 +191,7 @@ std::vector<byte> ARP::senderHardwareAddr() const
 	return m_senderHardwareAddr;
 }
 
-ARP& ARP::senderProtocolAddr(const address::addrIPv4 ipv4)
+ARP& ARP::senderProtocolAddr(const address::AddrIPv4 ipv4)
 {
 	// Copy bytes from the ipv4 address to the fit the protocol address
 	m_senderProtocolAddr.resize(sizeof(ipv4));
@@ -212,7 +212,7 @@ std::vector<byte> ARP::senderProtocolAddr() const
 	return m_senderProtocolAddr;
 }
 
-ARP& ARP::targetHardwareAddr(const address::addrMac mac)
+ARP& ARP::targetHardwareAddr(const address::AddrMac mac)
 {
 	// Copy bytes from the mac address to the target hardware address
 	m_targetHardwareAddr.resize(sizeof(mac));
@@ -233,7 +233,7 @@ std::vector<byte> ARP::targetHardwareAddr() const
 	return m_targetHardwareAddr;
 }
 
-ARP& ARP::targetProtocolAddr(const address::addrIPv4 ipv4)
+ARP& ARP::targetProtocolAddr(const address::AddrIPv4 ipv4)
 {
 	// Copy bytes from the ipv4 address to the fit the protocol address
 	m_targetProtocolAddr.resize(sizeof(ipv4));

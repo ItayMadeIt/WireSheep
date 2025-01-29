@@ -3,9 +3,9 @@
 using namespace address;
 
 
-addrIPv4::addrIPv4() = default;
+AddrIPv4::AddrIPv4() = default;
 
-addrIPv4::addrIPv4(const std::string& ipv4Str)
+AddrIPv4::AddrIPv4(const std::string& ipv4Str)
 {
 	std::stringstream sstream(ipv4Str);
 
@@ -25,12 +25,12 @@ addrIPv4::addrIPv4(const std::string& ipv4Str)
 	}
 }
 
-byte& addrIPv4::operator[](const size_t index)
+byte& AddrIPv4::operator[](const size_t index)
 {
 	return m_data[index];
 }
 
-void address::addrIPv4::operator=(const addrIPv4& other)
+void address::AddrIPv4::operator=(const AddrIPv4& other)
 {
 	for (size_t i = 0; i < ADDR_IP4_BYTES; i++)
 	{
@@ -38,7 +38,7 @@ void address::addrIPv4::operator=(const addrIPv4& other)
 	}
 }
 
-std::string addrIPv4::toString() const
+std::string AddrIPv4::toString() const
 {
 	std::stringstream sstream;
 
@@ -56,9 +56,9 @@ std::string addrIPv4::toString() const
 	return sstream.str();
 }
 
-addrIPv4 addrIPv4::fromString(const std::string& addr)
+AddrIPv4 AddrIPv4::fromString(const std::string& addr)
 {
-	addrIPv4 result;
+	AddrIPv4 result;
 	std::stringstream sstream(addr);
 
 	int curVal;
@@ -79,15 +79,15 @@ addrIPv4 addrIPv4::fromString(const std::string& addr)
 	return result;
 }
 
-addrIPv4 addrIPv4::broadcast = addrIPv4("255.255.255.255");
+AddrIPv4 AddrIPv4::broadcast = AddrIPv4("255.255.255.255");
 
 
 
 
 
 
-address::addrMac::addrMac() = default;
-addrMac::addrMac(const std::string& macStr)
+address::AddrMac::AddrMac() = default;
+AddrMac::AddrMac(const std::string& macStr)
 {
 	std::stringstream sstream(macStr);
 
@@ -107,12 +107,12 @@ addrMac::addrMac(const std::string& macStr)
 	}
 }
 
-byte& addrMac::operator[](const size_t index)
+byte& AddrMac::operator[](const size_t index)
 {
 	return m_data[index];
 }
 
-std::string addrMac::toString() const
+std::string AddrMac::toString() const
 {
 	std::stringstream sstream;
 
@@ -130,9 +130,9 @@ std::string addrMac::toString() const
 	return sstream.str();
 }
 
-addrMac addrMac::fromString(const std::string& addr)
+AddrMac AddrMac::fromString(const std::string& addr)
 {
-	addrMac result;
+	AddrMac result;
 	std::stringstream sstream(addr);
 	
 	int curVal;
@@ -153,7 +153,7 @@ addrMac addrMac::fromString(const std::string& addr)
 	return result;
 }
 
-addrMac addrMac::broadcast = addrMac("FF:FF:FF:FF:FF:FF");
+AddrMac AddrMac::broadcast = AddrMac("FF:FF:FF:FF:FF:FF");
 
 
 
@@ -232,9 +232,9 @@ addrIPv6 addrIPv6::fromString(const std::string& addr)
 
 
 
-std::ostream& address::operator<<(std::ostream& os, const addrIPv4 ipv4)
+std::ostream& address::operator<<(std::ostream& os, const AddrIPv4 ipv4)
 {
-	return os << ipv4;
+	return os << ipv4.toString();
 }
 
 std::ostream& address::operator<<(std::ostream& os, const addrIPv6 ipv6)
@@ -242,7 +242,7 @@ std::ostream& address::operator<<(std::ostream& os, const addrIPv6 ipv6)
 	return os << ipv6.toString();
 }
 
-std::ostream& address::operator<<(std::ostream& os, const addrMac mac)
+std::ostream& address::operator<<(std::ostream& os, const AddrMac mac)
 {
 	return os << mac.toString();
 }

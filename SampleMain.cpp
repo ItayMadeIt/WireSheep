@@ -142,8 +142,8 @@ int main()
 		.flags(IPv4::Flags::DF)
 		.ecn(0)
 		.ttl(128)
-		.src({ "192.168.1.41" })
-		.dst({ "8.8.8.8" })
+		.src({ device.getDeviceIPv4() })
+		.dst({ "142.250.75.174" })
 		.dscp((byte)IPv4::Services::CS0);
 
 	TCP tcpLayer;

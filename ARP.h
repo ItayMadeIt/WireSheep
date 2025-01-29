@@ -64,19 +64,19 @@ public:
 	ARP& protocolLength(const byte value);
 	byte protocolLength() const;
 
-	ARP& senderHardwareAddr(const address::addrMac mac);
+	ARP& senderHardwareAddr(const address::AddrMac mac);
 	ARP& senderHardwareAddr(const std::vector<byte> addr);
 	std::vector<byte> senderHardwareAddr() const;
 
-	ARP& senderProtocolAddr(const address::addrIPv4 ipv4);
+	ARP& senderProtocolAddr(const address::AddrIPv4 ipv4);
 	ARP& senderProtocolAddr(const std::vector<byte> addr);
 	std::vector<byte> senderProtocolAddr() const;
 
-	ARP& targetHardwareAddr(const address::addrMac mac);
+	ARP& targetHardwareAddr(const address::AddrMac mac);
 	ARP& targetHardwareAddr(const std::vector<byte> addr);
 	std::vector<byte> targetHardwareAddr() const;
 
-	ARP& targetProtocolAddr(const address::addrIPv4 ipv4);
+	ARP& targetProtocolAddr(const address::AddrIPv4 ipv4);
 	ARP& targetProtocolAddr(const std::vector<byte> addr);
 	std::vector<byte> targetProtocolAddr() const;
 

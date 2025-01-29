@@ -6,16 +6,14 @@
 
 namespace address
 {
-
-
 	constexpr size_t ADDR_IP4_BYTES = 4;
 	constexpr size_t ADDR_IP6_BYTES = 16;
 	constexpr size_t ADDR_MAC_BYTES = 6;
 
-	struct addrIPv4
+	struct AddrIPv4
 	{
-		addrIPv4();
-		addrIPv4(const std::string& ipv4Str);
+		AddrIPv4();
+		AddrIPv4(const std::string& ipv4Str);
 
 		/// <summary>
 		/// Array to store IPv4 (4 bytes).
@@ -26,15 +24,15 @@ namespace address
 
 		byte& operator[](const size_t index);
 
-		void operator=(const addrIPv4& other);
+		void operator=(const AddrIPv4& other);
 
 		std::string toString() const;
 
-		static addrIPv4 fromString(const std::string& addr);
+		static AddrIPv4 fromString(const std::string& addr);
 
-		static addrIPv4 broadcast;
+		static AddrIPv4 broadcast;
 
-		friend std::ostream& operator<<(std::ostream& os, const addrIPv4 ipv4);
+		friend std::ostream& operator<<(std::ostream& os, const AddrIPv4 ipv4);
 	};
 
 	struct addrIPv6
@@ -58,10 +56,10 @@ namespace address
 		friend std::ostream& operator<<(std::ostream& os, const addrIPv6 ipv6);
 	};
 	
-	struct addrMac
+	struct AddrMac
 	{
-		addrMac();
-		addrMac(const std::string& macStr);
+		AddrMac();
+		AddrMac(const std::string& macStr);
 
 		/// <summary>
 		/// Array to store IPv6 (6 bytes).
@@ -74,11 +72,11 @@ namespace address
 
 		std::string toString() const;
 
-		static addrMac fromString(const std::string& addr);
+		static AddrMac fromString(const std::string& addr);
 
-		static addrMac broadcast;
+		static AddrMac broadcast;
 
-		friend std::ostream& operator<<(std::ostream& os, const addrMac mac);
+		friend std::ostream& operator<<(std::ostream& os, const AddrMac mac);
 	};
 
 }

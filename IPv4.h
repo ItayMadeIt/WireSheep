@@ -88,18 +88,18 @@ public:
 
 public:
 	IPv4();
-	IPv4(const addrIPv4 src, const addrIPv4 dst);
+	IPv4(const AddrIPv4 src, const AddrIPv4 dst);
 	IPv4(const std::string& src, const std::string& dst);
 	IPv4(IPv4&& other);
 	IPv4(const IPv4& other);
 
 public:
 
-	IPv4& src(const addrIPv4 value) { m_src = value; return *this; }
-	addrIPv4 src() const { return m_src; }
+	IPv4& src(const AddrIPv4 value) { m_src = value; return *this; }
+	AddrIPv4 src() const { return m_src; }
 
-	IPv4& dst(const addrIPv4 value) { m_dst = value;return *this; }
-	addrIPv4 dst() const { return m_dst; }
+	IPv4& dst(const AddrIPv4 value) { m_dst = value;return *this; }
+	AddrIPv4 dst() const { return m_dst; }
 
 	IPv4& version(const byte value) { m_version = value; return *this;}
 	byte version() const { return m_version; };
@@ -184,8 +184,8 @@ protected:
 	byte4 m_options[5];
 
 	// addresses
-	addrIPv4 m_src; // source address | 32 bits
-	addrIPv4 m_dst;	// dest address | 32 bits
+	AddrIPv4 m_src; // source address | 32 bits
+	AddrIPv4 m_dst;	// dest address | 32 bits
 
 	const byte IHL_MIN_SIZE = 5;
 

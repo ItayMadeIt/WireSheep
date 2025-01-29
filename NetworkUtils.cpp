@@ -1,6 +1,6 @@
 #include "NetworkUtils.h"
 
-addrMac NetworkUtils::getSelfMac(const std::string& deviceName)
+AddrMac NetworkUtils::getSelfMac(const std::string& deviceName)
 {
     std::string formattedDeviceName = deviceName.substr(deviceName.find('{'), deviceName.size() - 1);
 
@@ -31,7 +31,7 @@ addrMac NetworkUtils::getSelfMac(const std::string& deviceName)
         if (pCurrAdapter->PhysicalAddressLength == ADDR_MAC_BYTES &&
             (formattedDeviceName.empty() || formattedDeviceName == pCurrAdapter->AdapterName))
         {
-            addrMac mac;
+            AddrMac mac;
             memcpy(mac.m_data, pCurrAdapter->PhysicalAddress, ADDR_MAC_BYTES);
             free(pAdapterAddresses);
             return mac;
@@ -41,7 +41,7 @@ addrMac NetworkUtils::getSelfMac(const std::string& deviceName)
     free(pAdapterAddresses);
     throw std::runtime_error("No matching network adapter found.");
 }
-addrMac NetworkUtils::getRouterMac(const std::string& deviceName)
+AddrMac NetworkUtils::getRouterMac(const std::string& deviceName)
 {
     std::string formattedDeviceName = deviceName.substr(deviceName.find('{'), deviceName.size() - 1);
 
@@ -96,7 +96,7 @@ addrMac NetworkUtils::getRouterMac(const std::string& deviceName)
 
                 if (retVal == NO_ERROR)
                 {
-                    addrMac mac;
+                    AddrMac mac;
                     memcpy(mac.m_data, macAddr, ADDR_MAC_BYTES);
                     free(adapterInfo);
                     return mac;
@@ -141,7 +141,7 @@ addrMac NetworkUtils::getRouterMac(const std::string& deviceName)
 DeviceMacs NetworkUtils::getDeviceMacs(const std::string& deviceName)
 {
     DeviceMacs macs;
-    macs.self = getSelfMac(deviceName);
+    macs.host = getSelfMac(deviceName);
     macs.router = getRouterMac(deviceName);
     return macs;
 }

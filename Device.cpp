@@ -23,11 +23,11 @@ Device::Device(const std::string& deviceName)
 	m_macs = NetworkUtils::getDeviceMacs(deviceName);
 }
 
-Device::Device(const pcap_if_t* windowsDevicePtr)
+Device::Device(const pcap_if_t* devicePtr)
 {
 	char errBuffer[PCAP_ERRBUF_SIZE];
 
-	m_devicePtr = pcap_create(windowsDevicePtr->name, errBuffer);
+	m_devicePtr = pcap_create(devicePtr->name, errBuffer);
 
 	if (!m_devicePtr)
 	{
@@ -42,7 +42,21 @@ Device::Device(const pcap_if_t* windowsDevicePtr)
 		throw std::runtime_error(errBuffer);
 	}
 
-	m_macs = NetworkUtils::getDeviceMacs(windowsDevicePtr->name);
+	for (const pcap_addr* addressIt = devicePtr->addresses; addressIt != nullptr; addressIt = addressIt->next)
+	{
+		if (addressIt->addr->sa_family == AF_INET) // ipv4
+		{
+			struct sockaddr_in* ipv4 = (struct sockaddr_in*)addressIt->addr;
+			
+			char ipStr[INET_ADDRSTRLEN];
+
+			inet_ntop(AF_INET, &(ipv4->sin_addr), ipStr, sizeof(ipStr));
+
+			m_ipv4s.host = AddrIPv4(ipStr);
+		}
+	}
+
+	m_macs = NetworkUtils::getDeviceMacs(devicePtr->name);
 }
 
 Device::~Device()
@@ -54,14 +68,25 @@ Device::~Device()
 	}
 }
 
-addrMac Device::getDeviceMac() const
+AddrMac Device::getDeviceMac() const
 {
-	return m_macs.self;
+	return m_macs.host;
 }
 
-addrMac Device::getRouterMac() const
+AddrMac Device::getRouterMac() const
 {
 	return m_macs.router;
+}
+
+AddrIPv4 Device::getDeviceIPv4() const
+{
+	return m_ipv4s.host;
+}
+
+AddrIPv4 Device::getRouterIPv4() const
+{
+	throw std::exception("Not implemented");
+	return m_ipv4s.router;
 }
 
 void Device::sendPacket(const Packet& packet)

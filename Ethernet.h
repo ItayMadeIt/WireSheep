@@ -20,18 +20,18 @@ public:
 	};
 
 	Ethernet();
-	Ethernet(const addrMac src, const addrMac dst, const byte2 type);
+	Ethernet(const AddrMac src, const AddrMac dst, const byte2 type);
 	Ethernet(const std::string& src, const std::string& dst, const byte2 type);
 	Ethernet(std::unique_ptr<Protocol> nextProtocol);
-	Ethernet(const addrMac src, const addrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
+	Ethernet(const AddrMac src, const AddrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
 	Ethernet(const std::string& src, const std::string& dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
 	~Ethernet();
 
-	Ethernet& src(const addrMac value);
-	addrMac src() const;
+	Ethernet& src(const AddrMac value);
+	AddrMac src() const;
 
-	Ethernet& dst(const addrMac value);
-	addrMac dst() const;
+	Ethernet& dst(const AddrMac value);
+	AddrMac dst() const;
 
 	Ethernet& type(const byte2 value);
 	Ethernet& type(const Protocols value);
@@ -56,8 +56,8 @@ protected:
 protected:
 	const static size_t MIN_SIZE = 0x40;
 	
-	addrMac m_dst;
-	addrMac m_src;
+	AddrMac m_dst;
+	AddrMac m_src;
 	byte2 m_type;
 
 };

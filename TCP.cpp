@@ -156,7 +156,7 @@ void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, cons
 
         // Add psuedo header
 
-        addrIPv4 addr = ipv4->src();
+        AddrIPv4 addr = ipv4->src();
         checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
         checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
 

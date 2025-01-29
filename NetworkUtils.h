@@ -18,19 +18,26 @@ using namespace address;
 
 struct DeviceMacs
 {
-    addrMac self;
-    addrMac router;
+    AddrMac host;
+    AddrMac router;
+};
+
+struct DeviceIPv4
+{
+    AddrIPv4 host;
+    AddrIPv4 router;
 };
 
 class NetworkUtils
 {
 public:
     // Get the MAC address of the device (self)
-    static addrMac getSelfMac(const std::string& deviceName);
+    static AddrMac getSelfMac(const std::string& deviceName);
 
     // Get the router's MAC address (router)
-    static addrMac getRouterMac(const std::string& deviceName);
+    static AddrMac getRouterMac(const std::string& deviceName);
 
     // Get both self and router MAC addresses
     static DeviceMacs getDeviceMacs(const std::string& deviceName);
+
 };

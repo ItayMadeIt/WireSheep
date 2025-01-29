@@ -6,7 +6,7 @@ IPv4::IPv4()
     m_totalLength(20), m_identification(0), m_flags(0), m_fragmentOffset(0), m_ttl(64), m_protocol(0), m_checksum(0), m_options{0}
 { }
 
-IPv4::IPv4(const addrIPv4 src, const addrIPv4 dst)
+IPv4::IPv4(const AddrIPv4 src, const AddrIPv4 dst)
     : Protocol(AllProtocols::IPv4), m_src(src), m_dst(dst), m_version(4), m_ihl(5), m_dscp(0), m_ecn(0b00),
     m_totalLength(20), m_identification(0), m_flags(0), m_fragmentOffset(0), m_ttl(64), m_protocol(0), m_checksum(0), m_options{ 0 }
 { }
