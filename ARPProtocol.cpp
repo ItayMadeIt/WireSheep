@@ -1,4 +1,5 @@
-#include "ARP.h"
+#include "ARPProtocol.h"
+
 #include "EndianHandler.h"
 
 void ARP::writeToBuffer(byte* buffer) const

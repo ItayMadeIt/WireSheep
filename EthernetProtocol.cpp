@@ -1,4 +1,4 @@
-#include "Ethernet.h"
+#include "EthernetProtocol.h"
 
 Ethernet::Ethernet() : Protocol(AllProtocols::Ethernet)
 { }

@@ -186,6 +186,7 @@
     <ClInclude Include="DNS.h" />
     <ClInclude Include="EndianHandler.h" />
     <ClInclude Include="Ethernet.h" />
+    <ClInclude Include="EthernetData.h" />
     <ClInclude Include="Helper.h" />
     <ClInclude Include="IPv4.h" />
     <ClInclude Include="NetworkUtils.h" />

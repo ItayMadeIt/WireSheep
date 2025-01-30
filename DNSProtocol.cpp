@@ -1,4 +1,4 @@
-#include "DNS.h"
+#include "DNSProtocol.h"
 
 std::vector<byte> DNS::formatDomain(const std::string& domain)
 {

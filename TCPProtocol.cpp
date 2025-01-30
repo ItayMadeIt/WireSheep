@@ -1,7 +1,8 @@
-#include "TCP.h"
+#include "TCPProtocol.h"
+
 #include "EndianHandler.h"
-#include "Ethernet.h"
-#include "IPv4.h"
+#include "EthernetProtocol.h"
+#include "IPv4Protocol.h"
 
 void TCP::writeToBuffer(byte* ptr) const
 {

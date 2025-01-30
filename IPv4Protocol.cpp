@@ -1,4 +1,4 @@
-#include "IPv4.h"
+#include "IPv4Protocol.h"
 
 
 IPv4::IPv4()
@@ -27,14 +27,14 @@ size_t IPv4::getSize() const
 
 void IPv4::writeToBuffer(byte* buffer) const
 {
-    byte4 word = 0;
 
     // first 32 bits
+    byte4 word = 0;
     word = EndiannessHandler::toNetworkEndian(
-        ((m_version & 0xF) << 28)       |    // Version      (4 bits)
-        ((m_ihl & 0xF) << 24)           |    // IHL          (4 bits)
-        ((m_dscp & 0x3F) << 18)         |    // DSCP         (6 bits)
-        ((m_ecn & 0x3) << 16)           |    // ECN          (3 bits)
+        ((m_version & 0b1111) << 28)       |    // Version      (4 bits)
+        ((m_ihl & 0b1111) << 24)           |    // IHL          (4 bits)
+        ((m_dscp & 0b111111) << 18)         |    // DSCP         (6 bits)
+        ((m_ecn & 0b11) << 16)           |    // ECN          (3 bits)
         ((m_totalLength& 0xFFFF))            // Total Length (16 bits)
     );
     memcpy(buffer, &word, sizeof(byte4));

@@ -1,4 +1,4 @@
-#include "Raw.h"
+#include "RawProtocol.h"
 
 Raw::Raw() : Protocol(AllProtocols::Raw)
 {

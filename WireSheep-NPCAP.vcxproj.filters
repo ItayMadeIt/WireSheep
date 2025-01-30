@@ -43,6 +43,18 @@
     <Filter Include="Source Files\Protocols">
       <UniqueIdentifier>{3107d97f-8e4e-4140-8180-c202cd253d47}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Protocols\Data Structures">
+      <UniqueIdentifier>{0e5f3a4c-9c4b-48f4-a4b5-465c91795169}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Protocols\Data Structures">
+      <UniqueIdentifier>{636144f5-aaad-4ae8-999b-26caf24ffeac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Protocols\Implementations">
+      <UniqueIdentifier>{a33d5f3c-8bdf-4e03-99d7-c44f31080be1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Protocols\Implementations">
+      <UniqueIdentifier>{3d970572-ee43-44c9-92e2-9420fa3b1245}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SampleMain.cpp">
@@ -50,18 +62,6 @@
     </ClCompile>
     <ClCompile Include="Device.cpp">
       <Filter>Source Files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="Ethernet.cpp">
-      <Filter>Source Files\Protocols</Filter>
-    </ClCompile>
-    <ClCompile Include="IPv4.cpp">
-      <Filter>Source Files\Protocols</Filter>
-    </ClCompile>
-    <ClCompile Include="Raw.cpp">
-      <Filter>Source Files\Protocols</Filter>
-    </ClCompile>
-    <ClCompile Include="UDP.cpp">
-      <Filter>Source Files\Protocols</Filter>
     </ClCompile>
     <ClCompile Include="Helper.cpp">
       <Filter>Source Files\Utils</Filter>
@@ -78,17 +78,8 @@
     <ClCompile Include="NetworkUtils.cpp">
       <Filter>Source Files\NetworkSpecific</Filter>
     </ClCompile>
-    <ClCompile Include="DNS.cpp">
-      <Filter>Source Files\Protocols</Filter>
-    </ClCompile>
     <ClCompile Include="DeviceList.cpp">
       <Filter>Source Files\Devices</Filter>
-    </ClCompile>
-    <ClCompile Include="ARP.cpp">
-      <Filter>Source Files\Protocols</Filter>
-    </ClCompile>
-    <ClCompile Include="TCP.cpp">
-      <Filter>Source Files\Protocols</Filter>
     </ClCompile>
     <ClCompile Include="Address.cpp">
       <Filter>Source Files\Utils</Filter>
@@ -99,20 +90,29 @@
     <ClCompile Include="ProtocolNode.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
+    <ClCompile Include="ARP.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="DNS.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="Ethernet.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="IPv4.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="Raw.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="TCP.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="UDP.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Ethernet.h">
-      <Filter>Header Files\Protocols</Filter>
-    </ClInclude>
-    <ClInclude Include="IPv4.h">
-      <Filter>Header Files\Protocols</Filter>
-    </ClInclude>
-    <ClInclude Include="UDP.h">
-      <Filter>Header Files\Protocols</Filter>
-    </ClInclude>
-    <ClInclude Include="Raw.h">
-      <Filter>Header Files\Protocols</Filter>
-    </ClInclude>
     <ClInclude Include="Device.h">
       <Filter>Header Files\Devices</Filter>
     </ClInclude>
@@ -134,17 +134,8 @@
     <ClInclude Include="PacketBuilder.h">
       <Filter>Header Files\Packets</Filter>
     </ClInclude>
-    <ClInclude Include="DNS.h">
-      <Filter>Header Files\Protocols</Filter>
-    </ClInclude>
     <ClInclude Include="DeviceList.h">
       <Filter>Header Files\Devices</Filter>
-    </ClInclude>
-    <ClInclude Include="ARP.h">
-      <Filter>Header Files\Protocols</Filter>
-    </ClInclude>
-    <ClInclude Include="TCP.h">
-      <Filter>Header Files\Protocols</Filter>
     </ClInclude>
     <ClInclude Include="Address.h">
       <Filter>Header Files\Utils</Filter>
@@ -154,6 +145,30 @@
     </ClInclude>
     <ClInclude Include="ProtocolNode.h">
       <Filter>Header Files\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="UDP.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="ARP.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="DNS.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="Ethernet.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="IPv4.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="Raw.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="TCP.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="EthernetData.h">
+      <Filter>Header Files\Protocols\Data Structures</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

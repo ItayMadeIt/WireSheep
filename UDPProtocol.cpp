@@ -1,5 +1,6 @@
-#include "UDP.h"
-#include "IPv4.h"
+#include "UDPProtocol.h"
+
+#include "IPv4Protocol.h"
 
 UDP::UDP() 
 	: Protocol(AllProtocols::UDP),
