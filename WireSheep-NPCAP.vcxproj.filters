@@ -46,9 +46,6 @@
     <Filter Include="Header Files\Protocols\Data Structures">
       <UniqueIdentifier>{0e5f3a4c-9c4b-48f4-a4b5-465c91795169}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\Protocols\Data Structures">
-      <UniqueIdentifier>{636144f5-aaad-4ae8-999b-26caf24ffeac}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Header Files\Protocols\Implementations">
       <UniqueIdentifier>{a33d5f3c-8bdf-4e03-99d7-c44f31080be1}</UniqueIdentifier>
     </Filter>
@@ -90,26 +87,32 @@
     <ClCompile Include="ProtocolNode.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="ARP.cpp">
+    <ClCompile Include="ARPProtocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
     </ClCompile>
-    <ClCompile Include="DNS.cpp">
+    <ClCompile Include="DNSProtocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
     </ClCompile>
-    <ClCompile Include="Ethernet.cpp">
+    <ClCompile Include="EthernetProtocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
     </ClCompile>
-    <ClCompile Include="IPv4.cpp">
+    <ClCompile Include="IPv4Protocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
     </ClCompile>
-    <ClCompile Include="Raw.cpp">
+    <ClCompile Include="RawProtocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
     </ClCompile>
-    <ClCompile Include="TCP.cpp">
+    <ClCompile Include="TCPProtocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
     </ClCompile>
-    <ClCompile Include="UDP.cpp">
+    <ClCompile Include="UDPProtocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="MutablePacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="IMMutablePacket.cpp">
+      <Filter>Source Files\Packets</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -146,29 +149,50 @@
     <ClInclude Include="ProtocolNode.h">
       <Filter>Header Files\Packets</Filter>
     </ClInclude>
-    <ClInclude Include="UDP.h">
+    <ClInclude Include="UDPProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="ARP.h">
+    <ClInclude Include="ARPProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="DNS.h">
+    <ClInclude Include="DNSProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="Ethernet.h">
+    <ClInclude Include="EthernetProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="IPv4.h">
+    <ClInclude Include="IPv4Protocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="Raw.h">
+    <ClInclude Include="RawProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="TCP.h">
+    <ClInclude Include="TCPProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
-    <ClInclude Include="EthernetData.h">
+    <ClInclude Include="EthernetHeader.h">
       <Filter>Header Files\Protocols\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="IPv4Header.h">
+      <Filter>Header Files\Protocols\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="ARPHeader.h">
+      <Filter>Header Files\Protocols\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="DNSHeader.h">
+      <Filter>Header Files\Protocols\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="TCPHeader.h">
+      <Filter>Header Files\Protocols\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="UDPHeader.h">
+      <Filter>Header Files\Protocols\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="IMMutablePacket.h">
+      <Filter>Header Files\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="MutablePacket.h">
+      <Filter>Header Files\Packets</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

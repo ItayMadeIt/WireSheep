@@ -17,6 +17,8 @@ public:
 
 	friend Device& operator<<(Device& device, const Packet& packet);
 
+	friend Device& operator<<(Device& device, const std::vector<byte>& buffer);
+
 	/// <summary>
 	/// Gets the mac address of the network
 	/// </summary>
@@ -44,6 +46,7 @@ public:
 
 private:
 	void sendPacket(const Packet& packet);
+	void sendPacket(const std::vector<byte>& buffer);
 
 	pcap_t* m_devicePtr;
 	std::string m_deviceName;

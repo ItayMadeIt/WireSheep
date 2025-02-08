@@ -2,7 +2,9 @@
 
 #include "WireDefs.h"
 
+// Force tight packing
 #pragma pack(push)
+#pragma pack(1)
 
 struct UDPHeader
 {

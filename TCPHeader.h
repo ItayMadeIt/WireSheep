@@ -2,9 +2,11 @@
 
 #include "WireDefs.h"
 
+// Force tight packing
 #pragma pack(push)
+#pragma pack(1)
 
-struct TCPData
+struct TCPHeader
 {
 	byte2 m_src;
 	byte2 m_dst;

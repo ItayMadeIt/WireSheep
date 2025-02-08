@@ -2,9 +2,11 @@
 
 #include "WireDefs.h"
 
+// Force tight packing
 #pragma pack(push)
+#pragma pack(1)
 
-struct DNSData
+struct DNSHeader
 {
 	byte2 m_transactionID;
 	byte2 m_flags;

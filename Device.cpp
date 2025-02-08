@@ -91,8 +91,19 @@ AddrIPv4 Device::getRouterIPv4() const
 
 void Device::sendPacket(const Packet& packet)
 {
-	const std::vector<byte>& buffer = packet;
+	const byte* buffer = packet.buffer();
+	const size_t size = packet.size();
 
+	// Send the packet
+	if (pcap_sendpacket(m_devicePtr, buffer, size) != 0)
+	{
+		throw std::exception("Failed to send packet.");
+	}
+}
+
+
+void Device::sendPacket(const std::vector<byte>& buffer)
+{
 	// Send the packet
 	if (pcap_sendpacket(m_devicePtr, buffer.data(), buffer.size()) != 0)
 	{
@@ -103,6 +114,13 @@ void Device::sendPacket(const Packet& packet)
 Device& operator<<(Device& device, const Packet& packet)
 {
 	device.sendPacket(packet);
+
+	return device;
+}
+
+Device& operator<<(Device& device, const std::vector<byte>& buffer)
+{
+	device.sendPacket(buffer);
 
 	return device;
 }

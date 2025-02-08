@@ -68,6 +68,7 @@ protected:
 	virtual void readFromBuffer(const byte* buffer, const size_t size) = 0;
 
 	bool m_includesChecksum;
+	byte* m_data;
 
 private:
 	AllProtocols m_protocolType;

@@ -3,6 +3,7 @@
 #include "EndianHandler.h"
 #include "Protocol.h"
 #include "Address.h"
+#include "EthernetHeader.h"
 
 using namespace address;
 
@@ -19,12 +20,7 @@ public:
 		IPv6 = 0x86DD,
 	};
 
-	Ethernet();
-	Ethernet(const AddrMac src, const AddrMac dst, const byte2 type);
-	Ethernet(const std::string& src, const std::string& dst, const byte2 type);
-	Ethernet(std::unique_ptr<Protocol> nextProtocol);
-	Ethernet(const AddrMac src, const AddrMac dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
-	Ethernet(const std::string& src, const std::string& dst, const byte2 type, std::unique_ptr<Protocol> nextProtocol);
+	Ethernet(EthernetHeader* data);
 	~Ethernet();
 
 	Ethernet& src(const AddrMac value);
@@ -50,16 +46,15 @@ public:
 	const static size_t SIZE = 14;
 
 protected:
+
 	virtual void writeToBuffer(byte* buffer) const override;
 	virtual void readFromBuffer(const byte* buffer, const size_t size) override;
-
-protected:
-	const static size_t MIN_SIZE = 0x40;
 	
-	AddrMac m_dst;
-	AddrMac m_src;
-	byte2 m_type;
+protected:
 
+	const static size_t MIN_SIZE = 0x40;
+
+	EthernetHeader* m_data;
 };
 
 /*

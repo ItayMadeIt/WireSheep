@@ -160,43 +160,52 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Address.cpp" />
-    <ClCompile Include="ARP.cpp" />
+    <ClCompile Include="ARPProtocol.cpp" />
     <ClCompile Include="Device.cpp" />
     <ClCompile Include="DeviceList.cpp" />
-    <ClCompile Include="DNS.cpp" />
+    <ClCompile Include="DNSProtocol.cpp" />
     <ClCompile Include="EndianHandler.cpp" />
-    <ClCompile Include="Ethernet.cpp" />
+    <ClCompile Include="EthernetProtocol.cpp" />
     <ClCompile Include="Helper.cpp" />
-    <ClCompile Include="IPv4.cpp" />
+    <ClCompile Include="IMMutablePacket.cpp" />
+    <ClCompile Include="IPv4Protocol.cpp" />
+    <ClCompile Include="MutablePacket.cpp" />
     <ClCompile Include="NetworkUtils.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="PacketBuilder.cpp" />
     <ClCompile Include="ProtocolNode.cpp" />
-    <ClCompile Include="Raw.cpp" />
+    <ClCompile Include="RawProtocol.cpp" />
     <ClCompile Include="SampleMain.cpp" />
-    <ClCompile Include="TCP.cpp" />
-    <ClCompile Include="UDP.cpp" />
+    <ClCompile Include="TCPProtocol.cpp" />
+    <ClCompile Include="UDPProtocol.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Address.h" />
-    <ClInclude Include="ARP.h" />
+    <ClInclude Include="ARPProtocol.h" />
+    <ClInclude Include="ARPHeader.h" />
     <ClInclude Include="Device.h" />
     <ClInclude Include="DeviceList.h" />
-    <ClInclude Include="DNS.h" />
+    <ClInclude Include="DNSProtocol.h" />
+    <ClInclude Include="DNSHeader.h" />
     <ClInclude Include="EndianHandler.h" />
-    <ClInclude Include="Ethernet.h" />
-    <ClInclude Include="EthernetData.h" />
+    <ClInclude Include="EthernetProtocol.h" />
+    <ClInclude Include="EthernetHeader.h" />
     <ClInclude Include="Helper.h" />
-    <ClInclude Include="IPv4.h" />
+    <ClInclude Include="IMMutablePacket.h" />
+    <ClInclude Include="IPv4Protocol.h" />
+    <ClInclude Include="IPv4Header.h" />
+    <ClInclude Include="MutablePacket.h" />
     <ClInclude Include="NetworkUtils.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="PacketBuilder.h" />
     <ClInclude Include="ProtocolNode.h" />
-    <ClInclude Include="Raw.h" />
-    <ClInclude Include="TCP.h" />
-    <ClInclude Include="UDP.h" />
+    <ClInclude Include="RawProtocol.h" />
+    <ClInclude Include="TCPProtocol.h" />
+    <ClInclude Include="TCPHeader.h" />
+    <ClInclude Include="UDPProtocol.h" />
+    <ClInclude Include="UDPHeader.h" />
     <ClInclude Include="WireDefs.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -10,7 +10,10 @@ namespace address
 	constexpr size_t ADDR_IP6_BYTES = 16;
 	constexpr size_t ADDR_MAC_BYTES = 6;
 
+	// Force tight packing
 	#pragma pack(push)
+	#pragma pack(1)
+
 	struct AddrIPv4
 	{
 		AddrIPv4();
@@ -37,7 +40,10 @@ namespace address
 	};
 	#pragma pack(pop)
 
+	// Force tight packing
 	#pragma pack(push)
+	#pragma pack(1)
+
 	struct addrIPv6
 	{
 		addrIPv6();
@@ -59,8 +65,11 @@ namespace address
 		friend std::ostream& operator<<(std::ostream& os, const addrIPv6 ipv6);
 	};
 	#pragma pack(pop)
-	
+
+	// Force tight packing
 	#pragma pack(push)
+	#pragma pack(1)
+
 	struct AddrMac
 	{
 		AddrMac();

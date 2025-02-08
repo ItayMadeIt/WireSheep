@@ -20,6 +20,7 @@ Protocol::Protocol(const AllProtocols protocol)
 	}
 }
 
+
 Protocol::Protocol(const Protocol& other) = default;
 
 Protocol::Protocol(Protocol&& other) = default;

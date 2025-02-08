@@ -6,14 +6,15 @@
 #include "Device.h"
 #include "NetworkUtils.h"
 #include "PacketBuilder.h"
-#include "Ethernet.h"
-#include "IPv4.h"
-#include "UDP.h"
-#include "Raw.h"
-#include "DNS.h"
+#include "EthernetProtocol.h"
+#include "IPv4Protocol.h"
+#include "UDPProtocol.h"
+#include "RawProtocol.h"
+#include "DNSProtocol.h"
 #include "DeviceList.h"
-#include "ARP.h"
-#include "TCP.h"
+#include "ARPProtocol.h"
+#include "TCPProtocol.h"
+#include <thread>
 
 std::string getFirstLineInFile(const std::string& filename)
 {
@@ -34,7 +35,7 @@ int main()
 
 	std::cout << devices;
 
-	Device device(devices[4]);
+	Device device(devices[7]);
 	
 	// Create packet
 	PacketBuilder packetBuilder;
@@ -72,29 +73,39 @@ int main()
 	device << packet;
 	*/
 
-	/*
-	Ethernet etherLayer;
+	// (Currently uses vector buffer but will be replaced by a mutable/immutable packet)
+	std::vector<byte> buffer;
+	buffer.resize(28+14);
+
+	Ethernet etherLayer(reinterpret_cast<EthernetHeader*>(buffer.data()));
 	etherLayer
 		.src(device.getDeviceMac())
-		.dst(device.getRouterMac())
+		.dst(AddrMac::broadcast)
 		.type(Ethernet::Protocols::ARP);
 
-	ARP arpLayer;
+	ARP arpLayer(reinterpret_cast<ARPHeader*>(buffer.data()+14));
 	arpLayer
 		.hardwareType(ARP::HardwareType::Ether)
+		.protocol(Ethernet::Protocols::IPv4)
+		.opcode(ARP::OperationCode::REQUEST)
 		.senderHardwareAddr(device.getDeviceMac())
-		.targetHardwareAddr(addrMac::broadcast)
-		.senderProtocolAddr({ "192.168.1.41" })
+		.targetHardwareAddr(AddrMac("00:00:00:00:00:00"))
+		.senderProtocolAddr({ device.getDeviceIPv4()})
 		.targetProtocolAddr({ "192.168.1.1" });
 
-	// Make it into a packet
-	Packet pack = (packetBuilder << etherLayer << arpLayer).build();
+	std::vector<byte> sample; // just for param because we need to use encode layer
+	arpLayer.encodeLayer(sample, 0);
 
-	// Print both packets bytes
-	std::cout << pack << std::endl;
-
+	std::cout << buffer << std::endl;
+	
 	// Send packet
-	device << pack;*/
+	for (size_t i = 0; i < 3; i++)
+	{
+		device << buffer;
+		Sleep(100);
+	}
+	
+	//*/
 
 	/*
 	Ethernet etherLayer;
@@ -129,6 +140,7 @@ int main()
 	device << pack;
 	*/
 	
+	/*
 	Ethernet etherLayer;
 	etherLayer
 		.src(device.getDeviceMac())
@@ -165,5 +177,5 @@ int main()
 
 	std::cout << pack;
 
-	device << pack;
+	device << pack;*/
 }

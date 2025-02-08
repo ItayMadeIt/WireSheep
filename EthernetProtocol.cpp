@@ -1,77 +1,56 @@
 #include "EthernetProtocol.h"
 
-Ethernet::Ethernet() : Protocol(AllProtocols::Ethernet)
-{ }
-
-Ethernet::Ethernet(const AddrMac src, const AddrMac dst, const byte2 type)
-	: Protocol(AllProtocols::Ethernet), m_src(src), m_dst(dst), m_type(type)
-{ }
-
-Ethernet::Ethernet(const std::string & src, const std::string & dst, const byte2 type) 
-	: Protocol(AllProtocols::Ethernet), m_src(src), m_dst(dst), m_type(type)
+Ethernet::Ethernet(EthernetHeader* data)
+	: Protocol(AllProtocols::Ethernet), m_data(data)
 { }
 
 Ethernet::~Ethernet() = default;
 
 Ethernet& Ethernet::dst(const AddrMac value)
 {
-	m_dst = value;
+	m_data->m_dst = value;
 	return *this;
 }
 AddrMac Ethernet::dst() const
 {
-	return m_dst;
+	return m_data->m_dst;
 }
 Ethernet& Ethernet::src(const AddrMac value)
 {
-	m_src = value;
+	m_data->m_src = value;
 	return *this;
 
 }
 AddrMac Ethernet::src() const
 {
-	return m_src;
+	return m_data->m_src;
 }
 
 Ethernet& Ethernet::type(const byte2 value)
 {
-	m_type = value;
+	m_data->m_etherType = EndiannessHandler::toNetworkEndian(value);
 	return *this;
 }
 
 Ethernet& Ethernet::type(const Protocols value)
 {
-	m_type = (byte2)value;
+	m_data->m_etherType = EndiannessHandler::toNetworkEndian((byte2)value);
 	return *this;
 }
 
 byte2 Ethernet::type() const
 {
-	return m_type;
+	return m_data->m_etherType;
 }
 
 void Ethernet::writeToBuffer(byte* buffer) const
 {
-	memcpy(buffer, &m_dst , ADDR_MAC_BYTES);
-	buffer += ADDR_MAC_BYTES;
-
-	memcpy(buffer, &m_src , ADDR_MAC_BYTES);
-	buffer += ADDR_MAC_BYTES;
-
-	byte2 netType = EndiannessHandler::toNetworkEndian(m_type);
-	memcpy(buffer, &netType, ETHER_LEN_TYPE);
+	// No need for an implementation, the buffer already has that data
 }
 
 void Ethernet::readFromBuffer(const byte* buffer, const size_t size)
 {
-	memcpy(&m_dst, buffer, ADDR_MAC_BYTES);
-	buffer += ADDR_MAC_BYTES;
-
-	memcpy(&m_src, buffer, ADDR_MAC_BYTES);
-	buffer += ADDR_MAC_BYTES;
-
-	memcpy(&m_type, buffer, ETHER_LEN_TYPE);
-	m_type = EndiannessHandler::fromNetworkEndian(m_type);
+	// No need for an implementation, the buffer already has that data
 }
 
 size_t Ethernet::getSize() const
@@ -79,18 +58,15 @@ size_t Ethernet::getSize() const
 	return Ethernet::SIZE;
 }
 
+// No need for an implementation, the buffer already has that data
+// Might include special cases 
 void Ethernet::encodeLayer(std::vector<byte>& buffer, const size_t offset) 
 {
-	// Add ethernet data to the array
-	buffer.resize(buffer.size() + Ethernet::SIZE);
-	writeToBuffer(buffer.data() + offset);
 }
 
+// No need for an implementation, the buffer already has that data
 void Ethernet::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
 {
-	// Add ethernet data to the array
-	buffer.resize(buffer.size() + Ethernet::SIZE);
-	writeToBuffer(buffer.data() + offset);
 }
 
 void Ethernet::encodeLayerPost(std::vector<byte>& buffer, const size_t offset)
@@ -107,12 +83,12 @@ std::ostream& operator<<(std::ostream& os, const Ethernet& ether)
 	os << "[Ethernet]" << std::endl;
 
 	// Output source and destination
-	os << "Src : " << ether.m_src  << std::endl;
-	os << "Dst : " << ether.m_dst  << std::endl;
+	os << "Src : " << ether.src() << std::endl;
+	os << "Dst : " << ether.dst() << std::endl;
 
 	// Output type as dec and hex
-	os << "Type: " << std::setfill(' ') << std::setw(5) << std::dec << ether.m_type;
-	os << " | 0x" << std::setfill('0') << std::setw(4) << std::hex << ether.m_type << std::endl << std::dec;
+	os << "Type: " << std::setfill(' ') << std::setw(5) << std::dec << (byte)ether.getProtocol();
+	os << " | 0x" << std::setfill('0') << std::setw(4) << std::hex << (byte)ether.getProtocol() << std::endl << std::dec;
 
 	return os;
 }

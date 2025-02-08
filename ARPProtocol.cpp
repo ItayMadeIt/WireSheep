@@ -4,36 +4,26 @@
 
 void ARP::writeToBuffer(byte* buffer) const
 {
-	byte2 var = EndiannessHandler::toNetworkEndian(m_hardwareType);
-	std::memcpy(buffer, &var, sizeof(var));
-	buffer += sizeof(var);
 
-	var = EndiannessHandler::toNetworkEndian(m_protocolType);
-	std::memcpy(buffer, &var, sizeof(var));
-	buffer += sizeof(var);
+	//byte2 var = endiannesshandler::tonetworkendian(m_hardwaretype);
+	//std::memcpy(buffer, &var, sizeof(var));
+	//buffer += sizeof(var);
 
-	std::memcpy(buffer, &m_hardwareLength, sizeof(m_hardwareLength));
-	buffer += sizeof(m_hardwareLength);
+	//var = endiannesshandler::tonetworkendian(m_protocoltype);
+	//std::memcpy(buffer, &var, sizeof(var));
+	//buffer += sizeof(var);
 
-	std::memcpy(buffer, &m_protocolLength, sizeof(m_protocolLength));
-	buffer += sizeof(m_protocolLength);
+	//std::memcpy(buffer, &m_hardwarelength, sizeof(m_hardwarelength));
+	//buffer += sizeof(m_hardwarelength);
 
-	var = EndiannessHandler::toNetworkEndian(m_operation);
-	std::memcpy(buffer, &var, sizeof(var));
-	buffer += sizeof(var);
+	//std::memcpy(buffer, &m_protocollength, sizeof(m_protocollength));
+	//buffer += sizeof(m_protocollength);
+
+	//var = endiannesshandler::tonetworkendian(m_operation);
+	//std::memcpy(buffer, &var, sizeof(var));
+	//buffer += sizeof(var);
 
 
-	std::memcpy(buffer, m_senderHardwareAddr.data(), m_senderHardwareAddr.size());
-	buffer += m_senderHardwareAddr.size();
-
-	std::memcpy(buffer, m_senderProtocolAddr.data(), m_senderProtocolAddr.size());
-	buffer += m_senderProtocolAddr.size();
-
-	std::memcpy(buffer, m_targetHardwareAddr.data(), m_targetHardwareAddr.size());
-	buffer += m_targetHardwareAddr.size();
-
-	std::memcpy(buffer, m_targetProtocolAddr.data(), m_targetProtocolAddr.size());
-	buffer += m_targetProtocolAddr.size();
 }
 
 void ARP::readFromBuffer(const byte* buffer, const size_t size)
@@ -56,12 +46,21 @@ void ARP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
 	}
 
 	// set lengths
-	m_hardwareLength = m_senderHardwareAddr.size();
-	m_protocolLength = m_senderProtocolAddr.size();
+	hardwareLength(m_senderHardwareAddr.size());
+	protocolLength(m_senderProtocolAddr.size());
 
-	// Add ARP data to the buffer
-	buffer.resize(buffer.size() + getSize());
-	writeToBuffer(buffer.data() + offset);
+	byte* addrPtr = reinterpret_cast<byte*>(m_data) + sizeof(ARPHeader);
+
+	std::memcpy(addrPtr, m_senderHardwareAddr.data(), m_senderHardwareAddr.size());
+	addrPtr += m_senderHardwareAddr.size();
+
+	std::memcpy(addrPtr, m_senderProtocolAddr.data(), m_senderProtocolAddr.size());
+	addrPtr += m_senderProtocolAddr.size();
+
+	std::memcpy(addrPtr, m_targetHardwareAddr.data(), m_targetHardwareAddr.size());
+	addrPtr += m_targetHardwareAddr.size();
+
+	std::memcpy(addrPtr, m_targetProtocolAddr.data(), m_targetProtocolAddr.size());
 }
 
 void ARP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
@@ -86,89 +85,88 @@ size_t ARP::getSize() const
 	return size;
 }
 
-ARP::ARP() : Protocol(AllProtocols::ARP)
-{
-}
+ARP::ARP(ARPHeader* data) : Protocol(AllProtocols::ARP), m_data(data)
+{}
 
 ARP& ARP::opcode(const byte2 value)
 {
-	m_operation = value;
+	m_data->m_operation = EndiannessHandler::toNetworkEndian(value);
 
 	return *this;
 }
 
 ARP& ARP::opcode(const OperationCode value)
 {
-	m_operation = (byte2)value;
+	m_data->m_operation = EndiannessHandler::toNetworkEndian((byte2)value);
 
 	return *this;
 }
 
 byte2 ARP::opcode() const
 {
-	return m_operation;
+	return EndiannessHandler::fromNetworkEndian(m_data->m_operation);
 }
 
 ARP& ARP::hardwareType(const byte2 value)
 {
-	m_hardwareType = value;
+	m_data->m_hardwareType = EndiannessHandler::toNetworkEndian(value);
 
 	return *this;
 }
 
 ARP& ARP::hardwareType(const HardwareType value)
 {
-	m_hardwareType = (byte2)value;
+	m_data->m_hardwareType = EndiannessHandler::toNetworkEndian((byte2)value);
 
 	return *this;
 }
 
 byte2 ARP::hardwareType() const
 {
-	return m_hardwareType;
+	return EndiannessHandler::fromNetworkEndian(m_data->m_hardwareType);
 }
 
 ARP& ARP::protocol(const byte2 value)
 {
-	m_protocolType = value;
+	m_data->m_protocolType = value;
 
 	return *this;
 }
 
 ARP& ARP::protocol(const Ethernet::Protocols value)
 {
-	m_protocolType = (byte2)value;
+	m_data->m_protocolType = EndiannessHandler::toNetworkEndian((byte2)value);
 
 	return *this;
 }
 
 byte2 ARP::protocol() const
 {
-	return m_protocolType;
+	return EndiannessHandler::fromNetworkEndian(m_data->m_protocolType);
 }
 
 ARP& ARP::hardwareLength(const byte value)
 {
-	m_hardwareLength = value;
+	m_data->m_hardwareLength = EndiannessHandler::toNetworkEndian(value);
 
 	return *this;
 }
 
 byte ARP::hardwareLength() const
 {
-	return m_hardwareLength;
+	return EndiannessHandler::fromNetworkEndian(m_data->m_hardwareLength);
 }
 
 ARP& ARP::protocolLength(const byte value)
 {
-	m_protocolLength = value;
+	m_data->m_protocolLength = EndiannessHandler::toNetworkEndian(value);
 
 	return *this;
 }
 
 byte ARP::protocolLength() const
 {
-	return m_protocolLength;
+	return EndiannessHandler::fromNetworkEndian(m_data->m_protocolLength);
 }
 
 ARP& ARP::senderHardwareAddr(const address::AddrMac mac)

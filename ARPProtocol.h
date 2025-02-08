@@ -1,6 +1,7 @@
 #include "Protocol.h"
-#include "Ethernet.h" // can use it because it's a lower layer protocol
+#include "EthernetProtocol.h" // can use it because it's a lower layer protocol
 #include "Address.h"
+#include "ARPHeader.h"
 
 class ARP : public Protocol
 {
@@ -45,7 +46,7 @@ public:
 		ARPSEC = 30,
 	};
 
-	ARP();
+	ARP(ARPHeader* data);
 
 	ARP& opcode(const byte2 value);
 	ARP& opcode(const OperationCode value);
@@ -80,10 +81,12 @@ public:
 	ARP& targetProtocolAddr(const std::vector<byte> addr);
 	std::vector<byte> targetProtocolAddr() const;
 
-	size_t getSize() const override;
+	virtual size_t getSize() const override;
 
-	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
-	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+
+	const static int BASE_SIZE = 8;
 
 protected:
 	void writeToBuffer(byte* buffer) const override;
@@ -92,13 +95,7 @@ protected:
 protected:
 	const static int SIZE_NO_ADDR = 8;
 
-	byte2 m_hardwareType;
-	byte2 m_protocolType;
-
-	byte m_hardwareLength;
-	byte m_protocolLength;
-
-	byte2 m_operation;
+	ARPHeader* m_data;
 
 	std::vector<byte> m_senderHardwareAddr;
 	std::vector<byte> m_senderProtocolAddr;
