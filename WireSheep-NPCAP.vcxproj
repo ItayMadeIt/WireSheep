@@ -173,8 +173,6 @@
     <ClCompile Include="NetworkUtils.cpp" />
     <ClCompile Include="Packet.cpp" />
     <ClCompile Include="Protocol.cpp" />
-    <ClCompile Include="PacketBuilder.cpp" />
-    <ClCompile Include="ProtocolNode.cpp" />
     <ClCompile Include="RawProtocol.cpp" />
     <ClCompile Include="SampleMain.cpp" />
     <ClCompile Include="TCPProtocol.cpp" />
@@ -199,8 +197,6 @@
     <ClInclude Include="NetworkUtils.h" />
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
-    <ClInclude Include="PacketBuilder.h" />
-    <ClInclude Include="ProtocolNode.h" />
     <ClInclude Include="RawProtocol.h" />
     <ClInclude Include="TCPProtocol.h" />
     <ClInclude Include="TCPHeader.h" />

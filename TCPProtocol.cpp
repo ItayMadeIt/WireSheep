@@ -70,7 +70,7 @@ size_t TCP::getSize() const
     return TCP::SIZE + ((m_optionsSize + 3) & ~3);
 }
 
-void TCP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
+void TCP::encodeLayerPre(std::vector<byte>& buffer, const size_t offset)
 {
     calculateOptionsSize();
 

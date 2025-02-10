@@ -12,7 +12,7 @@ public:
 	Raw& push_back(const byte* values, const size_t length);
 	Raw& push_back(const std::vector<byte>& values);
 
-	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	virtual void encodeLayerPre(std::vector<byte>& buffer, const size_t offset) override;
 	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 	size_t getSize() const override;

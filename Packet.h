@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Protocol.h"
-#include "ProtocolNode.h"
 #include <unordered_map>
 
 constexpr int MAX_PACKET_SIZE = 1500;
+constexpr size_t MAX_PROTOCOLS = 7;
 
 class Packet
 {

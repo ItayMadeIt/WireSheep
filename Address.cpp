@@ -158,9 +158,9 @@ AddrMac AddrMac::broadcast = AddrMac("FF:FF:FF:FF:FF:FF");
 
 
 
-addrIPv6::addrIPv6() = default;
+AddrIPv6::AddrIPv6() = default;
 
-addrIPv6::addrIPv6(const std::string& ipv6Str)
+AddrIPv6::AddrIPv6(const std::string& ipv6Str)
 {
 	std::stringstream sstream(ipv6Str);
 
@@ -182,12 +182,12 @@ addrIPv6::addrIPv6(const std::string& ipv6Str)
 	}
 }
 
-byte& addrIPv6::operator[](const size_t index)
+byte& AddrIPv6::operator[](const size_t index)
 {
 	return m_data[index];
 }
 
-std::string addrIPv6::toString() const
+std::string AddrIPv6::toString() const
 {
 	std::stringstream sstream;
 
@@ -205,9 +205,9 @@ std::string addrIPv6::toString() const
 	return sstream.str();
 }
 
-addrIPv6 addrIPv6::fromString(const std::string& addr)
+AddrIPv6 AddrIPv6::fromString(const std::string& addr)
 {
-	addrIPv6 result;
+	AddrIPv6 result;
 	std::stringstream sstream(addr);
 
 	int curVal;
@@ -237,7 +237,7 @@ std::ostream& address::operator<<(std::ostream& os, const AddrIPv4 ipv4)
 	return os << ipv4.toString();
 }
 
-std::ostream& address::operator<<(std::ostream& os, const addrIPv6 ipv6)
+std::ostream& address::operator<<(std::ostream& os, const AddrIPv6 ipv6)
 {
 	return os << ipv6.toString();
 }

@@ -1,7 +1,9 @@
 #include "EthernetProtocol.h"
+#include "MutablePacket.h"
 
-Ethernet::Ethernet(EthernetHeader* data)
-	: Protocol(AllProtocols::Ethernet), m_data(data)
+Ethernet::Ethernet(byte* data)
+	: Protocol(AllProtocols::Ethernet), 
+	m_data(reinterpret_cast<EthernetHeader*>(data))
 { }
 
 Ethernet::~Ethernet() = default;
@@ -43,39 +45,18 @@ byte2 Ethernet::type() const
 	return m_data->m_etherType;
 }
 
-void Ethernet::writeToBuffer(byte* buffer) const
+void Ethernet::encodePost(MutablePacket& packet, size_t protocolIndex)
 {
-	// No need for an implementation, the buffer already has that data
-}
-
-void Ethernet::readFromBuffer(const byte* buffer, const size_t size)
-{
-	// No need for an implementation, the buffer already has that data
+	if (packet.size() < MIN_SIZE)
+	{
+		size_t offset = (packet.size() > 0) ? packet.size() - 1 : 0;
+		packet.insertBytes(NULL, MIN_SIZE - packet.size());
+	}
 }
 
 size_t Ethernet::getSize() const
 {
-	return Ethernet::SIZE;
-}
-
-// No need for an implementation, the buffer already has that data
-// Might include special cases 
-void Ethernet::encodeLayer(std::vector<byte>& buffer, const size_t offset) 
-{
-}
-
-// No need for an implementation, the buffer already has that data
-void Ethernet::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
-{
-}
-
-void Ethernet::encodeLayerPost(std::vector<byte>& buffer, const size_t offset)
-{
-	// Ensure there are at minimum 60 bytes (12 for both MACs, 2 for the length/type and at minimum 42 bytes of data) 
-	if (buffer.size() < Ethernet::MIN_SIZE)
-	{
-		buffer.resize(Ethernet::MIN_SIZE);
-	}
+	return Ethernet::BASE_SIZE;
 }
 
 std::ostream& operator<<(std::ostream& os, const Ethernet& ether)
@@ -87,8 +68,7 @@ std::ostream& operator<<(std::ostream& os, const Ethernet& ether)
 	os << "Dst : " << ether.dst() << std::endl;
 
 	// Output type as dec and hex
-	os << "Type: " << std::setfill(' ') << std::setw(5) << std::dec << (byte)ether.getProtocol();
-	os << " | 0x" << std::setfill('0') << std::setw(4) << std::hex << (byte)ether.getProtocol() << std::endl << std::dec;
+	os << "Type: 0x" << std::setfill('0') << std::setw(4) << std::hex << (byte)ether.getProtocol() << std::endl;
 
 	return os;
 }

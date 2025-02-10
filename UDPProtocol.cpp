@@ -121,7 +121,7 @@ void UDP::readFromBuffer(const byte* buffer, const size_t size)
 	// Will be implemented in the future
 }
 
-void UDP::encodeLayer(std::vector<byte>& buffer, const size_t offset)
+void UDP::encodeLayerPre(std::vector<byte>& buffer, const size_t offset)
 {
 	// Get the amount of bytes we have left to input
 	m_length = buffer.capacity() - offset;

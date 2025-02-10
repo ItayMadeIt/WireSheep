@@ -70,7 +70,7 @@ void IPv4::readFromBuffer(const byte* buffer, const size_t size)
     // Not implemented
 }
 
-void IPv4::encodeLayer(std::vector<byte>& buffer, const size_t offset) 
+void IPv4::encodeLayerPre(std::vector<byte>& buffer, const size_t offset) 
 {
     // Calculate IPv4 checksum
     // calculateChecksum();

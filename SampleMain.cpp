@@ -5,7 +5,6 @@
 #include <string>
 #include "Device.h"
 #include "NetworkUtils.h"
-#include "PacketBuilder.h"
 #include "EthernetProtocol.h"
 #include "IPv4Protocol.h"
 #include "UDPProtocol.h"
@@ -14,6 +13,7 @@
 #include "DeviceList.h"
 #include "ARPProtocol.h"
 #include "TCPProtocol.h"
+#include "MutablePacket.h"
 #include <thread>
 
 std::string getFirstLineInFile(const std::string& filename)
@@ -37,10 +37,10 @@ int main()
 
 	Device device(devices[7]);
 	
+	/*
 	// Create packet
 	PacketBuilder packetBuilder;
 	
-	/*
 	Ethernet ether;
 	ether
 		.src(device.getDeviceMac())
@@ -74,7 +74,7 @@ int main()
 	*/
 
 	// (Currently uses vector buffer but will be replaced by a mutable/immutable packet)
-	std::vector<byte> buffer;
+	/*std::vector<byte> buffer;
 	buffer.resize(28+14);
 
 	Ethernet etherLayer(reinterpret_cast<EthernetHeader*>(buffer.data()));
@@ -94,7 +94,7 @@ int main()
 		.targetProtocolAddr({ "192.168.1.1" });
 
 	std::vector<byte> sample; // just for param because we need to use encode layer
-	arpLayer.encodeLayer(sample, 0);
+	arpLayer.encodeLayerPre(sample, 0);
 
 	std::cout << buffer << std::endl;
 	
@@ -103,6 +103,29 @@ int main()
 	{
 		device << buffer;
 		Sleep(100);
+	}*/
+
+	MutablePacket packet;
+	
+	Ethernet ether = packet.attach<Ethernet>();
+	ether
+		.src(device.getDeviceMac())
+		.dst(device.getRouterMac())
+		.type(Ethernet::Protocols::ARP);
+
+	ARP arp = packet.attach<ARP>(ARP::HardwareType::Ether, Ethernet::Protocols::IPv4);
+	arp
+		.hardwareType(ARP::HardwareType::Ether)
+		.protocol(Ethernet::Protocols::IPv4)
+		.opcode(ARP::OperationCode::REQUEST)
+		.senderHardwareAddr(device.getDeviceMac())
+		.targetHardwareAddr(AddrMac("00:00:00:00:00:00"))
+		.senderProtocolAddr({ device.getDeviceIPv4() })
+		.targetProtocolAddr({ "192.168.1.1" });
+
+	for (size_t i = 0; i < 3; i++)
+	{
+		device << packet;
 	}
 	
 	//*/

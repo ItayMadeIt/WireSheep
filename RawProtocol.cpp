@@ -41,7 +41,7 @@ void Raw::readFromBuffer(const byte* buffer, const size_t size)
 {
 }
 
-void Raw::encodeLayer(std::vector<byte>& buffer, const size_t offset)
+void Raw::encodeLayerPre(std::vector<byte>& buffer, const size_t offset)
 {
     // Add data to the array
     buffer.resize(buffer.size() + getSize());

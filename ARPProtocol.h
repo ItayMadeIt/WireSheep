@@ -46,7 +46,8 @@ public:
 		ARPSEC = 30,
 	};
 
-	ARP(ARPHeader* data);
+	ARP(byte* data);
+	ARP(byte* data, HardwareType hardwareType, Ethernet::Protocols protocolType);
 
 	ARP& opcode(const byte2 value);
 	ARP& opcode(const OperationCode value);
@@ -66,40 +67,33 @@ public:
 	byte protocolLength() const;
 
 	ARP& senderHardwareAddr(const address::AddrMac mac);
-	ARP& senderHardwareAddr(const std::vector<byte> addr);
-	std::vector<byte> senderHardwareAddr() const;
+	ARP& senderHardwareAddr(const byte* addr);
 
 	ARP& senderProtocolAddr(const address::AddrIPv4 ipv4);
-	ARP& senderProtocolAddr(const std::vector<byte> addr);
-	std::vector<byte> senderProtocolAddr() const;
+	ARP& senderProtocolAddr(const byte* addr);
 
 	ARP& targetHardwareAddr(const address::AddrMac mac);
-	ARP& targetHardwareAddr(const std::vector<byte> addr);
-	std::vector<byte> targetHardwareAddr() const;
+	ARP& targetHardwareAddr(const byte* addr);
 
 	ARP& targetProtocolAddr(const address::AddrIPv4 ipv4);
-	ARP& targetProtocolAddr(const std::vector<byte> addr);
-	std::vector<byte> targetProtocolAddr() const;
+	ARP& targetProtocolAddr(const byte* addr);
 
 	virtual size_t getSize() const override;
 
-	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
-	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
-
-	const static int BASE_SIZE = 8;
+	// Size is the size without any length dependent attributes
+	static constexpr int BASE_SIZE = 8;
 
 protected:
+	size_t m_size;
+
 	void writeToBuffer(byte* buffer) const override;
 	void readFromBuffer(const byte* buffer, const size_t size) override;
 
+	byte* targetProtocolAddr() const;
+	byte* senderProtocolAddr() const;
+	byte* targetHardwareAddr() const;
+	byte* senderHardwareAddr() const;
+
 protected:
-	const static int SIZE_NO_ADDR = 8;
-
 	ARPHeader* m_data;
-
-	std::vector<byte> m_senderHardwareAddr;
-	std::vector<byte> m_senderProtocolAddr;
-
-	std::vector<byte> m_targetHardwareAddr;
-	std::vector<byte> m_targetProtocolAddr;
 };

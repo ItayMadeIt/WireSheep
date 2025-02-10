@@ -69,9 +69,6 @@
     <ClCompile Include="Packet.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="PacketBuilder.cpp">
-      <Filter>Source Files\Packets</Filter>
-    </ClCompile>
     <ClCompile Include="NetworkUtils.cpp">
       <Filter>Source Files\NetworkSpecific</Filter>
     </ClCompile>
@@ -82,9 +79,6 @@
       <Filter>Source Files\Utils</Filter>
     </ClCompile>
     <ClCompile Include="Protocol.cpp">
-      <Filter>Source Files\Packets</Filter>
-    </ClCompile>
-    <ClCompile Include="ProtocolNode.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
     <ClCompile Include="ARPProtocol.cpp">
@@ -134,9 +128,6 @@
     <ClInclude Include="Packet.h">
       <Filter>Header Files\Packets</Filter>
     </ClInclude>
-    <ClInclude Include="PacketBuilder.h">
-      <Filter>Header Files\Packets</Filter>
-    </ClInclude>
     <ClInclude Include="DeviceList.h">
       <Filter>Header Files\Devices</Filter>
     </ClInclude>
@@ -144,9 +135,6 @@
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
     <ClInclude Include="Protocol.h">
-      <Filter>Header Files\Packets</Filter>
-    </ClInclude>
-    <ClInclude Include="ProtocolNode.h">
       <Filter>Header Files\Packets</Filter>
     </ClInclude>
     <ClInclude Include="UDPProtocol.h">

@@ -206,7 +206,7 @@ protected:
 
 	size_t getSize() const override;
 
-	void encodeLayer   (std::vector<byte>& buffer, const size_t offset) override;
+	void encodeLayerPre   (std::vector<byte>& buffer, const size_t offset) override;
 	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 protected:

@@ -20,7 +20,7 @@ public:
 		IPv6 = 0x86DD,
 	};
 
-	Ethernet(EthernetHeader* data);
+	Ethernet(byte* data);
 	~Ethernet();
 
 	Ethernet& src(const AddrMac value);
@@ -34,22 +34,16 @@ public:
 	byte2 type() const;
 
 	virtual size_t getSize() const override;
-
-	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
-	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
-
-	virtual void encodeLayerPost(std::vector<byte>& buffer, const size_t offset) override;
+	
+	// No need to override pre
+	// virtual void encodePre (MutablePacket& packet, size_t protocolIndex) override;
+	virtual void encodePost(MutablePacket& packet, size_t protocolIndex) override;
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
 
 public:
-	const static size_t SIZE = 14;
+	const static size_t BASE_SIZE = 14;
 
-protected:
-
-	virtual void writeToBuffer(byte* buffer) const override;
-	virtual void readFromBuffer(const byte* buffer, const size_t size) override;
-	
 protected:
 
 	const static size_t MIN_SIZE = 0x40;

@@ -21,7 +21,7 @@ public:
 	UDP& checksum(const byte2 value) { m_checksum = value; return *this; }
 	byte2 checksum() { return m_checksum; }
 
-	virtual void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	virtual void encodeLayerPre(std::vector<byte>& buffer, const size_t offset) override;
 	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 public:
 	static const size_t Size = 8;

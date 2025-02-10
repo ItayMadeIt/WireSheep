@@ -273,7 +273,7 @@ size_t DNS::getSize() const
     return headerSize + payloadSize;
 }
 
-void DNS::encodeLayer(std::vector<byte>& buffer, const size_t offset)
+void DNS::encodeLayerPre(std::vector<byte>& buffer, const size_t offset)
 {
     // Set lengths
     m_questionLength = (byte2)m_questions.size();

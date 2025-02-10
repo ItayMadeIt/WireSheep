@@ -44,10 +44,10 @@ namespace address
 	#pragma pack(push)
 	#pragma pack(1)
 
-	struct addrIPv6
+	struct AddrIPv6
 	{
-		addrIPv6();
-		addrIPv6(const std::string& ipv6Str);
+		AddrIPv6();
+		AddrIPv6(const std::string& ipv6Str);
 
 		/// <summary>
 		/// Array to store IPv6 (6 bytes).
@@ -60,9 +60,9 @@ namespace address
 
 		std::string toString() const;
 
-		static addrIPv6 fromString(const std::string& addr);
+		static AddrIPv6 fromString(const std::string& addr);
 
-		friend std::ostream& operator<<(std::ostream& os, const addrIPv6 ipv6);
+		friend std::ostream& operator<<(std::ostream& os, const AddrIPv6 ipv6);
 	};
 	#pragma pack(pop)
 

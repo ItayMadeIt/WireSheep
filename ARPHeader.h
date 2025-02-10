@@ -17,6 +17,11 @@ struct ARPHeader
 	byte m_protocolLength;
 
 	byte2 m_operation;
+
+	// Sender Hardware address
+	// Sender Protocol address
+	// Target Hardware address
+	// Target Protocol address
 };
 
 #pragma pack(pop)

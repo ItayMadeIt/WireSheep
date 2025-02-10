@@ -4,29 +4,33 @@
 #include <functional>
 #include <array>
 
+constexpr size_t MAX_PROTOCOL_OBJECTS_SIZE = 128;
+
 class MutablePacket;
 
 struct MutableProtocolEntry
 {
 	size_t m_offset;
-
-	std::function<void(MutablePacket&, size_t)> m_prePass;
-	std::function<void(MutablePacket&, size_t)> m_postPass;
 };
 
-constexpr size_t MAX_PROTOCOLS = 7;
+constexpr int PROTOCOLS_BUFFER_SIZE = 128;
 
 class MutablePacket : public Packet
 {
 public:
 	MutablePacket();
 
-	template<typename Protocol>
-	Protocol attach();
+	template<typename Protocol, typename... Args>
+	Protocol& attach(Args&&... args);
 
 	void compile();
 
 	byte* getPtrAtProtocol(size_t index);
+
+	void shiftFromOffset(size_t index, size_t amount);
+	void insertBytes(byte value, size_t amount);
+
+	size_t protocolCount() const;
 
 private:
 	void prePass();
@@ -35,12 +39,15 @@ private:
 private:
 	std::array<MutableProtocolEntry, MAX_PROTOCOLS> m_protocolEntries;
 	size_t m_protocolCount;
+
+	std::array<byte, PROTOCOLS_BUFFER_SIZE> m_protocolObjects;
+	size_t m_protocolObjectSize;
 };
 
-template<typename Protocol>
-inline Protocol MutablePacket::attach()
+template<typename Protocol, typename ...Args>
+inline Protocol& MutablePacket::attach(Args&&... args)
 {
-	if (m_curSize + Protocol::BaseSize > MAX_PACKET_SIZE)
+	if (m_curSize + Protocol::BASE_SIZE > MAX_PACKET_SIZE)
 	{
 		throw std::exception("Packet size exceeded!");
 	}
@@ -50,12 +57,17 @@ inline Protocol MutablePacket::attach()
 	}
 
 	size_t protocolOffset = m_curSize;
-	Protocol protocol(m_buffer + m_curSize);
-	m_curSize += protocol.getSize();
+	
+	Protocol* protocolObj = new (m_protocolObjects.data() + m_protocolObjectSize)
+		Protocol(m_buffer + protocolOffset, std::forward<Args>(args)...);
+	
+	m_curSize += protocolObj->getSize();
 
-	protocol[m_protocolCount++] = {
-		protocolOffset,
-		Protocol::prePass,
-		Protocol::prePost
+	m_protocolObjectSize += sizeof(Protocol);
+
+	m_protocolEntries[m_protocolCount++] = {
+		protocolOffset
 	};
+
+	return *protocolObj;
 }

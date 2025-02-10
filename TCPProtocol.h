@@ -154,7 +154,7 @@ public:
 	template<typename OptionType, typename... Args>
 	TCP& addOption(Args&&... args);
 
-	void encodeLayer(std::vector<byte>& buffer, const size_t offset) override;
+	void encodeLayerPre(std::vector<byte>& buffer, const size_t offset) override;
 	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
 
 	size_t getSize() const override;
