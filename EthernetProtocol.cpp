@@ -2,47 +2,48 @@
 #include "MutablePacket.h"
 
 Ethernet::Ethernet(byte* data)
-	: Protocol(AllProtocols::Ethernet), 
-	m_data(reinterpret_cast<EthernetHeader*>(data))
-{ }
+	: m_data(reinterpret_cast<EthernetHeader*>(data))
+{
+	type(0);
+}
 
 Ethernet::~Ethernet() = default;
 
 Ethernet& Ethernet::dst(const AddrMac value)
 {
-	m_data->m_dst = value;
+	m_data->dst = value;
 	return *this;
 }
 AddrMac Ethernet::dst() const
 {
-	return m_data->m_dst;
+	return m_data->dst;
 }
 Ethernet& Ethernet::src(const AddrMac value)
 {
-	m_data->m_src = value;
+	m_data->src = value;
 	return *this;
 
 }
 AddrMac Ethernet::src() const
 {
-	return m_data->m_src;
+	return m_data->src;
 }
 
 Ethernet& Ethernet::type(const byte2 value)
 {
-	m_data->m_etherType = EndiannessHandler::toNetworkEndian(value);
+	m_data->etherType = Endianness::toNetwork(value);
 	return *this;
 }
 
 Ethernet& Ethernet::type(const Protocols value)
 {
-	m_data->m_etherType = EndiannessHandler::toNetworkEndian((byte2)value);
+	m_data->etherType = Endianness::toNetwork((byte2)value);
 	return *this;
 }
 
 byte2 Ethernet::type() const
 {
-	return m_data->m_etherType;
+	return m_data->etherType;
 }
 
 void Ethernet::encodePost(MutablePacket& packet, size_t protocolIndex)
@@ -52,6 +53,11 @@ void Ethernet::encodePost(MutablePacket& packet, size_t protocolIndex)
 		size_t offset = (packet.size() > 0) ? packet.size() - 1 : 0;
 		packet.insertBytes(NULL, MIN_SIZE - packet.size());
 	}
+}
+
+byte* Ethernet::addr() const
+{
+	return reinterpret_cast<byte*>(m_data);
 }
 
 size_t Ethernet::getSize() const
@@ -67,8 +73,8 @@ std::ostream& operator<<(std::ostream& os, const Ethernet& ether)
 	os << "Src : " << ether.src() << std::endl;
 	os << "Dst : " << ether.dst() << std::endl;
 
-	// Output type as dec and hex
-	os << "Type: 0x" << std::setfill('0') << std::setw(4) << std::hex << (byte)ether.getProtocol() << std::endl;
+	// Output type as hex
+	os << "Type: 0x" << std::setfill('0') << std::setw(4) << std::hex << ether.type() << std::endl;
 
 	return os;
 }

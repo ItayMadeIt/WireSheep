@@ -10,16 +10,16 @@ using namespace address;
 
 struct IPv4Header
 {
-	byte m_versionIhl;
-	byte m_dscpEcn;
-	byte2 m_totalLength;
-	byte2 m_identification;
-	byte2 m_flags_framentoffset;
-	byte m_ttl;
-	byte m_protocol;
-	byte2 m_checksum;
-	AddrIPv4 m_src;
-	AddrIPv4 m_dst;
+	byte     version_ihl;
+	byte     dscp_ecn;
+	byte2    totalLength;
+	byte2    identification;
+	byte2    flags_framentOffset;
+	byte     ttl;
+	byte     protocol;
+	byte2    checksum;
+	AddrIPv4 src;
+	AddrIPv4 dst;
 };
 
 #pragma pack(pop)

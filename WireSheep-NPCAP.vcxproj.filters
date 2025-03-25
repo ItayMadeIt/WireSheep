@@ -108,6 +108,9 @@
     <ClCompile Include="IMMutablePacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
+    <ClCompile Include="StaticVector.cpp">
+      <Filter>Source Files\Utils</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Device.h">
@@ -181,6 +184,9 @@
     </ClInclude>
     <ClInclude Include="MutablePacket.h">
       <Filter>Header Files\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="StaticVector.hpp">
+      <Filter>Header Files\Utils</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

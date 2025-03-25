@@ -1,26 +1,26 @@
 #pragma once
 
 #include "Protocol.h"
+#include "MutablePacket.h"
 
 class  Raw : public Protocol
 {
 public:
-	Raw();
+	Raw(byte* data);
 
 public:
-	Raw& push_back(const byte value);
-	Raw& push_back(const byte* values, const size_t length);
-	Raw& push_back(const std::vector<byte>& values);
+	Raw& pushBack(const byte value, MutablePacket& packet);
+	Raw& pushBack(const byte* values, const size_t length, MutablePacket& packet);
+	Raw& pushBack(const std::vector<byte>& values, MutablePacket& packet);
 
-	virtual void encodeLayerPre(std::vector<byte>& buffer, const size_t offset) override;
-	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual byte* addr() const override;
 
-	size_t getSize() const override;
+	virtual size_t getSize() const override;
+	
+	const static size_t BASE_SIZE = 0;
 
 protected:
-	std::vector<byte> m_data;
-
-	virtual void writeToBuffer (byte* buffer) const override;
-	virtual void readFromBuffer(const byte* buffer, const size_t size) override;
+	byte* m_data;
+	size_t m_size;
 
 };

@@ -83,6 +83,8 @@ public:
 	// Size is the size without any length dependent attributes
 	static constexpr int BASE_SIZE = 8;
 
+	virtual byte* addr() const override;
+
 protected:
 	size_t m_size;
 

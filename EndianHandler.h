@@ -1,12 +1,12 @@
 #pragma once
-
+#include "WireDefs.h"
 #include <cstdint>
 
 #if defined(_MSC_VER)
 #include <intrin.h> // import custom compiler functions for faster swap
 #endif
 
-class EndiannessHandler
+class Endianness
 {
 public:
     // Static function to check system's endianness (computed once)
@@ -14,11 +14,11 @@ public:
 
     // Convert an X-bit value from system to little endian
     template<typename T>
-    static T toNetworkEndian(const T& value);
+    static T toNetwork(const T& value);
 
     // Convert an X-bit value from little endian to system
     template<typename T>
-    static T fromNetworkEndian(const T& value);
+    static T fromNetwork(const T& value);
 
 private:
     // Static const that stores whether the system is big-endian (computed once)
@@ -38,7 +38,7 @@ private:
 // Convert an X-bit value from system to little endian
 
 template<typename T>
-T EndiannessHandler::toNetworkEndian(const T& value)
+T Endianness::toNetwork(const T& value)
 {
     if (bigEndian)
     {
@@ -51,7 +51,7 @@ T EndiannessHandler::toNetworkEndian(const T& value)
 // Convert an X-bit value from little endian to system
 
 template<typename T>
-T EndiannessHandler::fromNetworkEndian(const T& value)
+T Endianness::fromNetwork(const T& value)
 {
     if (bigEndian)
     {
@@ -62,7 +62,7 @@ T EndiannessHandler::fromNetworkEndian(const T& value)
 
 // Swaps between the 2
 template<typename T>
-T EndiannessHandler::swapEndian(T value)
+T Endianness::swapEndian(T value)
 {
     if constexpr (sizeof(T) == 1) {
         return value; // No need to swap 1-byte values

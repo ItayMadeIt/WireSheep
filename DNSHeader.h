@@ -8,12 +8,12 @@
 
 struct DNSHeader
 {
-	byte2 m_transactionID;
-	byte2 m_flags;
-	byte2 m_amountQuestions;
-	byte2 m_amountAnswers;
-	byte2 m_amountAuthoritiveRR;
-	byte2 m_amountAdditionalRR;
+	byte2 transactionID;
+	byte2 flags;
+	byte2 amountQuestions;
+	byte2 amountAnswers;
+	byte2 amountAuthoritiveRR;
+	byte2 amountAdditionalRR;
 };
 
 #pragma pack(pop

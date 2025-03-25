@@ -1,6 +1,12 @@
 #pragma once
 #include "Protocol.h"
 #include "EndianHandler.h"
+#include "StaticVector.hpp"
+
+constexpr size_t MAX_RDATA_SIZE = 1024; // set 1024 bytes limit (mostly used for 1 IPv4 or similar)
+constexpr size_t MAX_DOMAIN_SIZE = 4096; // 2048 is the limit
+using RDataBytes = StaticVector<byte, MAX_RDATA_SIZE>;
+using DomainBytes = StaticVector<byte, MAX_DOMAIN_SIZE>;
 
 class DNS : public Protocol
 {
@@ -122,9 +128,9 @@ public:
 	public:
 		// default constructor
 		ResourceRecord(const std::vector<byte>& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const std::vector<byte>& rdata);
-
+		
 		// Resource address
-		std::vector<byte> m_address; 
+		DomainBytes m_domain;
 
 		// Resource type (Based on above enum: Type)
 		byte2 m_type;
@@ -135,8 +141,8 @@ public:
 		// Resource Time To Live (seconds)
 		byte4 m_ttl;
 
-		// Length of RDATA and RDATA
-		std::vector<byte> m_rdata;
+		// Resource address
+		RDataBytes m_rdata;
 	}; 
 
 	// Each question record is saved in this format
@@ -146,10 +152,10 @@ public:
 	public:
 
 		// default constructor
-		QuestionResourceRecord(const std::vector<byte>& address, const byte2 typeVal, const byte2 classVal);
+		QuestionResourceRecord(const std::string& domain, const byte2 typeVal, const byte2 classVal);
 		
 		// Resource address
-		std::vector<byte> m_address;
+		DomainBytes m_domain;
 
 		// Resource type (Based on above enum: Type)
 		byte2 m_type;
@@ -158,10 +164,11 @@ public:
 		byte2 m_class;
 	};
 
-	static std::vector<byte> formatDomain(const std::string& domain);
+	static DomainBytes formatDomain(const std::string& domain);
 	
 	DNS();
 
+	template<typename IP>
 	DNS& addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass);
 	QuestionResourceRecord getQuestionResponse(const size_t index);
 	DNS& popQuestion();
@@ -192,10 +199,10 @@ public:
 
 protected:
 	byte2 m_transcationID;
-	std::vector<QuestionResourceRecord> m_questions; // Include length
-	std::vector<ResourceRecord> m_answers; // Include length
-	std::vector<ResourceRecord> m_authRR; // Include length
-	std::vector<ResourceRecord> m_additionalRR; // Include length
+	byte* m_answersPtr;
+	byte* m_authRRPtr;
+	byte* m_additionalRRPtr;
+
 	byte2 m_flags;
 
 	// Length

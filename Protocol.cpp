@@ -1,11 +1,8 @@
 #include "Protocol.h"
 
-Protocol::Protocol(const AllProtocols protocol)
-	: m_protocolType(protocol)
+Protocol::Protocol()
 {
-	m_includesChecksum = false; // will be removed
 }
-
 
 Protocol::Protocol(const Protocol& other) = default;
 
@@ -26,12 +23,6 @@ void Protocol::encodeLayerPost   (std::vector<byte>& buffer, const size_t offset
 // Will be removed
 void Protocol::encodeLayerPostRaw(std::vector<byte>& buffer, const size_t offset) const {}
 
-// Will be removed
-bool Protocol::includesChecksum() const
-{
-	return m_includesChecksum;
-}
-
 
 void Protocol::encodePre(MutablePacket& packet, size_t protocolIndex)
 {
@@ -40,9 +31,4 @@ void Protocol::encodePre(MutablePacket& packet, size_t protocolIndex)
 void Protocol::encodePost(MutablePacket& packet, size_t protocolIndex)
 {
 	// Empty implementation
-}
-
-AllProtocols Protocol::getProtocol() const
-{
-	return m_protocolType;
 }

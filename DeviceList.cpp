@@ -1,5 +1,5 @@
 #include "DeviceList.h"
-
+#include "ARPProtocol.h"
 #include <iostream>
 
 DeviceList::DeviceList()

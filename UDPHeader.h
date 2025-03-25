@@ -8,10 +8,10 @@
 
 struct UDPHeader
 {
-	byte2 m_src;
-	byte2 m_dst;
-	byte2 m_length;
-	byte2 m_checksum;
+	byte2 src;
+	byte2 dst;
+	byte2 length;
+	byte2 checksum;
 };
 
 #pragma pack(pop)

@@ -10,9 +10,9 @@ using namespace address;
 
 struct EthernetHeader
 {
-	AddrMac m_dst;
-	AddrMac m_src;
-	byte2 m_etherType;
+	AddrMac dst;
+	AddrMac src;
+	byte2 etherType;
 };
 
 #pragma pack(pop)

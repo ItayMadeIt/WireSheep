@@ -23,7 +23,10 @@ public:
 	/// <returns>buffer size</returns>
 	const size_t size() const;
 
-protected:
+	// Print string to output stream
+	friend std::ostream& operator<<(std::ostream& os, Packet& packet);
+
+public:
 	byte m_buffer[MAX_PACKET_SIZE];
 	size_t m_curSize;
 };

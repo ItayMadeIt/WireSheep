@@ -35,8 +35,48 @@ int main()
 
 	std::cout << devices;
 
-	Device device(devices[7]);
+	Device device(devices[8]);
 	
+	MutablePacket packet;
+
+	Ethernet& ethernet = packet.attach<Ethernet>();
+	ethernet
+		.src(device.getDeviceMac())
+		.dst(device.getRouterMac())
+		.type(Ethernet::Protocols::IPv4);
+
+	std::cout << device.getDeviceMac() << std::endl;
+	std::cout << device.getDeviceIPv4() << std::endl;
+	std::cout << std::hex
+		<< std::setw(2) << static_cast<int>(device.getDeviceIPv4().m_data[0]) << "."
+		<< std::setw(2) << static_cast<int>(device.getDeviceIPv4().m_data[1]) << "."
+		<< std::setw(2) << static_cast<int>(device.getDeviceIPv4().m_data[2]) << "."
+		<< std::setw(2) << static_cast<int>(device.getDeviceIPv4().m_data[3])
+		<< std::endl << std::dec;
+	IPv4& ipv4 = packet.attach<IPv4>();
+	ipv4
+		.src(device.getDeviceIPv4())
+		.dst({ "8.8.8.8" })
+		.protocol(IPv4::Protocols::UDP)
+		.flags(IPv4::Flags::NONE)
+		.ecn(0b10);
+
+	UDP& udp = packet.attach<UDP>();
+	udp
+		.src(120)
+		.dst(80);
+
+	Raw& raw = packet.attach<Raw>();
+	raw.pushBack('H', packet);
+	raw.pushBack('i', packet);
+	raw.pushBack('!', packet);
+
+	packet.compile();
+
+	std::cout << packet;
+
+	device << packet;
+
 	/*
 	// Create packet
 	PacketBuilder packetBuilder;
@@ -104,7 +144,7 @@ int main()
 		device << buffer;
 		Sleep(100);
 	}*/
-
+	/*
 	MutablePacket packet;
 	
 	Ethernet ether = packet.attach<Ethernet>();
@@ -123,10 +163,14 @@ int main()
 		.senderProtocolAddr({ device.getDeviceIPv4() })
 		.targetProtocolAddr({ "192.168.1.1" });
 
+	packet.compile();
+
+	std::cout << packet;
+
 	for (size_t i = 0; i < 3; i++)
 	{
 		device << packet;
-	}
+	}*/
 	
 	//*/
 

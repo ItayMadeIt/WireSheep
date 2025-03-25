@@ -4,6 +4,8 @@
 #include "Address.h"
 #include "Protocol.h"
 #include <optional>
+#include "IPv4Header.h"
+#include "MutablePacket.h"
 
 using namespace address;
 
@@ -83,112 +85,69 @@ public:
 
 		// Lower Effort
 		LE = 1
-
 	};
 
 public:
-	IPv4();
-	IPv4(const AddrIPv4 src, const AddrIPv4 dst);
-	IPv4(const std::string& src, const std::string& dst);
 	IPv4(IPv4&& other);
 	IPv4(const IPv4& other);
+	IPv4(byte* data);
+	IPv4(byte* data, AddrIPv4 src, AddrIPv4 dst);
 
 public:
+	IPv4& src(const AddrIPv4 value);
+	AddrIPv4 src() const;
 
-	IPv4& src(const AddrIPv4 value) { m_src = value; return *this; }
-	AddrIPv4 src() const { return m_src; }
+	IPv4& dst(const AddrIPv4 value);
+	AddrIPv4 dst() const;
 
-	IPv4& dst(const AddrIPv4 value) { m_dst = value;return *this; }
-	AddrIPv4 dst() const { return m_dst; }
+	IPv4& version(const byte value);
+	byte version() const;
 
-	IPv4& version(const byte value) { m_version = value; return *this;}
-	byte version() const { return m_version; };
+	IPv4& ihl(const byte value);
+	byte ihl() const;
 
-	IPv4& dscp(const byte value) { m_dscp = value; return *this;}
-	byte dscp() const { return m_dscp; }
+	IPv4& dscp(const byte value);
+	byte dscp() const;
 
-	IPv4& ecn(const byte value) { m_ecn = value; return *this;};
-	byte ecn() const { return m_ecn; };
+	IPv4& ecn(const byte value);
+	byte ecn() const;
 
-	IPv4& identifcation(const byte2 value) { m_identification = value; return *this;}
-	byte2 identification() const { return m_identification; }
+	IPv4& identification(const byte2 value);
+	byte2 identification() const;
 
-	IPv4& flags(const byte value) { m_flags = value; return *this; }
-	IPv4& flags(const Flags value) { m_flags = (byte)value; return *this; }
-	byte flags() const { return m_flags; }
+	IPv4& flags(const byte value);
+	IPv4& flags(const Flags value);
+	byte flags() const;
 
-	IPv4& fragmentOffset(const byte2 value) { m_fragmentOffset = value; return *this;}
-	byte2  fragmentOffset() const { return m_fragmentOffset; }
+	IPv4& fragmentOffset(const byte2 value);
+	byte2 fragmentOffset() const;
 
-	IPv4& ttl(const byte value) { m_ttl = value; return *this; }
-	byte ttl() const { return m_ttl; }
+	IPv4& ttl(const byte value);
+	byte ttl() const;
 
-	IPv4& protocol(const Protocols value) { m_protocol = (byte)value; return *this;}
-	IPv4& protocol(const byte value) { m_protocol = value; return *this; }
-	Protocols protocol() const { return (Protocols)m_protocol; }
+	IPv4& protocol(const Protocols value);
+	IPv4& protocol(const byte value);
+	Protocols protocol() const;
 
-	IPv4& totalLength(const byte2 value) { m_totalLength = value; return *this; }
-	byte2 totalLength() const { return m_totalLength; }
+	IPv4& totalLength(const byte2 value); 
+	byte2 totalLength() const;
 
-	IPv4& checksum(const byte2 value) { m_checksum = value; return *this; }
-	byte2 checksum() const { return m_checksum; }
+	IPv4& checksum(const byte2 value);
+	byte2 checksum() const;
 
-	size_t getSize() const override;
+	virtual size_t getSize() const override;
+	
+	virtual byte* addr() const override;
 
-	void encodeLayerPre(std::vector<byte>& buffer, const size_t offset) override;
-	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual void encodePre(MutablePacket& packet, const size_t index) override;
+	virtual void encodePost(MutablePacket& packet, const size_t index) override;
 
-	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
 public:
-	const static size_t SIZE = 20; // min size of 20 bytes
+	const static size_t BASE_SIZE = 20; // min size of 20 bytes
 
 protected:
-	void writeToBuffer(byte* buffer) const override;
-	void readFromBuffer(const byte* buffer, const size_t size) override;
+	const static byte IHL_MIN_SIZE = 5;
 
 protected:
-	// in IPv4 setup has to be the value 4 (but you physically can modify it) | 4 bits
-	byte m_version = 4; 
-	
-	// IHL the length (internet header length => ihl * 8 MUST BE AT LEAST 5) | 4 bits
-	byte m_ihl;
-	
-	// https://en.wikipedia.org/wiki/Differentiated_services DSCP (ToS) specification | 6 bits
-	byte m_dscp;
-
-	// https://en.wikipedia.org/wiki/Explicit_Congestion_Notification ECN, useful for handling congestion | 2 bits
-	byte m_ecn;
-
-	// Total packet size from IP layer (including header) | 16 bits
-	byte2 m_totalLength;
-
-	// Identification | 16 bits
-	byte2 m_identification;
-
-	// Flags (Reserved, Dont-Fragment, More-Fragments) | 3 bits
-	byte m_flags;
-
-	// Fragment offset (Relative to the beginning in multiples of 8) | 13 bits
-	byte2 m_fragmentOffset;
-
-	// TTL (Time To Live) | 8 bits
-	byte m_ttl;
-	
-	// Protocol (Transport layer protocol) https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers | 8 bits
-	byte m_protocol;
-
-	// Checksum used for error checking | 16 bits
-	byte2 m_checksum;
-
-	// Options list: https://en.wikipedia.org/wiki/Internet_Protocol_Options | 0 - 320 bits (IHL > 5)
-	byte4 m_options[5];
-
-	// addresses
-	AddrIPv4 m_src; // source address | 32 bits
-	AddrIPv4 m_dst;	// dest address | 32 bits
-
-	const byte IHL_MIN_SIZE = 5;
-
-	
+	IPv4Header* m_data;
 };
-

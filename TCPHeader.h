@@ -8,15 +8,15 @@
 
 struct TCPHeader
 {
-	byte2 m_src;
-	byte2 m_dst;
-	byte4 m_seq;
-	byte4 m_ack;
-	byte  m_dataOffset;
-	byte  m_flags;
-	byte2 m_window;
-	byte2 m_checksum;
-	byte2 m_urgPtr;
+	byte2 src;
+	byte2 dst;
+	byte4 seq;
+	byte4 ack;
+	byte  dataOffset;
+	byte  flags;
+	byte2 window;
+	byte2 checksum;
+	byte2 urgPtr;
 };
 
 #pragma pack(pop)

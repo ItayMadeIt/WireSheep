@@ -231,7 +231,6 @@ AddrIPv6 AddrIPv6::fromString(const std::string& addr)
 }
 
 
-
 std::ostream& address::operator<<(std::ostream& os, const AddrIPv4 ipv4)
 {
 	return os << ipv4.toString();

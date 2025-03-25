@@ -1,8 +1,10 @@
 #include "DNSProtocol.h"
+#include "IPv4Protocol.h"
 
-std::vector<byte> DNS::formatDomain(const std::string& domain)
+DomainBytes DNS::formatDomain(const std::string& domain)
 {
-     std::vector<byte> address;
+    DomainBytes result{};
+    size_t writeIndex = 0;
 
     size_t startIndex = 0;
     size_t endIndex;
@@ -10,44 +12,52 @@ std::vector<byte> DNS::formatDomain(const std::string& domain)
     // Process each dot
     while ((endIndex = domain.find('.', startIndex)) != std::string::npos)
     {
-        // Get length of the section
-        size_t length = endIndex - startIndex;
+        // Length of segment
+        byte length = endIndex - startIndex;
 
-        // Add number for the amount of chars
-        address.emplace_back(static_cast<byte>(length));
+        if (writeIndex + 1 + length >= MAX_DOMAIN_SIZE)
+            throw std::runtime_error("Domain name too long");
 
-        // Add the segment data
-        const std::string segment = domain.substr(startIndex, length);
-        address.insert(address.end(), segment.begin(), segment.end());
+        // write length
+        result[writeIndex++] = static_cast<byte>(length);
+        // write domain
+        for (size_t i = 0; i < length; i++)
+        {
+            result[writeIndex++] = static_cast<byte>(domain[startIndex + i]);
+        }
 
-        // Move startIndex to the character after the dot
         startIndex = endIndex + 1;
     }
-
-    // Handle the last segment
+    
     size_t lastLength = domain.size() - startIndex;
-    address.emplace_back(static_cast<byte>(lastLength));
-
-    if (lastLength > 0)
+    if (writeIndex + 1 + lastLength + 1 > MAX_DOMAIN_SIZE)
     {
-        const std::string lastSegment = domain.substr(startIndex, lastLength);
-        address.insert(address.end(), lastSegment.begin(), lastSegment.end());
+        throw std::runtime_error("Domain name too long");
     }
 
-    // Add null terminator
-    address.emplace_back('\0');
+    // write length
+    result[writeIndex++] = static_cast<byte>(lastLength);
 
-    return address;
+    // write domain
+    for (size_t i = 0; i < lastLength; ++i)
+    {
+        result[writeIndex++] = static_cast<byte>(domain[startIndex + i]);
+    }
+    
+    // null terminator
+    result[writeIndex++] = 0;
+
+    return result;
 }
 
 
-DNS::DNS() : Protocol(AllProtocols::DNS), m_flags(0)
+DNS::DNS() : Protocol(), m_flags(0)
 {
 }
 
 DNS& DNS::addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass)
 {
-    m_questions.emplace_back(DNS::formatDomain(qAddr), qType, qClass);
+    QuestionResourceRecord q{qAddr, qType, qClass };
 
     return *this;
 }
@@ -168,32 +178,33 @@ DNS& DNS::setAdditionalRRLength(const byte2 value)
     return *this;
 }
 
+
 void DNS::writeToBuffer(byte* buffer) const
 {
     byte2 var;
 
     // Add values in the header: 
-    var = EndiannessHandler::toNetworkEndian(m_transcationID);
+    var = Endianness::toNetwork(m_transcationID);
     std::memcpy(buffer, &var, sizeof(m_transcationID));
     buffer += sizeof(m_transcationID);
 
-    var = EndiannessHandler::toNetworkEndian(m_flags);
+    var = Endianness::toNetwork(m_flags);
     std::memcpy(buffer, &var, sizeof(m_flags));
     buffer += sizeof(var);
 
-    var = EndiannessHandler::toNetworkEndian(static_cast<byte2>(m_questions.size()));
+    var = Endianness::toNetwork(static_cast<byte2>(m_questions.size()));
     std::memcpy(buffer, &var, sizeof(var));
     buffer += sizeof(var);
 
-    var = EndiannessHandler::toNetworkEndian(m_answers.size());
+    var = Endianness::toNetwork(m_answers.size());
     std::memcpy(buffer, &var, sizeof(m_answers));
     buffer += sizeof(var);
 
-    var = EndiannessHandler::toNetworkEndian(m_authRR.size());
+    var = Endianness::toNetwork(m_authRR.size());
     std::memcpy(buffer, &var, sizeof(m_authRR));
     buffer += sizeof(var);
 
-    var = EndiannessHandler::toNetworkEndian(m_additionalRR.size());
+    var = Endianness::toNetwork(m_additionalRR.size());
     std::memcpy(buffer, &var, sizeof(m_additionalRR));
     buffer += sizeof(var);
 
@@ -202,15 +213,15 @@ void DNS::writeToBuffer(byte* buffer) const
     for (const DNS::QuestionResourceRecord& q : m_questions)
     {
         // Copy the address
-        std::memcpy(buffer, q.m_address.data(), q.m_address.size());
-        buffer += q.m_address.size();
+        std::memcpy(buffer, q.m_domain.data(), q.m_domain.size());
+        buffer += q.m_domain.size();
 
         // Copy all other question data
-        var = EndiannessHandler::toNetworkEndian(q.m_type);
+        var = Endianness::toNetwork(q.m_type);
         std::memcpy(buffer, &var, sizeof(var));
         buffer += sizeof(var);
 
-        var = EndiannessHandler::toNetworkEndian(q.m_class);
+        var = Endianness::toNetwork(q.m_class);
         std::memcpy(buffer, &var, sizeof(var));
         buffer += sizeof(var);
     }
@@ -245,7 +256,7 @@ size_t DNS::getSize() const
     {
         for (const DNS::QuestionResourceRecord& q : m_questions)
         {
-            payloadSize += (q.m_address.size()) + sizeof(q.m_class) + sizeof(q.m_type);
+            payloadSize += (q.m_domain.size()) + sizeof(q.m_class) + sizeof(q.m_type);
         }
     }
     // If it's a responses
@@ -299,19 +310,19 @@ void DNS::encodeRecord(const DNS::ResourceRecord& record, byte*& ptr) const
     std::memcpy(ptr, record.m_address.data(), record.m_address.size());
     ptr += record.m_address.size();
 
-    val = EndiannessHandler::toNetworkEndian(record.m_type);
+    val = Endianness::toNetwork(record.m_type);
     std::memcpy(ptr, &val, sizeof(val));
     ptr += sizeof(val);
     
-    val = EndiannessHandler::toNetworkEndian(record.m_class);
+    val = Endianness::toNetwork(record.m_class);
     std::memcpy(ptr, &val, sizeof(val));
     ptr += sizeof(val);
 
-    val = EndiannessHandler::toNetworkEndian(record.m_ttl);
+    val = Endianness::toNetwork(record.m_ttl);
     std::memcpy(ptr, &val, sizeof(val));
     ptr += sizeof(val);
 
-    val = EndiannessHandler::toNetworkEndian(static_cast<byte2>(record.m_rdata.size()));
+    val = Endianness::toNetwork(static_cast<byte2>(record.m_rdata.size()));
     std::memcpy(ptr, &val, sizeof(val)); 
     ptr += sizeof(val);
     
@@ -320,11 +331,10 @@ void DNS::encodeRecord(const DNS::ResourceRecord& record, byte*& ptr) const
 }
 
 DNS::ResourceRecord::ResourceRecord(const std::vector<byte>& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const std::vector<byte>& rdata)
-    : m_address(address), m_type(typeVal), m_class(classVal), m_ttl(ttlVal), m_rdata(rdata)
+    : m_domain(address), m_type(typeVal), m_class(classVal), m_ttl(ttlVal), m_rdata(rdata)
 {
 }
 
-DNS::QuestionResourceRecord::QuestionResourceRecord(const std::vector<byte>& address, const byte2 typeVal, const byte2 classVal)
-    : m_address(address), m_type(typeVal), m_class(classVal)
-{
-}
+DNS::QuestionResourceRecord::QuestionResourceRecord(const std::string& address, const byte2 typeVal, const byte2 classVal)
+    : m_type(typeVal), m_class(classVal), m_domain(formatDomain(address))
+{}

@@ -1,11 +1,11 @@
 #include "ARPProtocol.h"
 #include "EndianHandler.h"
 #include <string>
-ARP::ARP(byte* data) : Protocol(AllProtocols::ARP), m_data(reinterpret_cast<ARPHeader*>(data))
+ARP::ARP(byte* data) : Protocol(), m_data(reinterpret_cast<ARPHeader*>(data))
 {}
 
 ARP::ARP(byte* data, HardwareType hardwareType, Ethernet::Protocols protocolType)
-	: Protocol(AllProtocols::ARP), m_data(reinterpret_cast<ARPHeader*>(data))
+	: Protocol(), m_data(reinterpret_cast<ARPHeader*>(data))
 {
 	m_size = ARP::BASE_SIZE;
 
@@ -75,28 +75,33 @@ size_t ARP::getSize() const
 	return m_size;
 }
 
+byte* ARP::addr() const
+{
+	return reinterpret_cast<byte*>(m_data);
+}
+
 ARP& ARP::opcode(const byte2 value)
 {
-	m_data->m_operation = EndiannessHandler::toNetworkEndian(value);
+	m_data->operation = Endianness::toNetwork(value);
 
 	return *this;
 }
 
 ARP& ARP::opcode(const OperationCode value)
 {
-	m_data->m_operation = EndiannessHandler::toNetworkEndian((byte2)value);
+	m_data->operation = Endianness::toNetwork((byte2)value);
 
 	return *this;
 }
 
 byte2 ARP::opcode() const
 {
-	return EndiannessHandler::fromNetworkEndian(m_data->m_operation);
+	return Endianness::fromNetwork(m_data->operation);
 }
 
 ARP& ARP::hardwareType(const byte2 value)
 {
-	m_data->m_hardwareType = EndiannessHandler::toNetworkEndian(value);
+	m_data->hardwareType = Endianness::toNetwork(value);
 
 	return *this;
 }
@@ -111,19 +116,19 @@ ARP& ARP::hardwareType(const HardwareType value)
 	default:
 		break;
 	}
-	m_data->m_hardwareType = EndiannessHandler::toNetworkEndian((byte2)value);
+	m_data->hardwareType = Endianness::toNetwork((byte2)value);
 
 	return *this;
 }
 
 byte2 ARP::hardwareType() const
 {
-	return EndiannessHandler::fromNetworkEndian(m_data->m_hardwareType);
+	return Endianness::fromNetwork(m_data->hardwareType);
 }
 
 ARP& ARP::protocol(const byte2 value)
 {
-	m_data->m_protocolType = value;
+	m_data->protocolType = value;
 
 	return *this;
 }
@@ -142,38 +147,38 @@ ARP& ARP::protocol(const Ethernet::Protocols value)
 		break;
 	}
 
-	m_data->m_protocolType = EndiannessHandler::toNetworkEndian((byte2)value);
+	m_data->protocolType = Endianness::toNetwork((byte2)value);
 
 	return *this;
 }
 
 byte2 ARP::protocol() const
 {
-	return EndiannessHandler::fromNetworkEndian(m_data->m_protocolType);
+	return Endianness::fromNetwork(m_data->protocolType);
 }
 
 ARP& ARP::hardwareLength(const byte value)
 {
-	m_data->m_hardwareLength = EndiannessHandler::toNetworkEndian(value);
+	m_data->hardwareLength = Endianness::toNetwork(value);
 
 	return *this;
 }
 
 byte ARP::hardwareLength() const
 {
-	return EndiannessHandler::fromNetworkEndian(m_data->m_hardwareLength);
+	return Endianness::fromNetwork(m_data->hardwareLength);
 }
 
 ARP& ARP::protocolLength(const byte value)
 {
-	m_data->m_protocolLength = EndiannessHandler::toNetworkEndian(value);
+	m_data->protocolLength = Endianness::toNetwork(value);
 
 	return *this;
 }
 
 byte ARP::protocolLength() const
 {
-	return EndiannessHandler::fromNetworkEndian(m_data->m_protocolLength);
+	return Endianness::fromNetwork(m_data->protocolLength);
 }
 
 ARP& ARP::senderHardwareAddr(const address::AddrMac mac)

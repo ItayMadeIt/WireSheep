@@ -10,13 +10,13 @@ using namespace address;
 
 struct ARPHeader
 {
-	byte2 m_hardwareType;
-	byte2 m_protocolType;
+	byte2 hardwareType;
+	byte2 protocolType;
 
-	byte m_hardwareLength;
-	byte m_protocolLength;
+	byte  hardwareLength;
+	byte  protocolLength;
 
-	byte2 m_operation;
+	byte2 operation;
 
 	// Sender Hardware address
 	// Sender Protocol address

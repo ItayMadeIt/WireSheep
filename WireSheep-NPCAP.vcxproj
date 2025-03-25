@@ -175,6 +175,7 @@
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="RawProtocol.cpp" />
     <ClCompile Include="SampleMain.cpp" />
+    <ClCompile Include="StaticVector.cpp" />
     <ClCompile Include="TCPProtocol.cpp" />
     <ClCompile Include="UDPProtocol.cpp" />
   </ItemGroup>
@@ -198,6 +199,7 @@
     <ClInclude Include="Packet.h" />
     <ClInclude Include="Protocol.h" />
     <ClInclude Include="RawProtocol.h" />
+    <ClInclude Include="StaticVector.hpp" />
     <ClInclude Include="TCPProtocol.h" />
     <ClInclude Include="TCPHeader.h" />
     <ClInclude Include="UDPProtocol.h" />

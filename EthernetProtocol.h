@@ -9,7 +9,7 @@ using namespace address;
 
 constexpr size_t ETHER_LEN_TYPE = 2;
 
-class Ethernet final : public Protocol 
+class Ethernet : public Protocol 
 {
 public: 
 	// full list: https://en.wikipedia.org/wiki/EtherType#Values
@@ -40,6 +40,8 @@ public:
 	virtual void encodePost(MutablePacket& packet, size_t protocolIndex) override;
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
+
+	virtual byte* addr() const override;
 
 public:
 	const static size_t BASE_SIZE = 14;

@@ -105,7 +105,7 @@ public:
 		OptionSelectiveAckPermitted();
 	};
 
-	// HAVE TO ADD MORE OPTIONS LATER
+	// CAN ADD MORE OPTIONS LATER
 
 public:
 	TCP();
@@ -160,6 +160,8 @@ public:
 	size_t getSize() const override;
 
 	void calculateOptionsSize();
+	
+	virtual byte* addr() const override { return nullptr; };
 
 protected:
 

@@ -6,40 +6,40 @@
 
 void TCP::writeToBuffer(byte* ptr) const
 {
-    byte2 var2 = EndiannessHandler::toNetworkEndian(m_srcPort);
+    byte2 var2 = Endianness::toNetwork(m_srcPort);
     std::memcpy(ptr, &var2, sizeof(var2));
     ptr += sizeof(var2);
 
-    var2 = EndiannessHandler::toNetworkEndian(m_dstPort);
+    var2 = Endianness::toNetwork(m_dstPort);
     std::memcpy(ptr, &var2, sizeof(var2));
     ptr += sizeof(var2);
 
-    byte4 var4 = EndiannessHandler::toNetworkEndian(m_seqNum);
+    byte4 var4 = Endianness::toNetwork(m_seqNum);
     std::memcpy(ptr, &var4, sizeof(var4));
     ptr += sizeof(var4);
 
-    var4 = EndiannessHandler::toNetworkEndian(m_ackNum);
+    var4 = Endianness::toNetwork(m_ackNum);
     std::memcpy(ptr, &var4, sizeof(var4));
     ptr += sizeof(var4);
 
     // only last four bits of data offset and 4 bits of reserved
-    byte var1 = EndiannessHandler::toNetworkEndian((byte)((m_dataOffset << 4) | (m_reserved)));
+    byte var1 = Endianness::toNetwork((byte)((m_dataOffset << 4) | (m_reserved)));
     std::memcpy(ptr, &var1, sizeof(var1));
     ptr += sizeof(var1);
 
-    var1 = EndiannessHandler::toNetworkEndian(m_flags);
+    var1 = Endianness::toNetwork(m_flags);
     std::memcpy(ptr, &var1, sizeof(var1));
     ptr += sizeof(var1);
 
-    var2 = EndiannessHandler::toNetworkEndian(m_window);
+    var2 = Endianness::toNetwork(m_window);
     std::memcpy(ptr, &var2, sizeof(var2));
     ptr += sizeof(var2);
 
-    var2 = EndiannessHandler::toNetworkEndian(m_checksum);
+    var2 = Endianness::toNetwork(m_checksum);
     std::memcpy(ptr, &var2, sizeof(var2));
     ptr += sizeof(var2);
 
-    var2 = EndiannessHandler::toNetworkEndian(m_urgentPtr);
+    var2 = Endianness::toNetwork(m_urgentPtr);
     std::memcpy(ptr, &var2, sizeof(var2));
     ptr += sizeof(var2);
     
@@ -64,6 +64,7 @@ void TCP::calculateOptionsSize()
         m_optionsSize += option->BASE_LENGTH;
     }
 }
+
 
 size_t TCP::getSize() const
 {
@@ -110,7 +111,7 @@ void TCP::addOptionsPadding(byte* ptr) const
     std::memset(ptr, 0, paddingLength);
 }
 
-TCP::TCP() : Protocol(AllProtocols::TCP),
+TCP::TCP() : Protocol(),
         m_seqNum(0), m_ackNum(0),
         m_srcPort(0), m_dstPort(0),
         m_flags(0), m_reserved(0),
@@ -121,7 +122,7 @@ TCP::TCP() : Protocol(AllProtocols::TCP),
 
 }
 
-TCP::TCP(const TCP& other) : Protocol(AllProtocols::TCP),
+TCP::TCP(const TCP& other) : Protocol(),
             m_seqNum(other.m_seqNum), m_ackNum(other.m_ackNum), 
             m_checksum(other.m_checksum), m_dataOffset(other.m_dataOffset), 
             m_srcPort(other.m_srcPort), m_dstPort(other.m_dstPort),
@@ -148,33 +149,30 @@ void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, cons
     byte2 tcpLength = buffer.size() - offset;
     checksumVal += tcpLength;
 
-    if (protocol->getProtocol() == AllProtocols::IPv4)
+    if (const IPv4* ipv4 = dynamic_cast<const IPv4*>(protocol))
     {
-        // Assume it will work
-        const IPv4* ipv4 = dynamic_cast<const IPv4*>(protocol);
-
         size_t ipv4Offset = offset - ipv4->getSize();
 
         // Add psuedo header
 
         AddrIPv4 addr = ipv4->src();
-        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
-        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
+        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
+        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
 
         addr = ipv4->dst();
-        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
-        checksumVal += EndiannessHandler::fromNetworkEndian(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
+        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
+        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
 
         checksumVal += (byte2)(ipv4->protocol());
 
-    }
-    else if (protocol->getProtocol() == AllProtocols::IPv6)
+    }/*
+    else if (const IPv6* ipv4 = dynamic_cast<const IPv4*>(protocol))
     {
         // Assume it will work
         // const IPv6* ipv6 = dynamic_cast<const IPv6*>(protocol);
 
         // Not implemented yet
-    }
+    }*/
     else
     {
         return;
@@ -188,7 +186,7 @@ void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, cons
 
     for (; iter < end; iter++)
     {
-        checksumVal += EndiannessHandler::fromNetworkEndian(*iter);
+        checksumVal += Endianness::fromNetwork(*iter);
     }
 
     // Handle the last leftover byte if the payload length is odd
@@ -206,7 +204,7 @@ void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, cons
     }
     m_checksum = ~checksumVal;
 
-    byte2 networkChecksum = EndiannessHandler::toNetworkEndian(m_checksum);
+    byte2 networkChecksum = Endianness::toNetwork(m_checksum);
 
     size_t headerChecksumOffset = offset + 16; // 6 = header checksum position relative to UDP start of the packet
     byte* checksumPtr = buffer.data() + headerChecksumOffset;
@@ -392,7 +390,7 @@ void TCP::OptionMaxSegmentSize::encode(byte* ptr) const
     Option::encode(ptr);
     ptr += Option::BASE_LENGTH;
 
-    byte2 val = EndiannessHandler::toNetworkEndian(m_maxSegmentSize);
+    byte2 val = Endianness::toNetwork(m_maxSegmentSize);
     std::memcpy(ptr, &val, sizeof(val));
 }
 

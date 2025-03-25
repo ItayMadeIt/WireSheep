@@ -1,61 +1,42 @@
 #include "RawProtocol.h"
 
-Raw::Raw() : Protocol(AllProtocols::Raw)
+Raw::Raw(byte* data)
+    : Protocol(), m_size(0), m_data(data)
 {
-
 }
 
-Raw& Raw::push_back(const byte value)
+Raw& Raw::pushBack(const byte value, MutablePacket& packet)
 {
-    m_data.push_back(value);
+    packet.insertBytes(value, 1);
+
+    m_size++;
 
     return *this;
 }
 
-Raw& Raw::push_back(const byte* values, const size_t length)
+Raw& Raw::pushBack(const byte* values, const size_t length, MutablePacket& packet)
 {
-    size_t lastSize = m_data.size();
+    packet.insertByteArr(values, length);
 
-    m_data.resize(m_data.size() + length);
-    memcpy(m_data.data() + lastSize, values, length);
+    m_size += length;
 
     return *this;
 }
 
-Raw& Raw::push_back(const std::vector<byte>& values)
+Raw& Raw::pushBack(const std::vector<byte>& values, MutablePacket& packet)
 {
-    size_t lastSize = m_data.size();
+    packet.insertByteArr(values.data(), values.size());
 
-    m_data.resize(m_data.size() + values.size());
-    memcpy(m_data.data() + lastSize, values.data(), values.size());
+    m_size += values.size();
 
     return *this;
 }
 
-void Raw::writeToBuffer(byte* buffer) const
+byte* Raw::addr() const
 {
-    memcpy(buffer, m_data.data(), m_data.size());
+    return m_data;
 }
-
-void Raw::readFromBuffer(const byte* buffer, const size_t size)
-{
-}
-
-void Raw::encodeLayerPre(std::vector<byte>& buffer, const size_t offset)
-{
-    // Add data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data() + offset);
-}
-
-void Raw::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
-{
-    // Add data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data() + offset);
-}
-
 size_t Raw::getSize() const
 {
-    return m_data.size();
+    return m_size;
 }

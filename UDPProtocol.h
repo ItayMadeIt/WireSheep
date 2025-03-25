@@ -2,39 +2,42 @@
 
 #include "Protocol.h"
 #include "EndianHandler.h"
+#include "UDPHeader.h"
 
 class UDP : public Protocol
 {
 public:
-	UDP();
-	UDP(const byte2 src, const byte2 dst);
+	UDP(byte* data);
+	UDP(byte* data, const byte2 src, const byte2 dst);
 
 public:
+
+	UDP&  src(const byte2 value);
+	byte2 src() const;
+	
+	UDP&  dst(const byte2 value);
+	byte2 dst() const;
+	
+	UDP&  length(const byte2 value);
+	byte2 length() const;
+	
+	UDP&  checksum(const byte2 value);
+	byte2 checksum() const;
+
+	virtual byte* addr() const override;
+
+	virtual size_t getSize() const override;
+
+	virtual void encodePre(MutablePacket& packet, const size_t index) override;
+	virtual void encodePost(MutablePacket& packet, const size_t index)override;
+public:
+	const static size_t BASE_SIZE = 8; 
+
+protected:	
+	// will be replaced
 	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
 
-	UDP& src(const byte2 value) { m_src = value; return *this; }
-	byte2 src() { return m_src; } 
-	UDP& dst(const byte2 value) { m_dst = value; return *this; }
-	byte2 dst() { return m_dst; }
-	UDP& length(const byte2 value) { m_length = value; return *this; }
-	byte2 length() { return m_length; }
-	UDP& checksum(const byte2 value) { m_checksum = value; return *this; }
-	byte2 checksum() { return m_checksum; }
 
-	virtual void encodeLayerPre(std::vector<byte>& buffer, const size_t offset) override;
-	virtual void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
-public:
-	static const size_t Size = 8;
-
-protected:
-	byte2 m_src;            // source port (16 bits)
-	byte2 m_dst;            // destination port (16 bits)
-	byte2 m_length;         // length (16 bits)
-	byte2 m_checksum;       // checksum (16 bits)
-	
-	virtual void writeToBuffer(byte* buffer) const override;
-	virtual void readFromBuffer(const byte* buffer, const size_t size) override;
-
-	size_t getSize() const override;
+	UDPHeader* m_data;
 };
 

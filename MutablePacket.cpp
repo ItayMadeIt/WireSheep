@@ -1,7 +1,7 @@
 #include "MutablePacket.h"
 
 MutablePacket::MutablePacket() :
-    Packet(), m_protocolCount(0), m_protocolObjectSize(0)
+    Packet(), m_protocolCount(0), m_protocolEndOffset(0)
 {}
 
 void MutablePacket::compile()
@@ -13,7 +13,7 @@ void MutablePacket::compile()
 
 byte* MutablePacket::getPtrAtProtocol(size_t index)
 {
-	return m_buffer + m_protocolEntries[index].m_offset;
+	return m_buffer + m_protocolEntries[index].m_dataOffset;
 }
 
 void MutablePacket::shiftFromOffset(size_t index, size_t amount)
@@ -36,7 +36,7 @@ void MutablePacket::shiftFromOffset(size_t index, size_t amount)
 	m_curSize += amount;
 }
 
-void MutablePacket::insertBytes(byte value, size_t amount)
+void MutablePacket::insertBytes(const byte value, size_t amount)
 {
 	if (amount == 0)
 	{
@@ -45,7 +45,21 @@ void MutablePacket::insertBytes(byte value, size_t amount)
 
 	std::size_t offset = m_curSize;
 	
-	std::memcpy(m_buffer + offset, m_buffer + offset + amount - 1, amount);
+	std::memset(m_buffer + offset, value, amount);
+
+	m_curSize += amount;
+}
+
+void MutablePacket::insertByteArr(const byte* byteArr, size_t amount)
+{
+	if (amount == 0)
+	{
+		return;
+	}
+
+	std::size_t offset = m_curSize;
+
+	std::memcpy(m_buffer + offset, byteArr, amount);
 
 	m_curSize += amount;
 }
@@ -59,8 +73,12 @@ void MutablePacket::prePass()
 {
 	for (size_t i = 0; i < m_protocolCount; i++)
 	{
-		size_t offset = m_protocolEntries[i].m_offset;
-		Protocol& proto = *reinterpret_cast<Protocol*>(m_protocolObjects.data() + i * sizeof(Protocol));
+		size_t offset = m_protocolEntries[i].m_objectOffset;
+
+		Protocol& proto = *reinterpret_cast<Protocol*>(
+			static_cast<void*>(&m_protocolObjects[offset])
+		);
+
 		proto.encodePre(*this, i);
 	}
 }
@@ -69,9 +87,13 @@ void MutablePacket::postPass()
 {
 	for (signed long i = m_protocolCount - 1; i >= 0; i--)
 	{
-		size_t offset = m_protocolEntries[i].m_offset;
-		Protocol& proto = *reinterpret_cast<Protocol*>(m_protocolObjects.data() + i * sizeof(Protocol));
-		proto.encodePre(*this, i);
+		size_t offset = m_protocolEntries[i].m_objectOffset;
+
+		Protocol& proto = *reinterpret_cast<Protocol*>(
+			static_cast<void*>(&m_protocolObjects[offset])
+		);
+
+		proto.encodePost(*this, i);
 	}
 }
 

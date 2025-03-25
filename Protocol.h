@@ -10,11 +10,21 @@ class MutablePacket;
 class Protocol
 {
 public:
-	Protocol(const AllProtocols protocol);
+	Protocol();
 	Protocol(const Protocol& other);
 	virtual ~Protocol() = default;
 	Protocol(Protocol&& other);
-	
+
+	virtual void encodePre(MutablePacket& packet, const size_t protocolIndex);
+	virtual void encodePost(MutablePacket& packet, const  size_t protocolIndex);
+
+	virtual size_t getSize() const = 0;
+
+	virtual byte* addr() const = 0;
+
+	/*
+		EVERYTHING FROM ON WILL BE REMOVED
+	*/
 	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol);
 
 	/// <summary>
@@ -55,17 +65,6 @@ public:
 	/// <param name="offset">Offset from buffer start</param>
 	virtual void encodeLayerPostRaw(std::vector<byte>& buffer, const size_t offset) const;
 
-	bool includesChecksum() const;
-
-
-	virtual void encodePre(MutablePacket& packet, size_t protocolIndex);
-	virtual void encodePost(MutablePacket& packet, size_t protocolIndex);
-
-
-	AllProtocols getProtocol() const;
-	virtual size_t getSize() const = 0;
-	
-
 protected:
 	/// <summary>
 	/// Serialize protocol data from the class into the array (ptr)
@@ -85,11 +84,4 @@ protected:
 	{
 		// Will be removed 
 	};
-
-
-	// Will be removed
-	bool m_includesChecksum;
-
-private:
-	AllProtocols m_protocolType;
 };
