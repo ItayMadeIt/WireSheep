@@ -175,7 +175,6 @@
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="RawProtocol.cpp" />
     <ClCompile Include="SampleMain.cpp" />
-    <ClCompile Include="StaticVector.cpp" />
     <ClCompile Include="TCPProtocol.cpp" />
     <ClCompile Include="UDPProtocol.cpp" />
   </ItemGroup>

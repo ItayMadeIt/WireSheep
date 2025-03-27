@@ -189,6 +189,11 @@ size_t IPv4::getSize() const
     return ihl() * 4;
 }
 
+void IPv4::addr(byte* address)
+{
+    m_data = reinterpret_cast<IPv4Header*>(address);
+}
+
 byte* IPv4::addr() const
 {
     return reinterpret_cast<byte*>(m_data);

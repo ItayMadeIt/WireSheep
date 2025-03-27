@@ -137,6 +137,7 @@ public:
 
 	virtual size_t getSize() const override;
 	
+	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
 
 	virtual void encodePre(MutablePacket& packet, const size_t index) override;
@@ -146,6 +147,7 @@ public:
 	const static size_t BASE_SIZE = 20; // min size of 20 bytes
 
 protected:
+
 	const static byte IHL_MIN_SIZE = 5;
 
 protected:

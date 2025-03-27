@@ -2,6 +2,7 @@
 
 #include "Protocol.h"
 #include <type_traits> 
+#include "TCPHeader.h"
 
 class TCP : public Protocol
 {
@@ -160,8 +161,9 @@ public:
 	size_t getSize() const override;
 
 	void calculateOptionsSize();
-	
-	virtual byte* addr() const override { return nullptr; };
+
+	virtual void addr(byte* address) override;
+	virtual byte* addr() const override;
 
 protected:
 
@@ -175,6 +177,8 @@ protected:
 
 protected:
 	const static size_t SIZE = 20; // header size: 20 bytes
+
+	TCPHeader* m_data;
 
 	byte2 m_srcPort;           // 16 bits
 	byte2 m_dstPort;           // 16 bits

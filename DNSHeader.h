@@ -10,10 +10,10 @@ struct DNSHeader
 {
 	byte2 transactionID;
 	byte2 flags;
-	byte2 amountQuestions;
-	byte2 amountAnswers;
-	byte2 amountAuthoritiveRR;
-	byte2 amountAdditionalRR;
+	byte2 questionsLength;
+	byte2 answerLength;
+	byte2 authoritiveRRLength;
+	byte2 additionalRRLength;
 };
 
-#pragma pack(pop
+#pragma pack(pop)

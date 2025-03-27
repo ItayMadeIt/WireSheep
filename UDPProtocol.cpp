@@ -53,6 +53,11 @@ byte2 UDP::checksum() const
 	return Endianness::fromNetwork(m_data->checksum);
 }
 
+void UDP::addr(byte* address)
+{
+	m_data = reinterpret_cast<UDPHeader*>(address);
+}
+
 byte* UDP::addr() const
 {
 	return reinterpret_cast<byte*>(m_data);

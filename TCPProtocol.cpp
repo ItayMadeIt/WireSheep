@@ -65,6 +65,16 @@ void TCP::calculateOptionsSize()
     }
 }
 
+void TCP::addr(byte* address)
+{
+    m_data = reinterpret_cast<TCPHeader*>(address);
+}
+
+byte* TCP::addr() const
+{
+    return reinterpret_cast<byte*>(m_data);
+}
+
 
 size_t TCP::getSize() const
 {

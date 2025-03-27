@@ -1,9 +1,13 @@
+#include <stdexcept>
+
 template<typename T, size_t Capacity>
 class StaticVector 
 {
 public:
-
+    StaticVector();
     StaticVector(const StaticVector<T, Capacity>& other);
+    StaticVector(const void* begin, const void* end);
+    StaticVector(const char* str);
 
     constexpr size_t capacity() const;
     size_t size() const;
@@ -21,9 +25,15 @@ public:
     const T* end() const;
 
 private:
-    T m_data[Capacity];
+    T m_data[Capacity * sizeof(T)];
     size_t m_size = 0;
 };
+
+template<typename T, size_t Capacity>
+inline StaticVector<T, Capacity>::StaticVector()
+    : m_data{}
+{
+}
 
 template<typename T, size_t Capacity>
 inline StaticVector<T, Capacity>::StaticVector(const StaticVector<T, Capacity>& other)
@@ -33,6 +43,36 @@ inline StaticVector<T, Capacity>::StaticVector(const StaticVector<T, Capacity>& 
     {
         m_data[i] = other.m_data[i];
     }
+}
+
+template<typename T, size_t Capacity>
+inline StaticVector<T, Capacity>::StaticVector(const void* begin, const void* end)
+{
+    const byte* beginPtr = reinterpret_cast<const byte*>(begin);
+    const byte* endPtr = reinterpret_cast<const byte*>(end);
+
+    resize(endPtr - beginPtr);
+
+    std::memcpy(m_data, beginPtr, m_size);
+}
+
+template<typename T, size_t Capacity>
+inline StaticVector<T, Capacity>::StaticVector(const char* str)
+{
+    size_t index = 0;
+
+    while (str[index] != '\0' && index < Capacity)
+    {
+        m_data[index] = str[index];
+        index++;
+    }
+
+    if (index < Capacity)
+    {
+        m_data[index++] = '\0';
+    }
+
+    m_size = index;
 }
 
 template<typename T, size_t Capacity>
@@ -56,15 +96,20 @@ inline bool StaticVector<T, Capacity>::empty() const
 template<typename T, size_t Capacity>
 inline void StaticVector<T, Capacity>::push_back(const T& val)
 {
-    if (m_size + 1 >= Capacity)
+    if (m_size + sizeof(T) >= Capacity)
         throw std::overflow_error("StaticVector overflow");
 
-    m_data[m_size++] = val;
+    T* ptr = reinterpret_cast<T*>(&m_data[m_size]);
+    *ptr = val;
+
+    m_size += sizeof(T);
 }
 
 template<typename T, size_t Capacity>
-inline void StaticVector<T, Capacity>::resize(size_t newSize, const T& val)
+inline void StaticVector<T, Capacity>::resize(size_t newCount, const T& val)
 {
+    size_t newSize = newCount * sizeof(T); 
+
     if (newSize > Capacity)
     {
         throw std::overflow_error("Resize overflow");
@@ -72,7 +117,8 @@ inline void StaticVector<T, Capacity>::resize(size_t newSize, const T& val)
 
     while (m_size < newSize)
     {
-        m_data[m_size++] = val;
+        m_data[m_size] = val;
+        m_size += sizeof(T);
     }
 
     m_size = newSize;

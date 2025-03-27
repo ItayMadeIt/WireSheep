@@ -75,6 +75,11 @@ size_t ARP::getSize() const
 	return m_size;
 }
 
+void ARP::addr(byte* address)
+{
+	m_data = reinterpret_cast<ARPHeader*>(address);
+}
+
 byte* ARP::addr() const
 {
 	return reinterpret_cast<byte*>(m_data);

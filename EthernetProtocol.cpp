@@ -55,6 +55,11 @@ void Ethernet::encodePost(MutablePacket& packet, size_t protocolIndex)
 	}
 }
 
+void Ethernet::addr(byte* address)
+{
+	m_data = reinterpret_cast<EthernetHeader*>(address);
+}
+
 byte* Ethernet::addr() const
 {
 	return reinterpret_cast<byte*>(m_data);

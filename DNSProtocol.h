@@ -2,9 +2,10 @@
 #include "Protocol.h"
 #include "EndianHandler.h"
 #include "StaticVector.hpp"
+#include "DNSHeader.h"
 
 constexpr size_t MAX_RDATA_SIZE = 1024; // set 1024 bytes limit (mostly used for 1 IPv4 or similar)
-constexpr size_t MAX_DOMAIN_SIZE = 4096; // 2048 is the limit
+constexpr size_t MAX_DOMAIN_SIZE = 2304; // 2048 is the limit
 using RDataBytes = StaticVector<byte, MAX_RDATA_SIZE>;
 using DomainBytes = StaticVector<byte, MAX_DOMAIN_SIZE>;
 
@@ -127,7 +128,7 @@ public:
 	// for now everything is public
 	public:
 		// default constructor
-		ResourceRecord(const std::vector<byte>& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const std::vector<byte>& rdata);
+		ResourceRecord(const DomainBytes& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const RDataBytes& rdata);
 		
 		// Resource address
 		DomainBytes m_domain;
@@ -151,8 +152,9 @@ public:
 	// for now everything is public
 	public:
 
-		// default constructor
 		QuestionResourceRecord(const std::string& domain, const byte2 typeVal, const byte2 classVal);
+		
+		QuestionResourceRecord(const DomainBytes& domain, const byte2 typeVal, const byte2 classVal);
 		
 		// Resource address
 		DomainBytes m_domain;
@@ -165,23 +167,23 @@ public:
 	};
 
 	static DomainBytes formatDomain(const std::string& domain);
+	static DomainBytes consumeDomain(const byte* ptr);
 	
-	DNS();
+	DNS(byte* data);
 
-	template<typename IP>
-	DNS& addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass);
+	DNS& addQuestion(MutablePacket& packet, const DomainBytes& qAddr, byte2 qType, byte2 qClass);
 	QuestionResourceRecord getQuestionResponse(const size_t index);
 	DNS& popQuestion();
 
-	DNS& addAnswer(const std::string& aAddr, const byte2 aType, const byte2 aClass, const byte4 aTtl, const std::vector<byte>& aData);;
+	DNS& addAnswer(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
 	ResourceRecord getAnswerResponse(const size_t index);
 	DNS& popAnswer();
 
-	DNS& addAuthResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData);
+	DNS& addAuthResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
 	ResourceRecord getAuthResponse(const size_t index);
 	DNS& popAuthResponse();
 
-	DNS& addAdditionalResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData);
+	DNS& addAdditionalResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
 	ResourceRecord  getAdditionalResponse(const size_t index);
 	DNS& popAdditionalResponse();
 
@@ -189,37 +191,31 @@ public:
 	DNS& flags(FlagsIndices newFlags);
 	byte2 flags();
 
-	DNS& setQuestionLength    (const byte2 value);
-	DNS& setAnswersLength     (const byte2 value);
-	DNS& setAuthRRLength      (const byte2 value);
-	DNS& setAdditionalRRLength(const byte2 value);
+	DNS& questionLength    (const byte2 value);
+	byte2 questionLength() const;
+	DNS& answersLength     (const byte2 value);
+	byte2 answersLength() const;
+	DNS& authRRLength      (const byte2 value);
+	byte2 authRRLength() const;
+	DNS& additionalRRLength(const byte2 value);
+	byte2 additionalRRLength() const;
 
-public:
-	const static size_t SIZE = 12; // min size of 12 bytes
-
-protected:
-	byte2 m_transcationID;
-	byte* m_answersPtr;
-	byte* m_authRRPtr;
-	byte* m_additionalRRPtr;
-
-	byte2 m_flags;
-
-	// Length
-	byte2 m_questionLength;
-	byte2 m_answerLength;
-	byte2 m_authLength;
-	byte2 m_additionalLength;
 
 	size_t getSize() const override;
 
-	void encodeLayerPre   (std::vector<byte>& buffer, const size_t offset) override;
-	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
+	virtual void addr(byte* address) override;
+	virtual byte* addr() const override;
+public:
+	const static size_t BASE_SIZE = 12; // min size of 12 bytes
 
 protected:
-	void writeToBuffer(byte* buffer) const override;
-	void readFromBuffer(const byte* buffer, const size_t size) override;
+	DNSHeader* m_data;
 
-	void encodeRecord(const DNS::ResourceRecord& record, byte*& ptr) const;
+	byte2 m_questionsEndLoc;
+	byte2 m_answersEndLoc;
+	byte2 m_authRREndLoc;
+	byte2 m_additionalRREndLoc;
+	//void encodeLayerPre   (std::vector<byte>& buffer, const size_t offset) override;
+
 };
 

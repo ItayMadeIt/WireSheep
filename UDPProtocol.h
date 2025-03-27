@@ -24,6 +24,7 @@ public:
 	UDP&  checksum(const byte2 value);
 	byte2 checksum() const;
 
+	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
 
 	virtual size_t getSize() const override;

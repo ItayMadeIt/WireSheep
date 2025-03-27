@@ -32,10 +32,16 @@ Raw& Raw::pushBack(const std::vector<byte>& values, MutablePacket& packet)
     return *this;
 }
 
+void Raw::addr(byte* address)
+{
+    m_data = address;
+}
+
 byte* Raw::addr() const
 {
     return m_data;
 }
+
 size_t Raw::getSize() const
 {
     return m_size;

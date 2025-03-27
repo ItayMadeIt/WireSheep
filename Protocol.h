@@ -20,11 +20,13 @@ public:
 
 	virtual size_t getSize() const = 0;
 
+	virtual void addr(byte* address) = 0;
 	virtual byte* addr() const = 0;
 
 	/*
 		EVERYTHING FROM ON WILL BE REMOVED
 	*/
+
 	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol);
 
 	/// <summary>

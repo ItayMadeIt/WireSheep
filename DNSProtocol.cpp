@@ -3,7 +3,7 @@
 
 DomainBytes DNS::formatDomain(const std::string& domain)
 {
-    DomainBytes result{};
+    DomainBytes result;
     size_t writeIndex = 0;
 
     size_t startIndex = 0;
@@ -47,294 +47,536 @@ DomainBytes DNS::formatDomain(const std::string& domain)
     // null terminator
     result[writeIndex++] = 0;
 
+    result.resize(writeIndex);
+
     return result;
 }
 
-
-DNS::DNS() : Protocol(), m_flags(0)
+DomainBytes DNS::consumeDomain(const byte* ptr)
 {
+    return { reinterpret_cast<const char*>(ptr) };
 }
 
-DNS& DNS::addQuestion(const std::string& qAddr, const byte2 qType, const byte2 qClass)
+DNS::DNS(byte* data)
+    : m_data(reinterpret_cast<DNSHeader*>(data))
 {
-    QuestionResourceRecord q{qAddr, qType, qClass };
+    std::memset(m_data, 0, BASE_SIZE);
+
+    m_questionsEndLoc = BASE_SIZE;
+    m_answersEndLoc = BASE_SIZE;
+    m_authRREndLoc = BASE_SIZE;
+    m_additionalRREndLoc = BASE_SIZE;
+}
+
+DNS& DNS::addQuestion(MutablePacket& packet, const DomainBytes& qAddr, byte2 qType, byte2 qClass)
+{
+    questionLength(questionLength() + 1);
+
+    qType = Endianness::toNetwork(qType);
+    qClass = Endianness::toNetwork(qClass);
+
+    QuestionResourceRecord record(qAddr, qType, qClass);
+    
+    packet.shiftFromAddr(
+        reinterpret_cast<byte*>(m_data) + m_questionsEndLoc, 
+        record.m_domain.size() + sizeof(record.m_type) + sizeof(record.m_class)
+    );
+
+    std::memcpy(addr() + m_questionsEndLoc, record.m_domain.begin(), record.m_domain.size());
+    m_questionsEndLoc += record.m_domain.size();
+
+    std::memcpy(addr() + m_questionsEndLoc, &record.m_type, sizeof(record.m_type));
+    m_questionsEndLoc += sizeof(record.m_type);
+
+    std::memcpy(addr() + m_questionsEndLoc, &record.m_class, sizeof(record.m_class));
+    m_questionsEndLoc += sizeof(record.m_class);
 
     return *this;
 }
 
 DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index)
 {
-    return m_questions[index];
+    // ptr to questions begin
+    byte* ptr = reinterpret_cast<byte*>(m_data) + sizeof(byte2) * 6; 
+
+    for (size_t i = 0; i < index; i++)
+    {
+        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        {
+            ptr += 2;
+        }
+        else
+        {
+            while (*ptr)
+            {
+                byte len = *ptr;
+                ptr += len + 1;
+            }
+            ptr++;
+        }
+
+        ptr += 2 + 2 + 4;
+    }
+
+
+    DomainBytes domain = consumeDomain(ptr);
+    ptr += domain.size();
+
+    byte2 netType = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(netType);
+
+    byte2 netClass = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+
+
+    return QuestionResourceRecord(
+        domain,
+        netType,
+        netClass
+    );
 }
 
 DNS& DNS::popQuestion()
 {
-    m_questions.pop_back();
-
-    return *this;
+    throw std::runtime_error("No implementation");
 }
 
-DNS& DNS::addAnswer(const std::string& aAddr, const byte2 aType, const byte2 aClass, const byte4 aTtl, const std::vector<byte>& aData)
+DNS& DNS::addAnswer(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData)
 {
-    m_answers.emplace_back(DNS::formatDomain(aAddr), aType, aClass, aTtl, aData);
+    answersLength(answersLength() + 1);
 
+    aType = Endianness::toNetwork(aType);
+    aClass = Endianness::toNetwork(aClass);
+    aTtl = Endianness::toNetwork(aTtl);
+    byte2 rdataSize = Endianness::toNetwork(static_cast<byte2>(aData.size()));
+
+    ResourceRecord record(aAddr, aType, aClass, aTtl, aData);
+
+    packet.shiftFromAddr(
+        reinterpret_cast<byte*>(m_data) + m_answersEndLoc,
+        record.m_domain.size() + sizeof(record.m_type) + sizeof(record.m_class) + sizeof(record.m_ttl) + sizeof(byte2) + record.m_rdata.size()
+    );
+
+
+    std::memcpy(addr() + m_answersEndLoc, record.m_domain.begin(), record.m_domain.size());
+    m_answersEndLoc += record.m_domain.size();
+
+    std::memcpy(addr() + m_answersEndLoc, &record.m_type, sizeof(record.m_type));
+    m_answersEndLoc += sizeof(record.m_type);
+
+    std::memcpy(addr() + m_answersEndLoc, &record.m_class, sizeof(record.m_class));
+    m_answersEndLoc += sizeof(record.m_class);
+
+    std::memcpy(addr() + m_answersEndLoc, &record.m_ttl, sizeof(record.m_ttl));
+    m_answersEndLoc += sizeof(record.m_ttl);
+
+    std::memcpy(addr() + m_answersEndLoc, &rdataSize, sizeof(rdataSize));
+    m_answersEndLoc += sizeof(rdataSize);
+
+    std::memcpy(addr() + m_answersEndLoc, aData.begin(), rdataSize);
+    m_answersEndLoc += sizeof(rdataSize);
     return *this;
 }
 
 DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)
 {
-    return m_answers[index];
+    // ptr to questions begin
+    byte* ptr = reinterpret_cast<byte*>(m_data) + m_questionsEndLoc;
+
+    for (size_t i = 0; i < index; i++)
+    {
+        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        {
+            ptr += 2;
+        }
+        else
+        {
+            while (*ptr)
+            {
+                byte len = *ptr;
+                ptr += len + 1;
+            }
+            ptr++;
+        }
+
+        ptr += 2 + 2 + 4;
+
+        byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+        ptr += 2 + rdlength;
+    }
+
+    DomainBytes domain = consumeDomain(ptr);
+    ptr += domain.size();
+
+    byte2 netType = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(netType);
+
+    byte2 netClass = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(netClass);
+
+    byte4 netTtl = Endianness::fromNetwork(*reinterpret_cast<byte4*>(ptr));
+    ptr += sizeof(netTtl);
+
+    byte2 rdataLength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(rdataLength);
+
+    RDataBytes rdata{ ptr, ptr + rdataLength };
+
+    return ResourceRecord(
+        domain,
+        netType,
+        netClass,
+        netTtl,
+        rdata
+    );
 }
 
 DNS& DNS::popAnswer()
 {
-    m_answers.pop_back();
-
-    return *this;
+    throw std::runtime_error("No implementation");
 }
 
-DNS& DNS::addAuthResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData)
+DNS& DNS::addAuthResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData)
 {
-    m_authRR.emplace_back(DNS::formatDomain(arAddr), arType, arClass, arTtl, arData);
+    authRRLength(authRRLength() + 1);
 
+    aType = Endianness::toNetwork(aType);
+    aClass = Endianness::toNetwork(aClass);
+    aTtl = Endianness::toNetwork(aTtl);
+    byte2 rdataSize = Endianness::toNetwork(static_cast<byte2>(aData.size()));
+
+    ResourceRecord record(aAddr, aType, aClass, aTtl, aData);
+
+    packet.shiftFromAddr(
+        reinterpret_cast<byte*>(m_data) + m_authRREndLoc,
+        record.m_domain.size() + sizeof(record.m_type) + sizeof(record.m_class) + sizeof(record.m_ttl) + record.m_rdata.size()
+    );
+
+    std::memcpy(addr() + m_authRREndLoc, record.m_domain.begin(), record.m_domain.size());
+    m_authRREndLoc += record.m_domain.size();
+
+    std::memcpy(addr() + m_authRREndLoc, &record.m_type, sizeof(record.m_type));
+    m_authRREndLoc += sizeof(record.m_type);
+
+    std::memcpy(addr() + m_authRREndLoc, &record.m_class, sizeof(record.m_class));
+    m_authRREndLoc += sizeof(record.m_class);
+
+    std::memcpy(addr() + m_authRREndLoc, &record.m_ttl, sizeof(record.m_ttl));
+    m_authRREndLoc += sizeof(record.m_ttl);
+
+    std::memcpy(addr() + m_authRREndLoc, &rdataSize, sizeof(rdataSize));
+    m_authRREndLoc += sizeof(rdataSize);
+
+    std::memcpy(addr() + m_authRREndLoc, aData.begin(), rdataSize);
+    m_authRREndLoc += sizeof(rdataSize);
     return *this;
 }
 
 DNS::ResourceRecord DNS::getAuthResponse(const size_t index)
 {
-    return m_authRR[index];
+    // ptr to auth begin
+    byte* ptr = reinterpret_cast<byte*>(m_data) + m_answersEndLoc;
+
+    for (size_t i = 0; i < index; i++)
+    {
+        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        {
+            ptr += 2;
+        }
+        else
+        {
+            while (*ptr)
+            {
+                byte len = *ptr;
+                ptr += len + 1;
+            }
+            ptr++;
+        }
+
+        ptr += 2 + 2 + 4;
+
+        byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+        ptr += 2 + rdlength;
+    }
+
+
+    DomainBytes domain = consumeDomain(ptr);
+    ptr += domain.size();
+
+    byte2 netType = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(netType);
+
+    byte2 netClass = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(netClass);
+
+    byte4 netTtl = Endianness::fromNetwork(*reinterpret_cast<byte4*>(ptr));
+    ptr += sizeof(netTtl);
+
+    byte2 rdataLength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(rdataLength);
+
+    RDataBytes rdata{ ptr, ptr + rdataLength };
+
+    return ResourceRecord(
+        domain,
+        netType,
+        netClass,
+        netTtl,
+        rdata
+    );
+
 }
 
 DNS& DNS::popAuthResponse()
 {
-    m_authRR.pop_back();
-
-    return *this;
+    throw std::runtime_error("No implementation");
 }
 
-DNS& DNS::addAdditionalResponse(const std::string& arAddr, const byte2 arType, const byte2 arClass, const byte4 arTtl, const std::vector<byte>& arData)
+DNS& DNS::addAdditionalResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData)
 {
-    m_additionalRR.emplace_back(DNS::formatDomain(arAddr), arType, arClass, arTtl, arData);
+    additionalRRLength(additionalRRLength() + 1);
+
+    aType = Endianness::toNetwork(aType);
+    aClass = Endianness::toNetwork(aClass);
+    aTtl = Endianness::toNetwork(aTtl);
+    byte2 rdataSize = Endianness::toNetwork(static_cast<byte2>(aData.size()));
+
+    ResourceRecord record(aAddr, aType, aClass, aTtl, aData);
+
+    packet.shiftFromAddr(
+        reinterpret_cast<byte*>(m_data) + m_additionalRREndLoc,
+        record.m_domain.size() + sizeof(record.m_type) + sizeof(record.m_class) + sizeof(record.m_ttl) + record.m_rdata.size()
+    );
+
+    std::memcpy(addr() + m_additionalRREndLoc, record.m_domain.begin(), record.m_domain.size());
+    m_additionalRREndLoc += record.m_domain.size();
+
+    std::memcpy(addr() + m_additionalRREndLoc, &record.m_type, sizeof(record.m_type));
+    m_additionalRREndLoc += sizeof(record.m_type);
+
+    std::memcpy(addr() + m_additionalRREndLoc, &record.m_class, sizeof(record.m_class));
+    m_additionalRREndLoc += sizeof(record.m_class);
+
+    std::memcpy(addr() + m_additionalRREndLoc, &record.m_ttl, sizeof(record.m_ttl));
+    m_additionalRREndLoc += sizeof(record.m_ttl);
+
+    std::memcpy(addr() + m_additionalRREndLoc, &rdataSize, sizeof(rdataSize));
+    m_additionalRREndLoc += sizeof(rdataSize);
+
+    std::memcpy(addr() + m_additionalRREndLoc, aData.begin(), rdataSize);
+    m_additionalRREndLoc += sizeof(rdataSize);
 
     return *this;
 }
 
 DNS::ResourceRecord DNS::getAdditionalResponse(const size_t index)
 {
-    return m_additionalRR[index];
+    // ptr to additional answers begin
+    byte* ptr = reinterpret_cast<byte*>(m_data) + m_authRREndLoc;
+    
+    for (size_t i = 0; i < index; i++)
+    {
+        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        {
+            ptr += 2;
+        }
+        else
+        {
+            while (*ptr)
+            {
+                byte len = *ptr;
+                ptr += len + 1;
+            }
+            ptr++;
+        }
+
+        ptr += 2 + 2 + 4;
+
+        byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+        ptr += 2 + rdlength;
+    }
+
+    DomainBytes domain = consumeDomain(ptr);
+    ptr += domain.size();
+
+    byte2 netType = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(netType);
+
+    byte2 netClass = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(netClass);
+
+    byte4 netTtl = Endianness::fromNetwork(*reinterpret_cast<byte4*>(ptr));
+    ptr += sizeof(netTtl);
+
+    byte2 rdataLength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += sizeof(rdataLength);
+
+    RDataBytes rdata{ ptr, ptr + rdataLength };
+
+    return ResourceRecord(
+        domain,
+        netType,
+        netClass,
+        netTtl,
+        rdata
+    );
 }
 
 DNS& DNS::popAdditionalResponse()
 {
-    m_additionalRR.pop_back();
-
-    return *this;
+    throw std::runtime_error("No implementation");
 }
 
 DNS& DNS::flags(byte2 newFlags)
 {
-    m_flags = newFlags;
+    m_data->flags = Endianness::toNetwork(newFlags);
 
     return *this;
 }
 
 DNS& DNS::flags(FlagsIndices newFlags)
 {
-    m_flags = (byte2)newFlags;
-
-    return *this;
+    return flags((byte2)newFlags);
 }
 
 byte2 DNS::flags()
 {
-    return m_flags;
+    return m_data->flags;
 }
 
-DNS& DNS::setQuestionLength(const byte2 value)
+DNS& DNS::questionLength(const byte2 value)
 {
-    m_questionLength = value;
+    m_data->questionsLength = Endianness::toNetwork(value);
 
     return *this;
 }
 
-DNS& DNS::setAnswersLength(const byte2 value)
+byte2 DNS::questionLength() const
 {
-    m_answerLength = value;
+    return Endianness::fromNetwork(m_data->questionsLength);
+}
+
+DNS& DNS::answersLength(const byte2 value)
+{
+    m_data->answerLength = Endianness::toNetwork(value);;
 
     return *this;
 }
 
-DNS& DNS::setAuthRRLength(const byte2 value)
+byte2 DNS::answersLength() const
 {
-    m_authLength = value;
+    return Endianness::fromNetwork(m_data->answerLength);
+}
+
+DNS& DNS::authRRLength(const byte2 value)
+{
+    m_data->authoritiveRRLength = Endianness::toNetwork(value);;
 
     return *this;
 }
 
-DNS& DNS::setAdditionalRRLength(const byte2 value)
+byte2 DNS::authRRLength() const
 {
-    m_additionalLength = value;
+    return Endianness::fromNetwork(m_data->authoritiveRRLength);
+}
+
+DNS& DNS::additionalRRLength(const byte2 value)
+{
+    m_data->additionalRRLength = Endianness::toNetwork(value);;
 
     return *this;
 }
 
-
-void DNS::writeToBuffer(byte* buffer) const
+byte2 DNS::additionalRRLength() const
 {
-    byte2 var;
-
-    // Add values in the header: 
-    var = Endianness::toNetwork(m_transcationID);
-    std::memcpy(buffer, &var, sizeof(m_transcationID));
-    buffer += sizeof(m_transcationID);
-
-    var = Endianness::toNetwork(m_flags);
-    std::memcpy(buffer, &var, sizeof(m_flags));
-    buffer += sizeof(var);
-
-    var = Endianness::toNetwork(static_cast<byte2>(m_questions.size()));
-    std::memcpy(buffer, &var, sizeof(var));
-    buffer += sizeof(var);
-
-    var = Endianness::toNetwork(m_answers.size());
-    std::memcpy(buffer, &var, sizeof(m_answers));
-    buffer += sizeof(var);
-
-    var = Endianness::toNetwork(m_authRR.size());
-    std::memcpy(buffer, &var, sizeof(m_authRR));
-    buffer += sizeof(var);
-
-    var = Endianness::toNetwork(m_additionalRR.size());
-    std::memcpy(buffer, &var, sizeof(m_additionalRR));
-    buffer += sizeof(var);
-
-    // Add the resource records
-
-    for (const DNS::QuestionResourceRecord& q : m_questions)
-    {
-        // Copy the address
-        std::memcpy(buffer, q.m_domain.data(), q.m_domain.size());
-        buffer += q.m_domain.size();
-
-        // Copy all other question data
-        var = Endianness::toNetwork(q.m_type);
-        std::memcpy(buffer, &var, sizeof(var));
-        buffer += sizeof(var);
-
-        var = Endianness::toNetwork(q.m_class);
-        std::memcpy(buffer, &var, sizeof(var));
-        buffer += sizeof(var);
-    }
-    
-    for (const DNS::ResourceRecord& ans : m_answers)
-    {
-        encodeRecord(ans, buffer);
-    }
-    for (const DNS::ResourceRecord rr : m_authRR)
-    {
-        encodeRecord(rr, buffer);
-    }
-    for (const DNS::ResourceRecord rr : m_additionalRR)
-    {
-        encodeRecord(rr, buffer);
-    }
-
+    return Endianness::fromNetwork(m_data->additionalRRLength);
 }
-
-void DNS::readFromBuffer(const byte* buffer, const size_t size)
-{
-    // Not implemented yet
-}
-
 
 size_t DNS::getSize() const
 {
-    size_t headerSize = sizeof(m_transcationID) + sizeof(m_flags) + sizeof(byte2) + sizeof(byte2) + sizeof(byte2) + sizeof(byte2);
-    size_t payloadSize = 0;
+    constexpr size_t headerSize = sizeof(m_data->transactionID) + sizeof(m_data->flags) + 
+        sizeof(m_data->questionsLength) + sizeof(m_data->answerLength) + sizeof(m_data->authoritiveRRLength) + sizeof(m_data->additionalRRLength);
 
-    if (!(m_flags & (byte)DNS::FlagsIndices::QR))
+    byte* ptr = (byte*)m_data + headerSize;
+
+    // Go over questions
+    byte2 questions = questionLength();
+
+    while (questions)
     {
-        for (const DNS::QuestionResourceRecord& q : m_questions)
+        while (*ptr)
         {
-            payloadSize += (q.m_domain.size()) + sizeof(q.m_class) + sizeof(q.m_type);
-        }
-    }
-    // If it's a responses
-    else
-    {
-        for (const DNS::ResourceRecord& ans : m_answers)
-        {
-            payloadSize += (ans.m_address.size()) + sizeof(ans.m_type) + sizeof(ans.m_class) + 
-                sizeof(ans.m_ttl) + sizeof(byte2) + ans.m_rdata.size();
+            byte size = *ptr;
+            ptr += size + 1;
         }
 
-        for (const DNS::ResourceRecord rr : m_authRR)
-        {
-            payloadSize += (rr.m_address.size()) + sizeof(rr.m_type) + sizeof(rr.m_class) + 
-                sizeof(rr.m_ttl) + sizeof(byte2) + rr.m_rdata.size();
-        }
-
-        for (const DNS::ResourceRecord rr : m_additionalRR)
-        {
-            payloadSize += (rr.m_address.size()) + sizeof(rr.m_type) + sizeof(rr.m_class) + 
-                sizeof(rr.m_ttl) + sizeof(byte2) + rr.m_rdata.size();
-        }
+        ptr += 1 + sizeof(byte2) + sizeof(byte2);
+        questions--;
     }
 
-    return headerSize + payloadSize;
+    auto skipResourceRecord = 
+        [&ptr]() 
+        {
+            if ((Endianness::fromNetwork( *reinterpret_cast<byte2*>(ptr) ) & 0b11000000) == 0b11000000) // compressed
+            {
+                ptr += 2;
+            }
+            else 
+            {
+                while (*ptr) 
+                {
+                    byte len = *ptr;
+                    ptr += len + 1;
+                }
+                ptr++;
+            }
+
+            ptr += 2 + 2 + 4; 
+
+            byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+            ptr += 2 + rdlength;
+        };
+
+    // Skip Answer RRs
+    for (size_t i = 0; i < answersLength(); ++i)
+    {
+        skipResourceRecord();
+    }
+
+    // Skip Authority RRs 
+    for (size_t i = 0; i < authRRLength(); ++i)
+    {
+        skipResourceRecord();
+    }
+
+    // Skip Additional RRs 
+    for (size_t i = 0; i < additionalRRLength(); ++i)
+    {
+        skipResourceRecord();
+    }
+
+    return ptr - reinterpret_cast<byte*>( m_data  );
 }
 
-void DNS::encodeLayerPre(std::vector<byte>& buffer, const size_t offset)
+void DNS::addr(byte* address)
 {
-    // Set lengths
-    m_questionLength = (byte2)m_questions.size();
-    m_additionalLength = (byte2)m_additionalRR.size();
-    m_authLength = (byte2)m_authRR.size();
-    m_answerLength = (byte2)m_answers.size();
-
-    // Add DNS data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data() + offset);
+    m_data = reinterpret_cast<DNSHeader*>(address);
 }
 
-void DNS::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
+byte* DNS::addr() const
 {
-    // Add DNS data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data() + offset);
+    return reinterpret_cast<byte*>(m_data);
 }
 
-void DNS::encodeRecord(const DNS::ResourceRecord& record, byte*& ptr) const
-{
-    byte2 val;
-    std::memcpy(ptr, record.m_address.data(), record.m_address.size());
-    ptr += record.m_address.size();
-
-    val = Endianness::toNetwork(record.m_type);
-    std::memcpy(ptr, &val, sizeof(val));
-    ptr += sizeof(val);
-    
-    val = Endianness::toNetwork(record.m_class);
-    std::memcpy(ptr, &val, sizeof(val));
-    ptr += sizeof(val);
-
-    val = Endianness::toNetwork(record.m_ttl);
-    std::memcpy(ptr, &val, sizeof(val));
-    ptr += sizeof(val);
-
-    val = Endianness::toNetwork(static_cast<byte2>(record.m_rdata.size()));
-    std::memcpy(ptr, &val, sizeof(val)); 
-    ptr += sizeof(val);
-    
-    std::memcpy(ptr, record.m_rdata.data(), record.m_rdata.size());
-    ptr += record.m_rdata.size();
-}
-
-DNS::ResourceRecord::ResourceRecord(const std::vector<byte>& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const std::vector<byte>& rdata)
+DNS::ResourceRecord::ResourceRecord(const DomainBytes& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const RDataBytes& rdata)
     : m_domain(address), m_type(typeVal), m_class(classVal), m_ttl(ttlVal), m_rdata(rdata)
 {
 }
 
 DNS::QuestionResourceRecord::QuestionResourceRecord(const std::string& address, const byte2 typeVal, const byte2 classVal)
-    : m_type(typeVal), m_class(classVal), m_domain(formatDomain(address))
+    : m_domain(formatDomain(address)), m_type(typeVal), m_class(classVal)
 {}
+
+DNS::QuestionResourceRecord::QuestionResourceRecord(const DomainBytes & domain, const byte2 typeVal, const byte2 classVal)
+    : m_domain(domain), m_type(typeVal), m_class(classVal)
+{
+}

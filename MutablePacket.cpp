@@ -18,7 +18,7 @@ byte* MutablePacket::getPtrAtProtocol(size_t index)
 
 void MutablePacket::shiftFromOffset(size_t index, size_t amount)
 {
-	if (index >= m_curSize)
+	if (index > m_curSize)
 	{
 		throw std::exception("Couldn't shift, index >= curSize");
 	}
@@ -34,6 +34,25 @@ void MutablePacket::shiftFromOffset(size_t index, size_t amount)
 	std::memmove(&m_buffer[index + amount], &m_buffer[index], shiftSize);
 
 	m_curSize += amount;
+
+	for (size_t i = 0; i < m_protocolCount; ++i) 
+	{
+		auto& entry = m_protocolEntries[i];
+		if (entry.m_dataOffset >= index) 
+		{
+			entry.m_dataOffset += amount;
+
+			Protocol* basePtr = reinterpret_cast<Protocol*>(
+				static_cast<void*>(&m_protocolObjects[entry.m_objectOffset])
+			);
+			basePtr->addr(m_buffer + entry.m_dataOffset); // you'd have to add this method
+		}
+	}
+}
+
+void MutablePacket::shiftFromAddr(byte* addr, size_t amount)
+{
+	shiftFromOffset(static_cast<size_t>(addr - m_buffer), amount);
 }
 
 void MutablePacket::insertBytes(const byte value, size_t amount)

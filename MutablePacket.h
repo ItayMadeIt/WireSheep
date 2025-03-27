@@ -36,6 +36,7 @@ public:
 	byte* getPtrAtProtocol(size_t index);
 
 	void shiftFromOffset(size_t index, size_t amount);
+	void shiftFromAddr(byte* addr, size_t amount);
 	void insertBytes(const byte value, size_t amount);
 	void insertByteArr(const byte* byteArr, size_t amount);
 
