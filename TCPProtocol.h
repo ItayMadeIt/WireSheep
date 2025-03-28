@@ -37,95 +37,40 @@ public:
 		MultipathTCP = 30,
 	};
 
-	struct OptionBase
+	class OptionBase
 	{
-		static const byte BASE_LENGTH = 2;
-
-		OptionBase(const byte optionType, const byte length = 0);
+	public:
+		// read+write optionbase
+		OptionBase(byte* addr, MutablePacket* packet=nullptr);
 		virtual ~OptionBase() = default;
 
-		virtual void encode(byte* ptr) const;
-		virtual std::unique_ptr<OptionBase> clone() const = 0;
+		bool isReadOnly();
 
-		byte m_optionType;
-		byte m_length;
+	private:
+		byte* m_data;
+		MutablePacket* m_packet;
 	};
 
-	template <typename OptionType>
-	struct Option : public OptionBase
-	{
-		Option(const byte optionType, const byte length = 0);
-
-		Option(const OptionTypeValues optionType, const byte length = 0);
-
-		virtual std::unique_ptr<TCP::OptionBase> clone() const override;
-	};
-	
-	struct OptionEndList : public Option<OptionEndList>
-	{
-		static const byte BASE_LENGTH = 1;
-
-		OptionEndList();
-
-		virtual void encode(byte* ptr) const override;
-	};
-
-	struct OptionNoOperation : public Option<OptionNoOperation>
-	{
-		static const byte BASE_LENGTH = 1;
-
-		OptionNoOperation();
-
-		virtual void encode(byte* ptr) const override;
-	};
-
-	struct OptionMaxSegmentSize : public Option<OptionMaxSegmentSize>
-	{
-		static const byte BASE_LENGTH = 4; // 1 for type, 1 for length, 2 for maxSegmentSize
-
-		OptionMaxSegmentSize(const byte2 maxSegmentSize);
-
-		virtual void encode(byte* ptr) const override;
-
-		byte2 m_maxSegmentSize;
-	};
-
-	struct OptionWindowScale : public Option<OptionWindowScale>
-	{
-		static const byte BASE_LENGTH = 3; // 1 for type, 1 for length, 1 for windowScale
-
-		OptionWindowScale(const byte windowScale);
-
-		virtual void encode(byte* ptr) const override;
-
-		byte m_windowScale;
-	};
-
-	struct OptionSelectiveAckPermitted: public Option<OptionSelectiveAckPermitted>
-	{
-		OptionSelectiveAckPermitted();
-	};
 
 	// CAN ADD MORE OPTIONS LATER
 
 public:
-	TCP();
-	TCP(const TCP& other);
+	TCP(byte* data);
 
 public:
 	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
 
-	TCP& srcPort(const byte2 value);
-	byte2 srcPort() const;
+	TCP& src(const byte2 value);
+	byte2 src() const;
 
-	TCP& dstPort(const byte2 value);
-	byte2 dstPort() const;
+	TCP& dst(const byte2 value);
+	byte2 dst() const;
 
-	TCP& seqNum(const byte4 value);
-	byte4 seqNum() const;
+	TCP& seq(const byte4 value);
+	byte4 seq() const;
 
-	TCP& ackNum(const byte4 value);
-	byte4 ackNum() const;
+	TCP& ack(const byte4 value);
+	byte4 ack() const;
 
 	TCP& dataOffset(const byte value);
 	byte dataOffset() const;
@@ -149,9 +94,6 @@ public:
 	template<typename OptionType>
 	TCP& addOption(const OptionType& option);
 
-	template<typename OptionType>
-	TCP& addOption(OptionType&& option);
-
 	template<typename OptionType, typename... Args>
 	TCP& addOption(Args&&... args);
 
@@ -160,41 +102,24 @@ public:
 
 	size_t getSize() const override;
 
-	void calculateOptionsSize();
-
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
 
 protected:
+
 	/// <summary>
 	/// Adds (optionLength % rowSize) 0 bytes
 	/// </summary>
 	void addOptionsPadding(byte* ptr) const;
 
+	virtual void calculateChecksum(MutablePacket& packet, const size_t index);
+
 protected:
-	const static size_t SIZE = 20; // header size: 20 bytes
+	const static size_t BASE_SIZE = 20; // header size: 20 bytes
 
 	TCPHeader* m_data;
 
-	byte2 m_srcPort;           // 16 bits
-	byte2 m_dstPort;           // 16 bits
-	
-	byte4 m_seqNum;            // 32 bits
-	byte4 m_ackNum;            // 32 bits
-
-	byte m_dataOffset;         // 4 bits
-	byte m_reserved;           // 4 bits
-	
-	byte m_flags;              // 8 bits
-	
-	byte2 m_window;            // 16 bits
-
-	byte2 m_checksum;          // 16 bits
-	byte2 m_urgentPtr;         // 16 bits
-
-	byte2 m_optionsSize;
-
-	std::vector< std::unique_ptr<TCP::OptionBase>> m_options; // all options
+	byte2 m_optionsEndLoc;
 
 };
 

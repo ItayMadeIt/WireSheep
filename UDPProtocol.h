@@ -35,9 +35,7 @@ public:
 	const static size_t BASE_SIZE = 8; 
 
 protected:	
-	// will be replaced
-	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
-
+	virtual void calculateChecksum(MutablePacket& packet, const size_t index);
 
 	UDPHeader* m_data;
 };

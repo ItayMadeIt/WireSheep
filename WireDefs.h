@@ -10,16 +10,18 @@ using byte2 = uint16_t;
 using byte4 = uint32_t;
 using byte8 = uint64_t;
 
-enum class ProvidedProtocols : byte
+// Can add as many protoocls
+enum class ProvidedProtocols : byte4
 {
-	Invalid = -1,
-	Raw = 0,
-	Ethernet = 1,
-	IPv4 = 2,
-	IPv6 = 3,
-	UDP = 4,
-	TCP = 5,
-	DNS = 6,
-	HTTP = 7, 
-	ARP = 8,
+	Invalid  =  0,
+	Ethernet =  1,
+	IPv4     =  2,
+	IPv6     =  3, // not implemneted
+	UDP      =  4,
+	TCP      =  5, // not fully implemneted
+	DNS      =  6,
+	HTTP     =  7, // not implemneted
+	ARP      =  8,
+	ICMP     =  9,
+	Raw      = 10,
 };

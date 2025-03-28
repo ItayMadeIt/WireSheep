@@ -4,67 +4,6 @@
 #include "EthernetProtocol.h"
 #include "IPv4Protocol.h"
 
-void TCP::writeToBuffer(byte* ptr) const
-{
-    byte2 var2 = Endianness::toNetwork(m_srcPort);
-    std::memcpy(ptr, &var2, sizeof(var2));
-    ptr += sizeof(var2);
-
-    var2 = Endianness::toNetwork(m_dstPort);
-    std::memcpy(ptr, &var2, sizeof(var2));
-    ptr += sizeof(var2);
-
-    byte4 var4 = Endianness::toNetwork(m_seqNum);
-    std::memcpy(ptr, &var4, sizeof(var4));
-    ptr += sizeof(var4);
-
-    var4 = Endianness::toNetwork(m_ackNum);
-    std::memcpy(ptr, &var4, sizeof(var4));
-    ptr += sizeof(var4);
-
-    // only last four bits of data offset and 4 bits of reserved
-    byte var1 = Endianness::toNetwork((byte)((m_dataOffset << 4) | (m_reserved)));
-    std::memcpy(ptr, &var1, sizeof(var1));
-    ptr += sizeof(var1);
-
-    var1 = Endianness::toNetwork(m_flags);
-    std::memcpy(ptr, &var1, sizeof(var1));
-    ptr += sizeof(var1);
-
-    var2 = Endianness::toNetwork(m_window);
-    std::memcpy(ptr, &var2, sizeof(var2));
-    ptr += sizeof(var2);
-
-    var2 = Endianness::toNetwork(m_checksum);
-    std::memcpy(ptr, &var2, sizeof(var2));
-    ptr += sizeof(var2);
-
-    var2 = Endianness::toNetwork(m_urgentPtr);
-    std::memcpy(ptr, &var2, sizeof(var2));
-    ptr += sizeof(var2);
-    
-    for (const std::unique_ptr<OptionBase>& option : m_options)
-    {
-        option->encode(ptr);
-        ptr += option->m_length;
-    }
-}
-
-void TCP::readFromBuffer(const byte* buffer, const size_t size)
-{
-}
-
-
-void TCP::calculateOptionsSize()
-{
-    // Sum of all option sizes (no allignemt)
-    m_optionsSize = 0;
-    for (const auto& option : m_options)
-    {
-        m_optionsSize += option->BASE_LENGTH;
-    }
-}
-
 void TCP::addr(byte* address)
 {
     m_data = reinterpret_cast<TCPHeader*>(address);
@@ -75,37 +14,9 @@ byte* TCP::addr() const
     return reinterpret_cast<byte*>(m_data);
 }
 
-
 size_t TCP::getSize() const
 {
-    return TCP::SIZE + ((m_optionsSize + 3) & ~3);
-}
-
-void TCP::encodeLayerPre(std::vector<byte>& buffer, const size_t offset)
-{
-    calculateOptionsSize();
-
-    m_dataOffset = (TCP::SIZE + (m_optionsSize+3)) / 4;
-    m_checksum = 0;
-
-    // Add TCP data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data() + offset);
-
-    // calculateChecksum(buffer);
-
-    // Adds padding for the options
-    addOptionsPadding(buffer.data() + offset + TCP::SIZE + m_optionsSize);
-}
-
-void TCP::encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const
-{
-    // Add TCP data to the array
-    buffer.resize(buffer.size() + getSize());
-    writeToBuffer(buffer.data() + offset);
-
-    // Adds padding for the options, (To disable should set m_optionSize to 0)
-    addOptionsPadding(buffer.data() + offset + TCP::SIZE + m_optionsSize);
+    return TCP::BASE_SIZE + ((m_optionsSize + 3) & ~3);
 }
 
 void TCP::addOptionsPadding(byte* ptr) const
@@ -121,29 +32,11 @@ void TCP::addOptionsPadding(byte* ptr) const
     std::memset(ptr, 0, paddingLength);
 }
 
-TCP::TCP() : Protocol(),
-        m_seqNum(0), m_ackNum(0),
-        m_srcPort(0), m_dstPort(0),
-        m_flags(0), m_reserved(0),
-        m_window(0), m_urgentPtr(0),
-        m_checksum(0), m_dataOffset(0),
-        m_optionsSize(0)
-{
 
-}
-
-TCP::TCP(const TCP& other) : Protocol(),
-            m_seqNum(other.m_seqNum), m_ackNum(other.m_ackNum), 
-            m_checksum(other.m_checksum), m_dataOffset(other.m_dataOffset), 
-            m_srcPort(other.m_srcPort), m_dstPort(other.m_dstPort),
-            m_flags(other.m_flags), m_reserved(other.m_reserved),
-            m_window(other.m_window), m_urgentPtr(other.m_urgentPtr),
-            m_optionsSize(other.m_optionsSize)
+TCP::TCP(byte* data)
+    : m_data(reinterpret_cast<TCPHeader*>(data))
 {
-    for (const std::unique_ptr<OptionBase>& option : other.m_options)
-    {
-        m_options.emplace_back(option->clone());
-    }
+    std::memset(data, 0, BASE_SIZE);
 }
 
 void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol)
@@ -212,7 +105,7 @@ void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, cons
     {
         checksumVal = (checksumVal & 0xFFFF) + (checksumVal >> 16);
     }
-    m_checksum = ~checksumVal;
+    checksum(~checksumVal);
 
     byte2 networkChecksum = Endianness::toNetwork(m_checksum);
 
@@ -222,124 +115,126 @@ void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, cons
     std::memcpy(checksumPtr, &networkChecksum, sizeof(networkChecksum));
 }
 
-TCP& TCP::srcPort(const byte2 value)
+TCP& TCP::src(const byte2 value)
 {
-    m_srcPort = value;
+    m_data->src = Endianness::toNetwork(value);
 
     return *this;
 }
 
-byte2 TCP::srcPort() const
+byte2 TCP::src() const
 {
-    return m_srcPort;
+    return Endianness::fromNetwork(m_data->src);
 }
 
-TCP& TCP::dstPort(const byte2 value)
+TCP& TCP::dst(const byte2 value)
 {
-    m_dstPort = value;
+    m_data->dst = Endianness::toNetwork(value);
 
     return *this;
 }
 
-byte2 TCP::dstPort() const
+byte2 TCP::dst() const
 {
-    return m_dstPort;
+    return Endianness::fromNetwork(m_data->dst);
 }
 
-TCP& TCP::seqNum(const byte4 value)
+TCP& TCP::seq(const byte4 value)
 {
-    m_seqNum = value;
+    m_data->seq = Endianness::toNetwork(value);
 
     return *this;
 }
 
-byte4 TCP::seqNum() const
+byte4 TCP::seq() const
 {
-    return m_seqNum;
+    return Endianness::fromNetwork(m_data->seq);
 }
 
-TCP& TCP::ackNum(const byte4 value)
+TCP& TCP::ack(const byte4 value)
 {
-    m_ackNum = value;
+    m_data->ack = Endianness::toNetwork(value);
 
     return *this;
 }
 
-byte4 TCP::ackNum() const
+byte4 TCP::ack() const
 {
-    return m_ackNum;
+    return Endianness::fromNetwork(m_data->ack);
 }
 
 TCP& TCP::dataOffset(const byte value)
 {
-    m_dataOffset = value;
+    m_data->dataOffset = Endianness::toNetwork(value & 0xF0) | (m_data->dataOffset & 0x0F);
 
     return *this;
 }
 
 byte TCP::dataOffset() const
 {
-    return m_dataOffset;
+    // get last 4 msb bits
+    return Endianness::fromNetwork(m_data->dataOffset) >> 4;
 }
 
 TCP& TCP::reserved(const byte value)
 {
-    m_reserved = value;
+    // one byte value, no need for endianness
+    m_data->dataOffset = (m_data->dataOffset & 0xF0) | (value & 0x0F); 
     
     return *this;
 }
 
 byte TCP::reserved() const
 {
-    return m_reserved;
+    return Endianness::fromNetwork(m_data->dataOffset & 0xF); // 4 bits
 }
 
 TCP& TCP::window(const byte2 value)
 {
-    m_window = value;
+    m_data->window = Endianness::toNetwork(value);
 
     return *this;
 }
 
 byte2 TCP::window() const
 {
-    return m_window;
+    return Endianness::fromNetwork(m_data->window);
 }
 
 TCP& TCP::checksum(const byte2 value)
 {
-    m_checksum = value;
+    m_data->checksum = Endianness::toNetwork(value);
 
     return *this;
 }
 
 byte2 TCP::checksum() const
 {
-    return m_checksum;
+    return Endianness::fromNetwork(m_data->checksum);
 }
 
 TCP& TCP::urgentPtr(const byte2 value)
 {
-    m_urgentPtr = value;
+    m_data->urgPtr = Endianness::toNetwork(value);
 
     return *this;
 }
 
 byte2 TCP::urgentPtr() const
 {
-    return m_urgentPtr;
+    return Endianness::fromNetwork(m_data->urgPtr);
 }
 
 TCP& TCP::flags(const byte value)
 {
-    m_flags = value;
+    m_data->flags = Endianness::toNetwork(value);
 
     return *this;
 }
 
 byte TCP::flags()
 {
-    return m_flags;
+    return Endianness::fromNetwork(m_data->flags);
 }
 
 
@@ -360,64 +255,11 @@ constexpr TCP::Flags operator&(TCP::Flags a, TCP::Flags b)
 
 // OPTIONS
 
-TCP::OptionBase::OptionBase(byte optionType, byte length)
-    : m_optionType(optionType), m_length(length)
+TCP::OptionBase::OptionBase(byte* addr, MutablePacket* packet)
+    : m_data(addr), m_packet(packet) 
 {}
 
-void TCP::OptionBase::encode(byte* ptr) const
+bool TCP::OptionBase::isReadOnly()
 {
-    // copy option header
-    std::memcpy(ptr, &m_optionType, sizeof(m_optionType));
-    ptr++;
-    std::memcpy(ptr, &m_length, sizeof(m_length));
+    return m_packet == nullptr;
 }
-
-TCP::OptionEndList::OptionEndList() : 
-    Option<OptionEndList>(OptionTypeValues::EndOfOptionList, OptionEndList::BASE_LENGTH)
-{}
-
-void TCP::OptionEndList::encode(byte * ptr) const
-{
-    std::memcpy(ptr, &m_optionType, sizeof(m_optionType));
-}
-
-TCP::OptionNoOperation::OptionNoOperation() : 
-    TCP::Option<OptionNoOperation>(OptionTypeValues::NoOperation, OptionNoOperation::BASE_LENGTH)
-{ }
-
-void TCP::OptionNoOperation::encode(byte * ptr) const
-{
-    std::memcpy(ptr, &m_optionType, sizeof(m_optionType));
-}
-
-TCP::OptionMaxSegmentSize::OptionMaxSegmentSize(const byte2 maxSegmentSize) :
-    TCP::Option<OptionMaxSegmentSize>(OptionTypeValues::MaximumSegmentSize, OptionMaxSegmentSize::BASE_LENGTH),
-    m_maxSegmentSize(maxSegmentSize)
-{ }
-
-void TCP::OptionMaxSegmentSize::encode(byte* ptr) const
-{
-    Option::encode(ptr);
-    ptr += Option::BASE_LENGTH;
-
-    byte2 val = Endianness::toNetwork(m_maxSegmentSize);
-    std::memcpy(ptr, &val, sizeof(val));
-}
-
-TCP::OptionWindowScale::OptionWindowScale(const byte windowScale) : 
-    TCP::Option<OptionWindowScale>(OptionTypeValues::WindowScale, OptionWindowScale::BASE_LENGTH),
-    m_windowScale(windowScale)
-{ }
-
-void TCP::OptionWindowScale::encode(byte * ptr) const
-{
-    Option::encode(ptr);
-    ptr += Option::BASE_LENGTH;
-
-    std::memcpy(ptr, &m_windowScale, sizeof(m_windowScale));
-}
-
-
-TCP::OptionSelectiveAckPermitted::OptionSelectiveAckPermitted() :
-    TCP::Option<OptionSelectiveAckPermitted>(OptionTypeValues::SelectiveAckPermitted, OptionSelectiveAckPermitted::BASE_LENGTH)
-{ }

@@ -55,7 +55,7 @@ int main()
 
 	UDP& udp = packet.attach<UDP>();
 	udp
-		.src(120)
+		.src(0x1234)
 		.dst(53);
 
 	DNS& dns = packet.attach<DNS>();

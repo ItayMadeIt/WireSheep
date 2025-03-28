@@ -12,7 +12,7 @@ struct TCPHeader
 	byte2 dst;
 	byte4 seq;
 	byte4 ack;
-	byte  dataOffset;
+	byte  dataOffset;// includes reserved
 	byte  flags;
 	byte2 window;
 	byte2 checksum;

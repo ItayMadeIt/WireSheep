@@ -175,19 +175,15 @@ public:
 
 	DNS& addQuestion(MutablePacket& packet, const DomainBytes& qAddr, byte2 qType, byte2 qClass);
 	QuestionResourceRecord getQuestionResponse(const size_t index);
-	DNS& popQuestion();
 
 	DNS& addAnswer(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
 	ResourceRecord getAnswerResponse(const size_t index);
-	DNS& popAnswer();
 
 	DNS& addAuthResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
 	ResourceRecord getAuthResponse(const size_t index);
-	DNS& popAuthResponse();
 
 	DNS& addAdditionalResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
 	ResourceRecord  getAdditionalResponse(const size_t index);
-	DNS& popAdditionalResponse();
 
 	DNS& flags(byte2 newFlags);
 	DNS& flags(FlagsIndices newFlags);
