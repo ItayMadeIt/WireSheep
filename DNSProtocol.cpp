@@ -440,7 +440,7 @@ DNS& DNS::flags(FlagsIndices newFlags)
 
 byte2 DNS::flags()
 {
-    return m_data->flags;
+    return Endianness::toNetwork(m_data->flags);
 }
 
 DNS& DNS::questionLength(const byte2 value)

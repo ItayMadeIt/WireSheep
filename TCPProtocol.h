@@ -166,10 +166,6 @@ public:
 	virtual byte* addr() const override;
 
 protected:
-
-	void writeToBuffer(byte* buffer) const override;
-	void readFromBuffer(const byte* buffer, const size_t size) override;
-
 	/// <summary>
 	/// Adds (optionLength % rowSize) 0 bytes
 	/// </summary>

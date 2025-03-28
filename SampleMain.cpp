@@ -60,17 +60,10 @@ int main()
 
 	DNS& dns = packet.attach<DNS>();
 	dns 
-		.flags(0b100)
-		.addQuestion(packet, "\6google\3com", (byte2)DNS::RRType::AAAA, (byte2)DNS::RRClass::Internet)
-		.addQuestion(packet, "\6openai\3com", (byte2)DNS::RRType::AAAA, (byte2)DNS::RRClass::Internet)
-		.addQuestion(packet, "\7example\3org", (byte2)DNS::RRType::AAAA, (byte2)DNS::RRClass::Internet);
+		.addQuestion(packet, DNS::formatDomain("google.com"), (byte2)DNS::RRType::AAAA, (byte2)DNS::RRClass::Internet);
 
-	auto q2 = dns.getQuestionResponse(1);
-	std::cout << "domain: " << (const char*)q2.m_domain.begin() << " type: " << q2.m_type << " class: " << q2.m_class << std::endl;
-
-	packet.compile();
-
-	std::cout << packet;
+	// calculates everything, for example, padding for Ethernet protocol, IP and transport layers checksum, every dynamic things
+	packet.compile(); 
 
 	device << packet;
 }

@@ -114,13 +114,7 @@ inline void StaticVector<T, Capacity>::resize(size_t newCount, const T& val)
     {
         throw std::overflow_error("Resize overflow");
     }
-
-    while (m_size < newSize)
-    {
-        m_data[m_size] = val;
-        m_size += sizeof(T);
-    }
-
+    
     m_size = newSize;
 }
 

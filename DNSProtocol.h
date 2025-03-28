@@ -25,14 +25,16 @@ public:
 
 	enum class FlagsIndices : byte
 	{
-		QR =     0,     // 1 bit  (Query/Response)
-		OPCODE = 1,     // 4 bits (OPCODE)
-		AA =     5,     // 1 bit  (Authoritative Answer)
-		TC =     6,     // 1 bit  (TrunCation)
-		RD =     7,     // 1 bit  (Recursion Desired)
-		RA =     8,     // 1 bit  (Recursion Available)
-		Z =      9,     // 3 bits (Zero (Reserved))
-		RCODE = 12,     // 4 bits (Response Code)
+		RCODE =  0,      // 4 bits (Response Code)
+		CD =     4,      // 1 bit (Checking Disabled)
+		AD =     5,      // 1 bit (Authentic Data)
+		Z =      6,      // 1 bits (Zero (Reserved))
+		RA =     7,      // 1 bit  (Recursion Available)
+		RD =     8,      // 1 bit  (Recursion Desired)
+		TC =     9,      // 1 bit  (TrunCation)
+		AA =     10,     // 1 bit  (Authoritative Answer)
+		OPCODE = 11,     // 4 bits (OPCODE)
+		QR =     15,     // 1 bit  (Query/Response)
 	};
 
 	// Types: https://en.wikipedia.org/wiki/List_of_DNS_record_types
