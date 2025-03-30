@@ -42,6 +42,11 @@ byte* Raw::addr() const
     return m_data;
 }
 
+ProvidedProtocols Raw::protType() const
+{
+    return ProvidedProtocols::Raw;
+}
+
 size_t Raw::getSize() const
 {
     return m_size;

@@ -100,6 +100,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Packet.lib;wpcap.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Lib;$(LibraryPath)</AdditionalLibraryDirectories>
+      <StackReserveSize>16384</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -120,6 +121,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Packet.lib;wpcap.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Lib;$(LibraryPath)</AdditionalLibraryDirectories>
+      <StackReserveSize>16384</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -167,6 +169,7 @@
     <ClCompile Include="EndianHandler.cpp" />
     <ClCompile Include="EthernetProtocol.cpp" />
     <ClCompile Include="Helper.cpp" />
+    <ClCompile Include="ICMP.cpp" />
     <ClCompile Include="IMMutablePacket.cpp" />
     <ClCompile Include="IPv4Protocol.cpp" />
     <ClCompile Include="MutablePacket.cpp" />
@@ -190,6 +193,8 @@
     <ClInclude Include="EthernetProtocol.h" />
     <ClInclude Include="EthernetHeader.h" />
     <ClInclude Include="Helper.h" />
+    <ClInclude Include="ICMP.h" />
+    <ClInclude Include="ICMPHeader.h" />
     <ClInclude Include="IMMutablePacket.h" />
     <ClInclude Include="IPv4Protocol.h" />
     <ClInclude Include="IPv4Header.h" />

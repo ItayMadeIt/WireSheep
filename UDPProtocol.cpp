@@ -74,8 +74,16 @@ void UDP::calculateChecksum(MutablePacket& packet, const size_t index)
 	byte2* iter = (byte2*)(m_data);
 	byte2* end = (byte2*)((byte*)m_data + fromProtocolSize);
 
-	if (const IPv4* ipv4 = packet.getPtr<IPv4>(index - 1))
+	Protocol* lastProtocol = packet.getPtr<Protocol>(index-1);
+	
+	if (lastProtocol == nullptr)
 	{
+		throw std::runtime_error("Couldn't calculate checksum, UDP first layer.");
+	}
+	
+	if (lastProtocol->protType() == ProvidedProtocols::IPv4)
+	{
+		const IPv4* ipv4 = packet.getPtr<IPv4>(index - 1);
 		const size_t IPV4_PSESUDO_SIZE = 12;
 		byte pseudoArr[IPV4_PSESUDO_SIZE] = { 0 };
 
@@ -85,15 +93,20 @@ void UDP::calculateChecksum(MutablePacket& packet, const size_t index)
 		std::memcpy(pseudoArr + 4, &dstAddr, sizeof(ipv4->dst()));
 		pseudoArr[8] = 0;
 		pseudoArr[9] = (byte)ipv4->protocol();
-		pseudoArr[10] = length() >> 8;
-		pseudoArr[11] = length() & 0xFF;
-
+		
+		// Set length
+		std::memcpy(&pseudoArr[10], &m_data->length, sizeof(m_data->length));
 
 		for (size_t i = 0; i < IPV4_PSESUDO_SIZE; i += 2)
 		{
-			byte2 word = (pseudoArr[i] << 8) + pseudoArr[i + 1];
-			checksumVal += word;
+			checksumVal += Endianness::fromNetwork(
+				*reinterpret_cast<byte2*>(&pseudoArr[i])
+			);
 		}
+	}
+	else
+	{
+		throw std::runtime_error("Couldn't calculate checksum, no transport layer found.");
 	}
 
 	int isOdd = (fromProtocolSize & 1) ? 1 : 0;
@@ -125,6 +138,11 @@ size_t UDP::getSize() const
 	return UDP::BASE_SIZE;
 }
 
+ProvidedProtocols UDP::protType() const
+{
+	return ProvidedProtocols::UDP;
+}
+
 void UDP::encodePre(MutablePacket& packet, const size_t index)
 {
 	size_t startOffset = (byte*)m_data - (byte*)packet.m_buffer;
@@ -138,5 +156,5 @@ void UDP::encodePre(MutablePacket& packet, const size_t index)
 
 void UDP::encodePost(MutablePacket& packet, const size_t index)
 {
-	
+	calculateChecksum(packet, index);
 }

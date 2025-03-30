@@ -28,17 +28,6 @@ ARP::ARP(byte* data, HardwareType hardwareType, Ethernet::Protocols protocolType
 	}
 }
 
-
-void ARP::writeToBuffer(byte* buffer) const
-{
-	// Not implemented
-}
-
-void ARP::readFromBuffer(const byte* buffer, const size_t size)
-{
-	// No implementation
-}
-
 byte* ARP::targetProtocolAddr() const
 {
 	return reinterpret_cast<byte*>(m_data) +
@@ -83,6 +72,11 @@ void ARP::addr(byte* address)
 byte* ARP::addr() const
 {
 	return reinterpret_cast<byte*>(m_data);
+}
+
+ProvidedProtocols ARP::protType() const
+{
+	return ProvidedProtocols::ARP;
 }
 
 ARP& ARP::opcode(const byte2 value)

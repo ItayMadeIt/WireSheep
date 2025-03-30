@@ -18,6 +18,9 @@ public:
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
 
+	virtual ProvidedProtocols protType() const;
+
+public:
 	const static size_t BASE_SIZE = 0;
 
 protected:

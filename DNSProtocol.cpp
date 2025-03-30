@@ -52,6 +52,56 @@ DomainBytes DNS::formatDomain(const std::string& domain)
     return result;
 }
 
+DomainBytes DNS::formatDomain(const char* domain)
+{
+    DomainBytes result;
+    size_t writeIndex = 0;
+
+    const char* start = domain;
+    const char* end = domain;
+
+    while (*end != '\0')
+    {
+        if (*end == '.')
+        {
+            size_t length = end - start;
+            if (writeIndex + 1 + length >= MAX_DOMAIN_SIZE)
+            {
+                throw std::runtime_error("Domain name too long");
+            }
+
+            result[writeIndex++] = static_cast<byte>(length);
+            for (size_t i = 0; i < length; ++i)
+            {
+                result[writeIndex++] = static_cast<byte>(start[i]);
+            }
+
+            start = end + 1;
+        }
+        ++end;
+    }
+
+    size_t lastLength = end - start;
+    if (writeIndex + 1 + lastLength + 1 > MAX_DOMAIN_SIZE)
+    {
+        throw std::runtime_error("Domain name too long");
+    }
+
+
+    result[writeIndex++] = static_cast<byte>(lastLength);
+    for (size_t i = 0; i < lastLength; ++i)
+    {
+        result[writeIndex++] = static_cast<byte>(start[i]);
+    }
+
+
+    result[writeIndex++] = 0; 
+    result.resize(writeIndex);
+    return result;
+
+
+}
+
 DomainBytes DNS::consumeDomain(const byte* ptr)
 {
     return { reinterpret_cast<const char*>(ptr) };
@@ -133,11 +183,6 @@ DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index)
         netType,
         netClass
     );
-}
-
-DNS& DNS::popQuestion()
-{
-    throw std::runtime_error("No implementation");
 }
 
 DNS& DNS::addAnswer(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData)
@@ -228,11 +273,6 @@ DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)
         netTtl,
         rdata
     );
-}
-
-DNS& DNS::popAnswer()
-{
-    throw std::runtime_error("No implementation");
 }
 
 DNS& DNS::addAuthResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData)
@@ -326,11 +366,6 @@ DNS::ResourceRecord DNS::getAuthResponse(const size_t index)
 
 }
 
-DNS& DNS::popAuthResponse()
-{
-    throw std::runtime_error("No implementation");
-}
-
 DNS& DNS::addAdditionalResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData)
 {
     additionalRRLength(additionalRRLength() + 1);
@@ -419,11 +454,6 @@ DNS::ResourceRecord DNS::getAdditionalResponse(const size_t index)
         netTtl,
         rdata
     );
-}
-
-DNS& DNS::popAdditionalResponse()
-{
-    throw std::runtime_error("No implementation");
 }
 
 DNS& DNS::flags(byte2 newFlags)
@@ -567,6 +597,11 @@ byte* DNS::addr() const
     return reinterpret_cast<byte*>(m_data);
 }
 
+ProvidedProtocols DNS::protType() const
+{
+    return ProvidedProtocols::DNS;
+}
+
 DNS::ResourceRecord::ResourceRecord(const DomainBytes& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const RDataBytes& rdata)
     : m_domain(address), m_type(typeVal), m_class(classVal), m_ttl(ttlVal), m_rdata(rdata)
 {
@@ -577,6 +612,6 @@ DNS::QuestionResourceRecord::QuestionResourceRecord(const std::string& address, 
 {}
 
 DNS::QuestionResourceRecord::QuestionResourceRecord(const DomainBytes & domain, const byte2 typeVal, const byte2 classVal)
-    : m_domain(domain), m_type(typeVal), m_class(classVal)
+    : m_domain(formatDomain(reinterpret_cast<const char*>( domain.begin() ) )), m_type(typeVal), m_class(classVal)
 {
 }

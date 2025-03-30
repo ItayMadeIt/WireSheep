@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Protocol.h"
-#include <type_traits> 
 #include "TCPHeader.h"
 
 class TCP : public Protocol
@@ -51,15 +50,32 @@ public:
 		MutablePacket* m_packet;
 	};
 
-
+	// no implementation 
+	class OptionEndList : OptionBase
+	{
+	};
+	// no implementation 
+	class OptionNOP : OptionBase
+	{
+	};
+	// no implementation 
+	class OptionMSS : OptionBase
+	{
+	};
+	// no implementation 
+	class OptionWindowScale : OptionBase
+	{
+	};
+	// no implementation 
+	class OptionSACK : OptionBase
+	{
+	};
 	// CAN ADD MORE OPTIONS LATER
 
 public:
 	TCP(byte* data);
 
 public:
-	virtual void calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol) override;
-
 	TCP& src(const byte2 value);
 	byte2 src() const;
 
@@ -97,14 +113,18 @@ public:
 	template<typename OptionType, typename... Args>
 	TCP& addOption(Args&&... args);
 
-	void encodeLayerPre(std::vector<byte>& buffer, const size_t offset) override;
-	void encodeLayerRaw(std::vector<byte>& buffer, const size_t offset) const override;
-
 	size_t getSize() const override;
 
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
 
+	virtual ProvidedProtocols protType() const;
+
+	virtual void encodePre(MutablePacket& packet, const size_t index) override;
+	virtual void encodePost(MutablePacket& packet, const size_t index)override;
+
+public:
+	const static size_t BASE_SIZE = 20; // header size: 20 bytes
 protected:
 
 	/// <summary>
@@ -112,63 +132,14 @@ protected:
 	/// </summary>
 	void addOptionsPadding(byte* ptr) const;
 
+	size_t getOptionsSize() const;
+	
 	virtual void calculateChecksum(MutablePacket& packet, const size_t index);
 
 protected:
-	const static size_t BASE_SIZE = 20; // header size: 20 bytes
 
 	TCPHeader* m_data;
 
 	byte2 m_optionsEndLoc;
 
 };
-
-template<typename OptionType>
-TCP::Option<OptionType>::Option(const byte optionType, const byte length)
-	: OptionBase(optionType, length) 
-{}
-
-template<typename OptionType>
-TCP::Option<OptionType>::Option(const OptionTypeValues optionType, const byte length)
-	: OptionBase((byte)optionType, length) 
-{}
-
-
-template<typename OptionType>
-std::unique_ptr<TCP::OptionBase> TCP::Option<OptionType>::clone() const
-{
-	return std::make_unique<OptionType>(static_cast<const OptionType&>(*this));
-}
-
-template<typename OptionType>
-TCP& TCP::addOption(const OptionType& option)
-{
-	m_options.emplace_back(std::make_unique<OptionType>(option));
-
-	calculateOptionsSize();
-
-	return *this;
-}
-
-template<typename OptionType>
-TCP& TCP::addOption(OptionType&& option)
-{
-	m_options.emplace_back(std::make_unique<OptionType>(std::move(option)));
-
-	calculateOptionsSize();
-
-	return *this;
-}
-
-template<typename OptionType, typename ...Args>
-TCP& TCP::addOption(Args&&... args)
-{
-
-	m_options.emplace_back(
-		std::make_unique<OptionType>(std::forward<Args>(args)...)
-	);
-
-	calculateOptionsSize();
-
-	return *this;
-}

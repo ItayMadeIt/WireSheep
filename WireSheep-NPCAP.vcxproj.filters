@@ -108,6 +108,9 @@
     <ClCompile Include="IMMutablePacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
+    <ClCompile Include="ICMP.cpp">
+      <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Device.h">
@@ -184,6 +187,12 @@
     </ClInclude>
     <ClInclude Include="StaticVector.hpp">
       <Filter>Header Files\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="ICMPHeader.h">
+      <Filter>Header Files\Protocols\Data Structures</Filter>
+    </ClInclude>
+    <ClInclude Include="ICMP.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

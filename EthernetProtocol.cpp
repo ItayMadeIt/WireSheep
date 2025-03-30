@@ -51,7 +51,7 @@ void Ethernet::encodePost(MutablePacket& packet, size_t protocolIndex)
 	if (packet.size() < MIN_SIZE)
 	{
 		size_t offset = (packet.size() > 0) ? packet.size() - 1 : 0;
-		packet.insertBytes(NULL, MIN_SIZE - packet.size());
+		packet.insertBytes(0, MIN_SIZE - packet.size());
 	}
 }
 
@@ -63,6 +63,11 @@ void Ethernet::addr(byte* address)
 byte* Ethernet::addr() const
 {
 	return reinterpret_cast<byte*>(m_data);
+}
+
+ProvidedProtocols Ethernet::protType() const
+{
+	return ProvidedProtocols::Ethernet;
 }
 
 size_t Ethernet::getSize() const

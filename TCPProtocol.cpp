@@ -16,103 +16,123 @@ byte* TCP::addr() const
 
 size_t TCP::getSize() const
 {
-    return TCP::BASE_SIZE + ((m_optionsSize + 3) & ~3);
+    return TCP::BASE_SIZE + ((getOptionsSize() + 3) & ~3);
 }
 
 void TCP::addOptionsPadding(byte* ptr) const
 {
     // If option size % 4 == 0, it's invalid, meaning no padding
-    if (m_optionsSize % 4 == 0)
+    if (getOptionsSize() % 4 == 0)
     {
         return;
     }
 
-    byte2 paddingLength = (4 - m_optionsSize % 4);
+    byte2 paddingLength = (4 - getOptionsSize() % 4);
 
     std::memset(ptr, 0, paddingLength);
 }
 
+size_t TCP::getOptionsSize() const
+{
+	return m_optionsEndLoc - BASE_SIZE;
+}
+
 
 TCP::TCP(byte* data)
-    : m_data(reinterpret_cast<TCPHeader*>(data))
+    : m_data(reinterpret_cast<TCPHeader*>(data)), m_optionsEndLoc(BASE_SIZE)
 {
     std::memset(data, 0, BASE_SIZE);
 }
 
-void TCP::calculateChecksum(std::vector<byte>& buffer, const size_t offset, const Protocol* protocol)
+void TCP::calculateChecksum(MutablePacket& packet, const size_t index)
 {
-    if (!protocol)
-    {
-        // Will throw exception
-        return;
-    }
+	byte4 checksumVal = 0;
 
-    byte4 checksumVal = 0;
+	// Size of the packet from UDP
+	byte2 fromProtocolSize = ((byte*)packet.m_buffer + packet.m_curSize) - (byte*)m_data;
 
-    byte2 tcpLength = buffer.size() - offset;
-    checksumVal += tcpLength;
+	// Calculate checksum
+	byte2* iter = (byte2*)(m_data);
+	byte2* end = (byte2*)((byte*)m_data + fromProtocolSize);
 
-    if (const IPv4* ipv4 = dynamic_cast<const IPv4*>(protocol))
-    {
-        size_t ipv4Offset = offset - ipv4->getSize();
+	Protocol* lastProtocol = packet.getPtr<Protocol>(index - 1);
 
-        // Add psuedo header
+	if (lastProtocol == nullptr)
+	{
+		throw std::runtime_error("Couldn't calculate checksum, UDP first layer.");
+	}
 
-        AddrIPv4 addr = ipv4->src();
-        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
-        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
+	if (lastProtocol->protType() == ProvidedProtocols::IPv4)
+	{
+		const IPv4* ipv4 = packet.getPtr<IPv4>(index - 1);
+		const size_t IPV4_PSESUDO_SIZE = 12;
+		byte pseudoArr[IPV4_PSESUDO_SIZE] = { 0 };
 
-        addr = ipv4->dst();
-        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data)));    // First 16-bit word
-        checksumVal += Endianness::fromNetwork(*(reinterpret_cast<byte2*>(addr.m_data + 2))); // Second 16-bit word
+		auto srcAddr = ipv4->src();
+		std::memcpy(pseudoArr, &srcAddr, sizeof(ipv4->src()));
+		auto dstAddr = ipv4->dst();
+		std::memcpy(pseudoArr + 4, &dstAddr, sizeof(ipv4->dst()));
+		pseudoArr[8] = 0;
+		pseudoArr[9] = (byte)ipv4->protocol();
 
-        checksumVal += (byte2)(ipv4->protocol());
+		// Set length
+		byte2 netLength = Endianness::toNetwork(fromProtocolSize);
+		std::memcpy(&pseudoArr[10], &netLength, sizeof(netLength));
 
-    }/*
-    else if (const IPv6* ipv4 = dynamic_cast<const IPv4*>(protocol))
-    {
-        // Assume it will work
-        // const IPv6* ipv6 = dynamic_cast<const IPv6*>(protocol);
+		for (size_t i = 0; i < IPV4_PSESUDO_SIZE; i += 2)
+		{
+			checksumVal += Endianness::fromNetwork(
+				*reinterpret_cast<byte2*>(&pseudoArr[i])
+			);
+		}
+	}
+	else
+	{
+		throw std::runtime_error("Couldn't calculate checksum, no transport layer found.");
+	}
 
-        // Not implemented yet
-    }*/
-    else
-    {
-        return;
-    }
+	int isOdd = (fromProtocolSize & 1) ? 1 : 0;
 
-    bool isOdd = (tcpLength - getSize()) % 2 != 0;
+	while (iter + isOdd < end)
+	{
+		checksumVal += Endianness::fromNetwork(*iter);
 
-    // Iterate through 16-bit words
-    byte2* iter = reinterpret_cast<byte2*>(buffer.data() + offset);
-    byte2* end = reinterpret_cast<byte2*>(buffer.data() + offset + tcpLength - (isOdd ? 1 : 0));
+		iter++;
+	}
 
-    for (; iter < end; iter++)
-    {
-        checksumVal += Endianness::fromNetwork(*iter);
-    }
+	if (isOdd)
+	{
+		byte lastByte = *((byte*)iter);
+		checksumVal += (lastByte << 8);
+	}
 
-    // Handle the last leftover byte if the payload length is odd
-    if (isOdd)
-    {
-        // Get the last byte
-        byte lastByte = *(buffer.data() + offset + tcpLength - 1);
-        byte2 paddedWord = (lastByte << 8);
-        checksumVal += paddedWord;
-    }
+	while (checksumVal & 0xFFFF0000)
+	{
+		checksumVal = (checksumVal >> 16) + (checksumVal & 0xFFFF);
+	}
 
-    while (checksumVal >> 16)
-    {
-        checksumVal = (checksumVal & 0xFFFF) + (checksumVal >> 16);
-    }
-    checksum(~checksumVal);
+	// one complement
+	checksum(~checksumVal);
+}
 
-    byte2 networkChecksum = Endianness::toNetwork(m_checksum);
+ProvidedProtocols TCP::protType() const
+{
+	return ProvidedProtocols::TCP;
+}
 
-    size_t headerChecksumOffset = offset + 16; // 6 = header checksum position relative to UDP start of the packet
-    byte* checksumPtr = buffer.data() + headerChecksumOffset;
+void TCP::encodePre(MutablePacket& packet, const size_t index)
+{
+	size_t startOffset = (byte*)m_data - (byte*)packet.m_buffer;
+	size_t endOffset = packet.m_curSize;
 
-    std::memcpy(checksumPtr, &networkChecksum, sizeof(networkChecksum));
+	dataOffset(getOptionsSize() / 4 + 5); 
+
+	checksum(0);
+}
+
+void TCP::encodePost(MutablePacket& packet, const size_t index)
+{
+	calculateChecksum(packet, index);
 }
 
 TCP& TCP::src(const byte2 value)
@@ -165,7 +185,8 @@ byte4 TCP::ack() const
 
 TCP& TCP::dataOffset(const byte value)
 {
-    m_data->dataOffset = Endianness::toNetwork(value & 0xF0) | (m_data->dataOffset & 0x0F);
+	int a = (value << 4) & 0xF0;
+    m_data->dataOffset = ((value << 4) & 0xF0) | (m_data->dataOffset & 0x0F);
 
     return *this;
 }

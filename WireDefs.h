@@ -22,6 +22,6 @@ enum class ProvidedProtocols : byte4
 	DNS      =  6,
 	HTTP     =  7, // not implemneted
 	ARP      =  8,
-	ICMP     =  9,
+	ICMP     =  9, // not implemented
 	Raw      = 10,
 };

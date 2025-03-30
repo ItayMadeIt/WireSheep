@@ -85,12 +85,11 @@ public:
 
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
+	
+	virtual ProvidedProtocols protType() const;
 
 protected:
 	size_t m_size;
-
-	void writeToBuffer(byte* buffer) const override;
-	void readFromBuffer(const byte* buffer, const size_t size) override;
 
 	byte* targetProtocolAddr() const;
 	byte* senderProtocolAddr() const;

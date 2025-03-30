@@ -1,11 +1,46 @@
 #include "Device.h"
 
-Device::Device(const std::string& deviceName) 
-	: m_deviceName(deviceName)
-{ 
+Device::Device(const std::string& deviceName)
+{
+	if (deviceName.size() >= MAX_DEVICE_NAME)
+	{
+		throw std::runtime_error("Invalid Device Name");
+	}
+	std::memcpy(m_deviceName, deviceName.c_str(), deviceName.size());
+
+	char errBuffer[PCAP_ERRBUF_SIZE];
+
+	m_devicePtr = pcap_create(m_deviceName, errBuffer);
+
+	if (!m_devicePtr)
+	{
+		throw std::exception(errBuffer);
+	}
+
+	// If activating failed
+	if (pcap_activate(m_devicePtr) != 0)
+	{
+		strcpy_s(errBuffer, pcap_geterr(m_devicePtr));
+		pcap_close(m_devicePtr);
+		throw std::runtime_error(errBuffer);
+	}
+
+	m_macs = NetworkUtils::getDeviceMacs(m_deviceName);
+}
+
+Device::Device(const char* deviceName)
+{
+	size_t size = strlen(deviceName);
+	if (size >= MAX_DEVICE_NAME)
+	{
+		throw std::runtime_error("Invalid Device Name");
+	}
+
+	std::memcpy(m_deviceName, deviceName, strlen(deviceName));
+
 	char errBuffer[PCAP_ERRBUF_SIZE];
 	
-	m_devicePtr = pcap_create(deviceName.c_str(), errBuffer);
+	m_devicePtr = pcap_create(m_deviceName, errBuffer);
 
 	if (!m_devicePtr)
 	{
@@ -97,7 +132,8 @@ void Device::sendPacket(const Packet& packet)
 	// Send the packet
 	if (pcap_sendpacket(m_devicePtr, buffer, size) != 0)
 	{
-		throw std::exception("Failed to send packet.");
+		std::string err = pcap_geterr(m_devicePtr);
+		throw std::runtime_error("Failed to send packet: " + err);
 	}
 }
 

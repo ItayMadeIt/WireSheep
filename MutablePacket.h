@@ -4,8 +4,6 @@
 #include <functional>
 #include <array>
 
-constexpr size_t MAX_PROTOCOL_OBJECTS_SIZE = 128;
-
 class MutablePacket;
 
 struct MutableProtocolEntry
@@ -14,7 +12,7 @@ struct MutableProtocolEntry
 	size_t m_objectOffset;
 };
 
-constexpr int PROTOCOLS_BUFFER_SIZE = 128;
+constexpr size_t PROTOCOLS_BUFFER_SIZE = 256;
 
 class MutablePacket : public Packet
 {
@@ -37,6 +35,10 @@ public:
 
 	void shiftFromOffset(size_t index, size_t amount);
 	void shiftFromAddr(byte* addr, size_t amount);
+	void shrinkFromOffset(size_t index, size_t amount);
+	void shrinkFromAddr(byte* addr, size_t amount);
+	void replaceFromOffset(size_t index, size_t deleteAmount, const byte* dataPtr, size_t dataAmount);
+	void replaceFromAddr(byte* addr, size_t deleteAmount, const byte* dataPtr, size_t dataAmount);
 	void insertBytes(const byte value, size_t amount);
 	void insertByteArr(const byte* byteArr, size_t amount);
 
@@ -80,13 +82,15 @@ inline ProtocolClass& MutablePacket::attach(Args&&... args)
 	{
 		throw std::exception("Not enough space for alignment!");
 	}
+
+	// Add base size of protocol to buffer size
+	// If more specifciation is needed, modify Packet using helper functions.
+	m_curSize += ProtocolClass::BASE_SIZE;
+
 	ProtocolClass* protocolObj = new (alignedPtr) ProtocolClass(m_buffer + protocolDataOffset, std::forward<Args>(args)...);
 
 	// Modify to the alligned offset value
 	protocolClassOffset = static_cast<byte*>(alignedPtr) - m_protocolObjects.data();
-
-	// Add to the buffer size
-	m_curSize += protocolObj->getSize();
 
 	// Add the alligned size
 	m_protocolEndOffset += protocolClassOffset + sizeof(ProtocolClass);

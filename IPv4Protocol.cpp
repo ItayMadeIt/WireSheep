@@ -233,3 +233,8 @@ void IPv4::encodePost(MutablePacket& packet, const size_t index)
     checksum(~checksumVal & 0xFFFF);
 }
 
+ProvidedProtocols IPv4::protType() const
+{
+    return ProvidedProtocols::IPv4;
+}
+

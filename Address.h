@@ -18,6 +18,7 @@ namespace address
 	{
 		AddrIPv4();
 		AddrIPv4(const std::string& ipv4Str);
+		AddrIPv4(const char* ipv4Str);
 
 		/// <summary>
 		/// Array to store IPv4 (4 bytes).
@@ -31,8 +32,6 @@ namespace address
 		void operator=(const AddrIPv4& other);
 
 		std::string toString() const;
-
-		static AddrIPv4 fromString(const std::string& addr);
 
 		static AddrIPv4 broadcast;
 
@@ -48,6 +47,7 @@ namespace address
 	{
 		AddrIPv6();
 		AddrIPv6(const std::string& ipv6Str);
+		AddrIPv6(const char* ipv6Str);
 
 		/// <summary>
 		/// Array to store IPv6 (6 bytes).
@@ -59,8 +59,6 @@ namespace address
 		byte& operator[](const size_t index);
 
 		std::string toString() const;
-
-		static AddrIPv6 fromString(const std::string& addr);
 
 		friend std::ostream& operator<<(std::ostream& os, const AddrIPv6 ipv6);
 	};
@@ -74,6 +72,7 @@ namespace address
 	{
 		AddrMac();
 		AddrMac(const std::string& macStr);
+		AddrMac(const char* macStr);
 
 		/// <summary>
 		/// Array to store IPv6 (6 bytes).
@@ -85,8 +84,6 @@ namespace address
 		byte& operator[](const size_t index);
 
 		std::string toString() const;
-
-		static AddrMac fromString(const std::string& addr);
 
 		static AddrMac broadcast;
 

@@ -139,6 +139,8 @@ public:
 	
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
+	
+	virtual ProvidedProtocols protType() const;
 
 	virtual void encodePre(MutablePacket& packet, const size_t index) override;
 	virtual void encodePost(MutablePacket& packet, const size_t index) override;

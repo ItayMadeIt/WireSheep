@@ -1,8 +1,38 @@
 #include "NetworkUtils.h"
+#include <string.h>
 
-AddrMac NetworkUtils::getSelfMac(const std::string& deviceName)
+AddrMac NetworkUtils::getSelfMac(const char* deviceName)
 {
-    std::string formattedDeviceName = deviceName.substr(deviceName.find('{'), deviceName.size() - 1);
+    const char* formattedDeviceName = nullptr;
+
+    size_t len = strlen(deviceName);
+    size_t from = 0;
+
+    for (from = 0; from < len; ++from)
+    {
+        if (deviceName[from] == '{')
+        {
+            break;
+        }
+    }
+    if (from == len)
+    {
+        throw std::runtime_error("No { found in MAC address");
+    }
+
+    size_t to = len > 0 ? len - 1 : 0; // last char
+
+    // invalid range
+    if (from >= to)
+    {
+        throw std::runtime_error("Invalid device name.");
+    }
+
+    // substr values
+    formattedDeviceName = deviceName + from;
+    size_t formattedLen = to - from;
+
+
 
     PIP_ADAPTER_ADDRESSES pAdapterAddresses = nullptr;
     ULONG outBufLen = 0;
@@ -28,9 +58,12 @@ AddrMac NetworkUtils::getSelfMac(const std::string& deviceName)
     // Iterate through adapters
     for (PIP_ADAPTER_ADDRESSES pCurrAdapter = pAdapterAddresses; pCurrAdapter != nullptr; pCurrAdapter = pCurrAdapter->Next)
     {
-        if (pCurrAdapter->PhysicalAddressLength == ADDR_MAC_BYTES &&
-            (formattedDeviceName.empty() || formattedDeviceName == pCurrAdapter->AdapterName))
+        if (pCurrAdapter->PhysicalAddressLength == ADDR_MAC_BYTES)
         {
+            if (std::memcmp(formattedDeviceName, pCurrAdapter->AdapterName, formattedLen) != 0)
+            {
+                continue;
+            }
             AddrMac mac;
             memcpy(mac.m_data, pCurrAdapter->PhysicalAddress, ADDR_MAC_BYTES);
             free(pAdapterAddresses);
@@ -41,9 +74,40 @@ AddrMac NetworkUtils::getSelfMac(const std::string& deviceName)
     free(pAdapterAddresses);
     throw std::runtime_error("No matching network adapter found.");
 }
-AddrMac NetworkUtils::getRouterMac(const std::string& deviceName)
+
+
+AddrMac NetworkUtils::getRouterMac(const char* deviceName)
 {
-    std::string formattedDeviceName = deviceName.substr(deviceName.find('{'), deviceName.size() - 1);
+
+    const char* formattedDeviceName = nullptr;
+
+    size_t len = strlen(deviceName);
+    size_t from = 0;
+
+    for (from = 0; from < len; ++from)
+    {
+        if (deviceName[from] == '{')
+        {
+            break;
+        }
+    }
+    if (from == len)
+    {
+        throw std::runtime_error("No { found in MAC address");
+    }
+
+    size_t to = len > 0 ? len - 1 : 0; // last char
+
+    // invalid range
+    if (from >= to)
+    {
+        throw std::runtime_error("Invalid device name.");
+    }
+
+    // substr values
+    formattedDeviceName = deviceName + from;
+    size_t formattedLen = to - from;
+
 
     // Get the default gateway's IP address
     PIP_ADAPTER_INFO adapterInfo = nullptr;
@@ -75,58 +139,61 @@ AddrMac NetworkUtils::getRouterMac(const std::string& deviceName)
     while (pCurrAdapter)
     {
 
-        if (formattedDeviceName.empty() || formattedDeviceName == pCurrAdapter->AdapterName)
+        if (std::memcmp(formattedDeviceName, pCurrAdapter->AdapterName, formattedLen) != 0)
         {
-            // Default gateway IP
-            IP_ADDR_STRING* gateway = &pCurrAdapter->GatewayList;
-            if (gateway != nullptr && gateway->IpAddress.String[0] != '\0')
-            {
-                sockaddr_in destAddr;
-                memset(&destAddr, 0, sizeof(destAddr));
-                destAddr.sin_family = AF_INET;
-                destAddr.sin_addr.s_addr = inet_addr(gateway->IpAddress.String);
+            pCurrAdapter = pCurrAdapter->Next;
+            continue;
+        }
+        
+        // Default gateway IP
+        IP_ADDR_STRING* gateway = &pCurrAdapter->GatewayList;
+        if (gateway != nullptr && gateway->IpAddress.String[0] != '\0')
+        {
+            sockaddr_in destAddr;
+            memset(&destAddr, 0, sizeof(destAddr));
+            destAddr.sin_family = AF_INET;
+            destAddr.sin_addr.s_addr = inet_addr(gateway->IpAddress.String);
 
-                // Use SendARP to get MAC
-                ULONG macAddr[2] = { 0 };
-                ULONG macAddrLen = 6; // MAC address length
+            // Use SendARP to get MAC
+            ULONG macAddr[2] = { 0 };
+            ULONG macAddrLen = 6; // MAC address length
                 
-                memset(&macAddr, 0xff, sizeof(macAddr));
+            memset(&macAddr, 0xff, sizeof(macAddr));
 
-                unsigned long retVal = SendARP(destAddr.sin_addr.s_addr, 0, &macAddr, &macAddrLen);
+            unsigned long retVal = SendARP(destAddr.sin_addr.s_addr, 0, &macAddr, &macAddrLen);
 
-                if (retVal == NO_ERROR)
+            if (retVal == NO_ERROR)
+            {
+                AddrMac mac;
+                memcpy(mac.m_data, macAddr, ADDR_MAC_BYTES);
+                free(adapterInfo);
+                return mac;
+            }
+            else {
+                printf("Error: SendArp failed with error: %d", retVal);
+                switch (retVal)
                 {
-                    AddrMac mac;
-                    memcpy(mac.m_data, macAddr, ADDR_MAC_BYTES);
-                    free(adapterInfo);
-                    return mac;
-                }
-                else {
-                    printf("Error: SendArp failed with error: %d", retVal);
-                    switch (retVal)
-                    {
-                        case ERROR_GEN_FAILURE:
-                            printf(" (ERROR_GEN_FAILURE)\n");
-                            break;
-                        case ERROR_INVALID_PARAMETER:
-                            printf(" (ERROR_INVALID_PARAMETER)\n");
-                            break;
-                        case ERROR_INVALID_USER_BUFFER:
-                            printf(" (ERROR_INVALID_USER_BUFFER)\n");
-                            break;
-                        case ERROR_BAD_NET_NAME:
-                            printf(" (ERROR_GEN_FAILURE)\n");
-                            break;
-                        case ERROR_BUFFER_OVERFLOW:
-                            printf(" (ERROR_BUFFER_OVERFLOW)\n");
-                            break;
-                        case ERROR_NOT_FOUND:
-                            printf(" (ERROR_NOT_FOUND)\n");
-                            break;
-                        default:
-                            printf("\n");
-                            break;
-                    }
+                    case ERROR_GEN_FAILURE:
+                        printf(" (ERROR_GEN_FAILURE)\n");
+                        break;
+                    case ERROR_INVALID_PARAMETER:
+                        printf(" (ERROR_INVALID_PARAMETER)\n");
+                        break;
+                    case ERROR_INVALID_USER_BUFFER:
+                        printf(" (ERROR_INVALID_USER_BUFFER)\n");
+                        break;
+                    case ERROR_BAD_NET_NAME:
+                        printf(" (ERROR_GEN_FAILURE)\n");
+                        break;
+                    case ERROR_BUFFER_OVERFLOW:
+                        printf(" (ERROR_BUFFER_OVERFLOW)\n");
+                        break;
+                    case ERROR_NOT_FOUND:
+                        printf(" (ERROR_NOT_FOUND)\n");
+                        break;
+                    default:
+                        printf("\n");
+                        break;
                 }
             }
         }
@@ -138,7 +205,7 @@ AddrMac NetworkUtils::getRouterMac(const std::string& deviceName)
 }
 
 
-DeviceMacs NetworkUtils::getDeviceMacs(const std::string& deviceName)
+DeviceMacs NetworkUtils::getDeviceMacs(const char* deviceName)
 {
     DeviceMacs macs;
     macs.host = getSelfMac(deviceName);

@@ -29,6 +29,8 @@ public:
 
 	virtual size_t getSize() const override;
 
+	virtual ProvidedProtocols protType() const;
+
 	virtual void encodePre(MutablePacket& packet, const size_t index) override;
 	virtual void encodePost(MutablePacket& packet, const size_t index)override;
 public:

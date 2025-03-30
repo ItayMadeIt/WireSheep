@@ -18,12 +18,37 @@ AddrIPv4::AddrIPv4(const std::string& ipv4Str)
 		sstream >> std::dec >> curVal;
 		m_data[i] = (byte)curVal;
 
-		if (i != ADDR_MAC_BYTES - 1)
+		if (i != ADDR_IP4_BYTES - 1)
 		{
 			sstream >> delim;
 		}
 	}
 }
+
+address::AddrIPv4::AddrIPv4(const char* ipv4Str)
+{
+	int curVal = 0;
+	int idx = 0;
+
+	for (const char* p = ipv4Str; *p && idx < ADDR_IP4_BYTES; ++p)
+	{
+		if (*p == '.')
+		{
+			m_data[idx++] = (byte)curVal;
+			curVal = 0;
+		}
+		else if (*p >= '0' && *p <= '9')
+		{
+			curVal = curVal * 10 + (*p - '0');
+		}
+		else
+		{
+			throw std::runtime_error("Invalid char: " + (*p));
+		}
+	}
+	m_data[idx] = (byte)curVal;
+}
+
 
 byte& AddrIPv4::operator[](const size_t index)
 {
@@ -56,29 +81,6 @@ std::string AddrIPv4::toString() const
 	return sstream.str();
 }
 
-AddrIPv4 AddrIPv4::fromString(const std::string& addr)
-{
-	AddrIPv4 result;
-	std::stringstream sstream(addr);
-
-	int curVal;
-	char delim;
-
-	// Get dec value into result[i]
-	for (size_t i = 0; i < ADDR_IP4_BYTES; i++)
-	{
-		sstream >> std::dec >> curVal;
-		result[i] = (byte)curVal;
-
-		if (i != ADDR_MAC_BYTES - 1)
-		{
-			sstream >> delim;
-		}
-	}
-
-	return result;
-}
-
 AddrIPv4 AddrIPv4::broadcast = AddrIPv4("255.255.255.255");
 
 
@@ -107,6 +109,43 @@ AddrMac::AddrMac(const std::string& macStr)
 	}
 }
 
+address::AddrMac::AddrMac(const char* macStr)
+{
+	int curVal = 0;
+	int idx = 0;
+
+	while (*macStr && idx < ADDR_MAC_BYTES)
+	{
+		curVal = 0;
+		for (int i = 0; i < 2 && *macStr; ++i)
+		{
+			char c = *macStr;
+			++macStr;
+
+			if (c >= '0' && c <= '9')
+			{
+				curVal = (curVal << 4) + (c - '0');
+			}
+			else if (c >= 'a' && c <= 'f')
+			{
+				curVal = (curVal << 4) + (c - 'a' + 10);
+			}
+			else if (c >= 'A' && c <= 'F')
+			{
+				curVal = (curVal << 4) + (c - 'A' + 10);
+			}
+			else
+			{
+				throw std::runtime_error("Invalid char: (MAC) " + c);
+			}
+		}
+
+		m_data[idx++] = static_cast<byte>(curVal);
+
+		if (*macStr == ':' || *macStr == '-') ++macStr;
+	}
+}
+
 byte& AddrMac::operator[](const size_t index)
 {
 	return m_data[index];
@@ -128,29 +167,6 @@ std::string AddrMac::toString() const
 	}
 
 	return sstream.str();
-}
-
-AddrMac AddrMac::fromString(const std::string& addr)
-{
-	AddrMac result;
-	std::stringstream sstream(addr);
-	
-	int curVal;
-	char delim;
-
-	// Get 2 char hex value into result[i]
-	for (size_t i = 0; i < ADDR_MAC_BYTES; i++)
-	{
-		sstream >> std::hex >> curVal;
-		result[i] = curVal;
-
-		if (i != ADDR_MAC_BYTES - 1)
-		{
-			sstream >> delim;
-		}
-	}
-	
-	return result;
 }
 
 AddrMac AddrMac::broadcast = AddrMac("FF:FF:FF:FF:FF:FF");
@@ -182,6 +198,45 @@ AddrIPv6::AddrIPv6(const std::string& ipv6Str)
 	}
 }
 
+address::AddrIPv6::AddrIPv6(const char* ipv6Str)
+{
+	int curVal = 0;
+	int idx = 0;
+
+	while (*ipv6Str && idx < ADDR_IP6_BYTES)
+	{
+		curVal = 0;
+		while (*ipv6Str && *ipv6Str != ':')
+		{
+			char c = *ipv6Str++;
+
+			if (c >= '0' && c <= '9')
+			{
+				curVal = (curVal << 4) + (c - '0');
+			}
+			else if (c >= 'a' && c <= 'f')
+			{
+				curVal = (curVal << 4) + (c - 'a' + 10);
+			}
+			else if (c >= 'A' && c <= 'F')
+			{
+				curVal = (curVal << 4) + (c - 'A' + 10);
+			}
+			else
+			{
+				throw std::runtime_error("Invalid char: (IPv6) " + c);
+			}
+		}
+
+		// store as two bytes, big-endian
+		m_data[idx++] = (curVal >> 8) & 0xFF;
+		m_data[idx++] = curVal & 0xFF;
+
+		// skip colon
+		if (*ipv6Str == ':') ++ipv6Str;
+	}
+}
+
 byte& AddrIPv6::operator[](const size_t index)
 {
 	return m_data[index];
@@ -203,31 +258,6 @@ std::string AddrIPv6::toString() const
 	}
 
 	return sstream.str();
-}
-
-AddrIPv6 AddrIPv6::fromString(const std::string& addr)
-{
-	AddrIPv6 result;
-	std::stringstream sstream(addr);
-
-	int curVal;
-	char delim;
-
-	// Get 4 char hex value into result[i], result[i+1]
-	for (size_t i = 0; i < ADDR_IP6_BYTES/2; i++)
-	{
-		sstream >> std::hex >> curVal;
-		// Input it backwards
-		result[i*2+1] = (curVal & 0x00FF)     ;
-		result[i*2  ] = (curVal & 0xFF00) >> 8;
-
-		if (i != ADDR_IP6_BYTES/2-1)
-		{
-			sstream >> delim;
-		}
-	}
-
-	return result;
 }
 
 

@@ -12,6 +12,7 @@ class Device
 {
 public:
 	Device(const std::string& deviceName);
+	Device(const char* deviceName);
 	Device(const pcap_if_t* devicePtr);
 	~Device();
 
@@ -49,7 +50,7 @@ private:
 	void sendPacket(const std::vector<byte>& buffer);
 
 	pcap_t* m_devicePtr;
-	std::string m_deviceName;
+	char m_deviceName[MAX_DEVICE_NAME];
 	DeviceMacs m_macs;
 	DeviceIPv4 m_ipv4s;
 };

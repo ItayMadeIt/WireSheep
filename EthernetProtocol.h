@@ -38,13 +38,13 @@ public:
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
 
+	virtual ProvidedProtocols protType() const;
+
 	// No need to override pre
 	// virtual void encodePre (MutablePacket& packet, size_t protocolIndex) override;
 	virtual void encodePost(MutablePacket& packet, size_t protocolIndex) override;
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
-
-
 public:
 	const static size_t BASE_SIZE = 14;
 

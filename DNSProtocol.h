@@ -5,7 +5,7 @@
 #include "DNSHeader.h"
 
 constexpr size_t MAX_RDATA_SIZE = 1024; // set 1024 bytes limit (mostly used for 1 IPv4 or similar)
-constexpr size_t MAX_DOMAIN_SIZE = 2304; // 2048 is the limit
+constexpr size_t MAX_DOMAIN_SIZE = 256; // 253 is the limit
 using RDataBytes = StaticVector<byte, MAX_RDATA_SIZE>;
 using DomainBytes = StaticVector<byte, MAX_DOMAIN_SIZE>;
 
@@ -169,6 +169,7 @@ public:
 	};
 
 	static DomainBytes formatDomain(const std::string& domain);
+	static DomainBytes formatDomain(const char* domain);
 	static DomainBytes consumeDomain(const byte* ptr);
 	
 	DNS(byte* data);
@@ -203,6 +204,9 @@ public:
 
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
+
+	virtual ProvidedProtocols protType() const;
+
 public:
 	const static size_t BASE_SIZE = 12; // min size of 12 bytes
 

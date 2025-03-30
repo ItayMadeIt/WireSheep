@@ -15,16 +15,13 @@
 #include "TCPProtocol.h"
 #include "MutablePacket.h"
 #include <thread>
+#include "ICMP.h"
 
-std::string getFirstLineInFile(const std::string& filename)
+void* operator new(size_t size)
 {
-	std::string result;
+	std::cout << "Size: " << size << std::endl;
 
-	std::ifstream file(filename);
-
-	std::getline(file, result);
-
-	return result;
+	return malloc(size);
 }
 
 int main()
@@ -48,22 +45,26 @@ int main()
 	IPv4& ipv4 = packet.attach<IPv4>();
 	ipv4
 		.src(device.getDeviceIPv4())
-		.dst({ "8.8.8.8" })
-		.protocol(IPv4::Protocols::UDP)
+		.dst({ "8.8.4.4" })
+		.protocol(IPv4::Protocols::ICMP)
 		.flags(IPv4::Flags::NONE)
 		.ecn(0b10);
 
-	UDP& udp = packet.attach<UDP>();
-	udp
-		.src(0x1234)
-		.dst(53);
+	using namespace ICMPMesssages;
+	const char* msg = "george";
+	EchoRequest	request {
+		(byte2)0x1234, 
+		(byte2)0x5678,
+		reinterpret_cast<const byte*>(msg), 
+		6
+	};
+	ICMP& icmp = packet.attach<ICMP>(packet, request);
 
-	DNS& dns = packet.attach<DNS>();
-	dns 
-		.addQuestion(packet, DNS::formatDomain("google.com"), (byte2)DNS::RRType::AAAA, (byte2)DNS::RRClass::Internet);
+	std::cout << packet;
 
 	// calculates everything, for example, padding for Ethernet protocol, IP and transport layers checksum, every dynamic things
 	packet.compile(); 
+	std::cout << packet;
 
 	device << packet;
 }

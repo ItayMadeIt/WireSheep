@@ -32,12 +32,12 @@ class NetworkUtils
 {
 public:
     // Get the MAC address of the device (self)
-    static AddrMac getSelfMac(const std::string& deviceName);
+    static AddrMac getSelfMac(const char* deviceName);
 
     // Get the router's MAC address (router)
-    static AddrMac getRouterMac(const std::string& deviceName);
+    static AddrMac getRouterMac(const char* deviceName);
 
     // Get both self and router MAC addresses
-    static DeviceMacs getDeviceMacs(const std::string& deviceName);
+    static DeviceMacs getDeviceMacs(const char* deviceName);
 
 };

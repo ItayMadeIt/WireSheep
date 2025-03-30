@@ -23,5 +23,5 @@ public:
 	virtual void addr(byte* address) = 0;
 	virtual byte* addr() const = 0;
 	
-	virtual ProvidedProtocols type() const = 0;
+	virtual ProvidedProtocols protType() const = 0;
 };
