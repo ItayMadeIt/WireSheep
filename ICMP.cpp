@@ -39,8 +39,6 @@ ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::DestinationUnreacha
 {
     std::memset(data, 0, BASE_SIZE);
     
-    type(ControlType::DestUnreachable);
-    code(msg.code);
 }
 
 ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::TimeExceeded msg)
@@ -134,6 +132,62 @@ byte2 ICMP::getPayloadLength()
     return m_payloadLength;
 }
 
+ICMP& ICMP::echoRequest(MutablePacket& packet, byte2 id, byte2 seq, const void* data, byte2 length)
+{
+    type(ControlType::EchoRequest);
+    code(ControlCode::EchoRequest);
+
+    byte4 contentVal = (id << 16) | seq;
+    content(contentVal);
+
+    setPayload(packet, reinterpret_cast<const byte*>(data), static_cast<byte2>(length));
+
+
+    return *this;
+}
+
+ICMP& ICMP::echoReply(MutablePacket& packet, byte2 id, byte2 seq, const void* data, byte2 length)
+{
+    type(ControlType::EchoReply);
+    code(ControlCode::EchoReply);
+
+    byte4 contentVal = (id << 16) | seq;
+    content(contentVal);
+
+    setPayload(packet, reinterpret_cast<const byte*>( data), length);
+
+    return *this;
+}
+
+ICMP& ICMP::destinationUnreachable(MutablePacket& packet, byte codeVal)
+{
+    type(ControlType::DestUnreachable);
+    code(codeVal);
+
+    return *this;
+}
+
+ICMP& ICMP::destinationUnreachable(MutablePacket& packet, ControlCode codeVal)
+{
+    return destinationUnreachable(packet, static_cast<byte>(codeVal));
+}
+
+ICMP& ICMP::timeExceeded(MutablePacket& packet, byte codeVal, const byte* originalIPv4Packet)
+{
+    type(ControlType::TimeExceeded);
+    code(codeVal);
+
+    const byte2 len = sizeof(IPv4Header) + 8;
+    setPayload(packet, originalIPv4Packet, len);
+
+    return *this;
+}
+
+ICMP& ICMP::timeExceeded(MutablePacket& packet, ControlCode codeVal, const byte* originalIPv4Packet)
+{
+    return timeExceeded(packet, static_cast<byte>(codeVal), originalIPv4Packet);
+}
+
 size_t ICMP::getSize() const
 {
     return BASE_SIZE + m_payloadLength;
@@ -163,17 +217,26 @@ void ICMP::encodePre(MutablePacket& packet, const size_t index)
 void ICMP::encodePost(MutablePacket& packet, const size_t index)
 {
     byte4 checksumVal = 0;
+    byte2 length = getSize();
 
     // Calculate checksum
     byte2* iter = (byte2*)(m_data);
-    byte2* end = (byte2*)((byte*)m_data + getSize());
+    byte2* end = (byte2*)((byte*)m_data + length);
 
-    while (iter < end)
+    int isOdd = (length & 1) ? 1 : 0;
+
+    while (iter + isOdd < end)
     {
         checksumVal += Endianness::fromNetwork(*iter);
+
         iter++;
     }
-    std::cout << std::dec;
+
+    if (isOdd)
+    {
+        byte lastByte = *((byte*)iter);
+        checksumVal += (lastByte << 8);
+    }
 
     while (checksumVal & 0xFFFF0000)
     {

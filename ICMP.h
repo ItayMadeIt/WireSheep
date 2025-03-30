@@ -134,6 +134,13 @@ public:
 	byte* getPayloadPtr();
 	byte2 getPayloadLength();
 
+	ICMP& echoRequest(MutablePacket& packet, byte2 id, byte2 seq, const void* data, byte2 length);
+	ICMP& echoReply(MutablePacket& packet, byte2 id, byte2 seq, const void* data, byte2 length);
+	ICMP& destinationUnreachable(MutablePacket& packet, byte codeVal);
+	ICMP& destinationUnreachable(MutablePacket& packet, ControlCode codeVal);
+	ICMP& timeExceeded(MutablePacket& packet, byte codeVal, const byte* originalIPv4Packet);
+	ICMP& timeExceeded(MutablePacket& packet, ControlCode codeVal, const byte* originalIPv4Packet);
+
 
 	virtual size_t getSize() const override;
 	virtual void addr(byte* address) override;

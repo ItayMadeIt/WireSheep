@@ -50,17 +50,8 @@ int main()
 		.flags(IPv4::Flags::NONE)
 		.ecn(0b10);
 
-	using namespace ICMPMesssages;
-	const char* msg = "george";
-	EchoRequest	request {
-		(byte2)0x1234, 
-		(byte2)0x5678,
-		reinterpret_cast<const byte*>(msg), 
-		6
-	};
-	ICMP& icmp = packet.attach<ICMP>(packet, request);
-
-	std::cout << packet;
+	ICMP& icmp = packet.attach<ICMP>();
+	icmp.echoRequest(packet, 0x1234, 0x5678, "name", sizeof("name"));
 
 	// calculates everything, for example, padding for Ethernet protocol, IP and transport layers checksum, every dynamic things
 	packet.compile(); 
