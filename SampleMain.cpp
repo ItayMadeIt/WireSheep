@@ -15,13 +15,22 @@
 #include "TCPProtocol.h"
 #include "MutablePacket.h"
 #include <thread>
-#include "ICMP.h"
+#include "ICMPProtocol.h"
+#include "RawSniffer.h"
+//#include "ClassifySniffer.h"
 
 void* operator new(size_t size)
 {
 	std::cout << "Size: " << size << std::endl;
 
-	return malloc(size);
+	void* ptr = malloc(size);
+
+	if (ptr == nullptr)
+	{
+		throw std::runtime_error("Couldn't get allocated memory.");
+	}
+
+	return ptr;
 }
 
 int main()
@@ -33,29 +42,16 @@ int main()
 	std::cout << devices;
 
 	Device device(devices[8]);
-	
-	MutablePacket packet;
 
-	Ethernet& ethernet = packet.attach<Ethernet>();
-	ethernet
-		.src(device.getDeviceMac())
-		.dst(device.getRouterMac())
-		.type(Ethernet::Protocols::IPv4);
+	RawSniffer sniffer(device);
 
-	IPv4& ipv4 = packet.attach<IPv4>();
-	ipv4
-		.src(device.getDeviceIPv4())
-		.dst({ "8.8.4.4" })
-		.protocol(IPv4::Protocols::ICMP)
-		.flags(IPv4::Flags::NONE)
-		.ecn(0b10);
+	sniffer.setFilter("arp or (ip and !udp)");
 
-	ICMP& icmp = packet.attach<ICMP>();
-	icmp.echoRequest(packet, 0x1234, 0x5678, "name", sizeof("name"));
-
-	// calculates everything, for example, padding for Ethernet protocol, IP and transport layers checksum, every dynamic things
-	packet.compile(); 
-	std::cout << packet;
-
-	device << packet;
+	sniffer.start(100);
+	for (int i = 0; i < 100; i++)
+	{
+		const IMMutablePacket packet = sniffer.getPacketView(i);
+		std::cout << "Packet [" << i << "]" << std::endl;
+		std::cout << packet << std::endl;
+	}
 }

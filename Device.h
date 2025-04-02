@@ -45,6 +45,8 @@ public:
 	/// <returns>Network's routere IPv4 address</returns>
 	AddrIPv4 getRouterIPv4() const;
 
+	pcap_t* getHandle();
+
 private:
 	void sendPacket(const Packet& packet);
 	void sendPacket(const std::vector<byte>& buffer);

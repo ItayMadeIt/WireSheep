@@ -48,10 +48,10 @@ byte2 Ethernet::type() const
 
 void Ethernet::encodePost(MutablePacket& packet, size_t protocolIndex)
 {
-	if (packet.size() < MIN_SIZE)
+	if (packet.getSize() < MIN_SIZE)
 	{
-		size_t offset = (packet.size() > 0) ? packet.size() - 1 : 0;
-		packet.insertBytes(0, MIN_SIZE - packet.size());
+		size_t offset = (packet.getSize() > 0) ? packet.getSize() - 1 : 0;
+		packet.insertBytes(0, MIN_SIZE - packet.getSize());
 	}
 }
 

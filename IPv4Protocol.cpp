@@ -201,8 +201,8 @@ byte* IPv4::addr() const
 
 void IPv4::encodePre(MutablePacket& packet, const size_t index)
 {
-    size_t startOffset = (byte*)m_data - (byte*)packet.m_buffer;
-    size_t endOffset = packet.m_curSize;
+    size_t startOffset = (byte*)m_data - (byte*)packet.getBuffer();
+    size_t endOffset = packet.getSize();
 
     totalLength(endOffset - startOffset);
 

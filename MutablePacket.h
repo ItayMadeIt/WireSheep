@@ -4,15 +4,13 @@
 #include <functional>
 #include <array>
 
-class MutablePacket;
-
 struct MutableProtocolEntry
 {
-	size_t m_dataOffset;
-	size_t m_objectOffset;
+	byte4 dataOffset;
+	byte4 objectOffset;
 };
 
-constexpr size_t PROTOCOLS_BUFFER_SIZE = 256;
+constexpr byte4 PROTOCOLS_BUFFER_SIZE = 256;
 
 class MutablePacket : public Packet
 {
@@ -22,47 +20,57 @@ public:
 	template<typename ProtocolClass, typename... Args>
 	ProtocolClass& attach(Args&&... args);
 
+	byte* getBuffer();
+	byte4 getSize();
 
 	template<typename ProtocolClass>
-	ProtocolClass& get(size_t index);
+	ProtocolClass& get(byte4 index);
 
 	template<typename ProtocolClass>
-	ProtocolClass* getPtr(size_t index);
+	ProtocolClass* getPtr(byte4 index);
 
 	void compile();
 
-	byte* getPtrAtProtocol(size_t index);
+	byte* getPtrAtProtocol(byte4 index);
 
-	void shiftFromOffset(size_t index, size_t amount);
-	void shiftFromAddr(byte* addr, size_t amount);
-	void shrinkFromOffset(size_t index, size_t amount);
-	void shrinkFromAddr(byte* addr, size_t amount);
-	void replaceFromOffset(size_t index, size_t deleteAmount, const byte* dataPtr, size_t dataAmount);
-	void replaceFromAddr(byte* addr, size_t deleteAmount, const byte* dataPtr, size_t dataAmount);
-	void insertBytes(const byte value, size_t amount);
-	void insertByteArr(const byte* byteArr, size_t amount);
+	void shiftFromOffset(byte4 index, byte4 amount);
+	void shiftFromAddr(byte* addr, byte4 amount);
+	void shrinkFromOffset(byte4 index, byte4 amount);
+	void shrinkFromAddr(byte* addr, byte4 amount);
+	void replaceFromOffset(byte4 index, byte4 deleteAmount, const byte* dataPtr, byte4 dataAmount);
+	void replaceFromAddr(byte* addr, byte4 deleteAmount, const byte* dataPtr, byte4 dataAmount);
+	void insertBytes(const byte value, byte4 amount);
+	void insertByteArr(const byte* byteArr, byte4 amount);
 
-	size_t protocolCount() const;
+	byte4 protocolCount() const;
 
-public:
+protected:
+	byte m_buffer[MAX_PACKET_SIZE];
+	byte4 m_size;
+
 	std::array<MutableProtocolEntry, MAX_PROTOCOLS> m_protocolEntries;
-	size_t m_protocolCount;
+	byte4 m_protocolCount;
 
 	std::array<byte, PROTOCOLS_BUFFER_SIZE> m_protocolObjects;
 
 	/// <summary>
 	/// Offset from the start of the buffer where the new protocol should be placed
 	/// </summary>
-	size_t m_protocolEndOffset;
-private:
+	byte4 m_protocolEndOffset;
+
+protected:
 	void prePass();
 	void postPass();
+
+	// Inherited via Packet
+	virtual const byte* buffer() const override;
+	virtual const byte4 size() const override;
 };
 
 template<typename ProtocolClass, typename ...Args>
 inline ProtocolClass& MutablePacket::attach(Args&&... args)
 {
-	if (m_curSize + ProtocolClass::BASE_SIZE > MAX_PACKET_SIZE)
+	if (m_size + ProtocolClass::BASE_SIZE > MAX_PACKET_SIZE)
 	{
 		throw std::exception("Packet size exceeded!");
 	}
@@ -71,13 +79,13 @@ inline ProtocolClass& MutablePacket::attach(Args&&... args)
 		throw std::exception("Exceeded protocols amount!");
 	}
 
-	size_t protocolDataOffset = m_curSize;
-	size_t protocolClassOffset = m_protocolEndOffset;
+	byte4 protocolDataOffset = m_size;
+	byte4 protocolClassOffset = m_protocolEndOffset;
 	
 	// Instantiate protocol into the protocols buffer
-	size_t alignment = alignof(Protocol);
+	byte4 alignment = alignof(Protocol);
 	void* alignedPtr = static_cast<void*>(m_protocolObjects.data() + protocolClassOffset);
-	size_t remainingSize = PROTOCOLS_BUFFER_SIZE - protocolClassOffset;
+	byte4 remainingSize = PROTOCOLS_BUFFER_SIZE - protocolClassOffset;
 	if (!std::align(alignment, sizeof(ProtocolClass), alignedPtr, remainingSize))
 	{
 		throw std::exception("Not enough space for alignment!");
@@ -85,7 +93,7 @@ inline ProtocolClass& MutablePacket::attach(Args&&... args)
 
 	// Add base size of protocol to buffer size
 	// If more specifciation is needed, modify Packet using helper functions.
-	m_curSize += ProtocolClass::BASE_SIZE;
+	m_size += ProtocolClass::BASE_SIZE;
 
 	ProtocolClass* protocolObj = new (alignedPtr) ProtocolClass(m_buffer + protocolDataOffset, std::forward<Args>(args)...);
 
@@ -105,7 +113,7 @@ inline ProtocolClass& MutablePacket::attach(Args&&... args)
 }
 
 template<typename ProtocolClass>
-inline ProtocolClass& MutablePacket::get(size_t index)
+inline ProtocolClass& MutablePacket::get(byte4 index)
 {
 	if (m_protocolCount <= index)
 	{
@@ -113,12 +121,12 @@ inline ProtocolClass& MutablePacket::get(size_t index)
 	}
 
 	return *reinterpret_cast<Protocol*>(
-		static_cast<void*>(&m_protocolObjects[m_protocolEntries[index].m_objectOffset])
+		static_cast<void*>(&m_protocolObjects[m_protocolEntries[index].objectOffset])
 	);
 }
 
 template<typename ProtocolClass>
-inline ProtocolClass* MutablePacket::getPtr(size_t index)
+inline ProtocolClass* MutablePacket::getPtr(byte4 index)
 {
 	if (m_protocolCount <= index)
 	{
@@ -126,6 +134,6 @@ inline ProtocolClass* MutablePacket::getPtr(size_t index)
 	}
 
 	return dynamic_cast<ProtocolClass*>(reinterpret_cast<Protocol*>(
-		static_cast<void*>(&m_protocolObjects[m_protocolEntries[index].m_objectOffset])
+		static_cast<void*>(&m_protocolObjects[m_protocolEntries[index].objectOffset])
 	));
 }

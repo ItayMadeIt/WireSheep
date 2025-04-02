@@ -17,6 +17,10 @@ Device::Device(const std::string& deviceName)
 		throw std::exception(errBuffer);
 	}
 
+	pcap_set_promisc(m_devicePtr, 1);
+	pcap_set_immediate_mode(m_devicePtr, 1);
+	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024); 
+
 	// If activating failed
 	if (pcap_activate(m_devicePtr) != 0)
 	{
@@ -36,7 +40,7 @@ Device::Device(const char* deviceName)
 		throw std::runtime_error("Invalid Device Name");
 	}
 
-	std::memcpy(m_deviceName, deviceName, strlen(deviceName));
+	std::memcpy(m_deviceName, deviceName, strlen(deviceName) + 1);
 
 	char errBuffer[PCAP_ERRBUF_SIZE];
 	
@@ -46,6 +50,10 @@ Device::Device(const char* deviceName)
 	{
  		throw std::exception(errBuffer);
 	}
+
+	pcap_set_promisc(m_devicePtr, 1);
+	pcap_set_immediate_mode(m_devicePtr, 1);
+	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
 
 	// If activating failed
 	if (pcap_activate(m_devicePtr) != 0)
@@ -68,6 +76,10 @@ Device::Device(const pcap_if_t* devicePtr)
 	{
 		throw std::exception(errBuffer);
 	}
+
+	pcap_set_promisc(m_devicePtr, 1);
+	pcap_set_immediate_mode(m_devicePtr, 1);
+	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
 
 	// If activating failed
 	if (pcap_activate(m_devicePtr) != 0)
@@ -137,6 +149,11 @@ void Device::sendPacket(const Packet& packet)
 	}
 }
 
+
+pcap_t* Device::getHandle()
+{
+	return m_devicePtr;
+}
 
 void Device::sendPacket(const std::vector<byte>& buffer)
 {

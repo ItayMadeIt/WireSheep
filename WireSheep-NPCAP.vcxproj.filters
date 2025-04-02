@@ -52,6 +52,12 @@
     <Filter Include="Source Files\Protocols\Implementations">
       <UniqueIdentifier>{3d970572-ee43-44c9-92e2-9420fa3b1245}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\Sniffing">
+      <UniqueIdentifier>{305ef4b9-4dac-446a-b06c-68259ba822da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Sniffing">
+      <UniqueIdentifier>{fb5e5e97-a1cd-48ee-84ce-09eb49e0b290}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SampleMain.cpp">
@@ -108,8 +114,20 @@
     <ClCompile Include="IMMutablePacket.cpp">
       <Filter>Source Files\Packets</Filter>
     </ClCompile>
-    <ClCompile Include="ICMP.cpp">
+    <ClCompile Include="ICMPProtocol.cpp">
       <Filter>Source Files\Protocols\Implementations</Filter>
+    </ClCompile>
+    <ClCompile Include="RawSniffer.cpp">
+      <Filter>Source Files\Sniffing</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassifiedPacket.cpp">
+      <Filter>Source Files\Packets</Filter>
+    </ClCompile>
+    <ClCompile Include="ClassifySniffer.cpp">
+      <Filter>Source Files\Sniffing</Filter>
+    </ClCompile>
+    <ClCompile Include="Classifier.cpp">
+      <Filter>Source Files\Sniffing</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -191,8 +209,20 @@
     <ClInclude Include="ICMPHeader.h">
       <Filter>Header Files\Protocols\Data Structures</Filter>
     </ClInclude>
-    <ClInclude Include="ICMP.h">
+    <ClInclude Include="ICMPProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
+    </ClInclude>
+    <ClInclude Include="RawSniffer.h">
+      <Filter>Header Files\Sniffing</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassifiedPacket.h">
+      <Filter>Header Files\Packets</Filter>
+    </ClInclude>
+    <ClInclude Include="ClassifySniffer.h">
+      <Filter>Header Files\Sniffing</Filter>
+    </ClInclude>
+    <ClInclude Include="Classfier.h">
+      <Filter>Header Files\Sniffing</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

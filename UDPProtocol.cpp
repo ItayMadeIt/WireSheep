@@ -68,7 +68,7 @@ void UDP::calculateChecksum(MutablePacket& packet, const size_t index)
 	byte4 checksumVal = 0;
 
 	// Size of the packet from UDP
-	byte2 fromProtocolSize = ((byte*)packet.m_buffer + packet.m_curSize) - (byte*)m_data;
+	byte2 fromProtocolSize = ((byte*)packet.getBuffer()  + packet.getSize()) - (byte*)m_data;
 
 	// Calculate checksum
 	byte2* iter = (byte2*)(m_data);
@@ -145,8 +145,8 @@ ProvidedProtocols UDP::protType() const
 
 void UDP::encodePre(MutablePacket& packet, const size_t index)
 {
-	size_t startOffset = (byte*)m_data - (byte*)packet.m_buffer;
-	size_t endOffset = packet.m_curSize;
+	size_t startOffset = (byte*)m_data - (byte*)packet.getBuffer();
+	size_t endOffset = packet.getSize();
 
 	length(endOffset - startOffset);
 

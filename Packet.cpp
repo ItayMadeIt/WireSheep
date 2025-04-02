@@ -1,28 +1,17 @@
 #include "Packet.h"
 #include <iomanip>
 
-Packet::Packet() 
-    : m_curSize(0)
-{}
-
-const byte* Packet::buffer() const
+std::ostream& operator<<(std::ostream& os, const Packet& packet)
 {
-    return m_buffer;
-}
-
-const size_t Packet::size() const
-{
-    return m_curSize;
-}
-
-std::ostream& operator<<(std::ostream& os, Packet& packet)
-{
-    os << std::dec << "Packet [" << packet.m_curSize << "]" << std::endl;
-    for (size_t i = 0; i < packet.m_curSize; i++)
+    os << std::hex << std::setfill('0');
+    for (int i = 0; i < packet.size(); ++i) 
     {
-        os << std::setfill('0') << std::setw(2) << std::hex << (int)packet.m_buffer[i] << ' ';
+        os << std::setw(2) << static_cast<int>(packet.buffer()[i]) << " ";
+        if ((i + 1) % 8 == 0)
+            os << " ";
+        if ((i + 1) % 16 == 0)
+            os << "\n";
     }
-    os << std::dec;
-
+    os << std::dec; // Reset to decimal
     return os;
 }
