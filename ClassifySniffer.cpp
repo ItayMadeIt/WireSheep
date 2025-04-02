@@ -4,7 +4,7 @@ ClassifySniffer::ClassifySniffer(Device& device, Classifier* classifier)
 	: m_device(device), m_buffer(), m_classifiedPackets(0), m_running(false), m_classifier(classifier)
 {}
 
-void ClassifySniffer::setClassifier(Classifier & newClassifier)
+void ClassifySniffer::setClassifier(Classifier* newClassifier)
 {
 	m_classifier = newClassifier;
 }

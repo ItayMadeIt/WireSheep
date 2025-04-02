@@ -221,7 +221,7 @@
     <ClInclude Include="ClassifySniffer.h">
       <Filter>Header Files\Sniffing</Filter>
     </ClInclude>
-    <ClInclude Include="Classfier.h">
+    <ClInclude Include="Classifier.h">
       <Filter>Header Files\Sniffing</Filter>
     </ClInclude>
   </ItemGroup>

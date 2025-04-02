@@ -21,6 +21,12 @@ public:
 
 	void pop();
 
+	byte4 protocolsCount();
+
+	bool isFull();
+
+	const byte* endPtr();
+
 private:
 	StaticVector<Protocol*, MAX_PROTOCOLS * sizeof(Protocol*)> m_protocolsPtr;
 	IMMutablePacket m_rawPacket;
@@ -61,4 +67,19 @@ inline void ClassifiedPacket::pop()
 
 	m_rawLastIndex -= get<Protocol>(m_protocolsPtr.count() - 1).getSize();
 	m_protocolsPtr.pop_back();
+}
+
+inline byte4 ClassifiedPacket::protocolsCount()
+{
+	return m_protocolsPtr.count();
+}
+
+inline bool ClassifiedPacket::isFull()
+{
+	return m_rawLastIndex == m_rawPacket.size();
+}
+
+inline const byte* ClassifiedPacket::endPtr()
+{
+	return m_rawPacket.buffer() + m_rawLastIndex;
 }
