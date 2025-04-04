@@ -12,15 +12,18 @@ public:
 
 	void setClassifier(Classifier* newClassifier);
 
-	void capture(byte4 maxPackets = 0x200);
+	bool capture(byte4 maxPackets = 0x200);
 
 	void setFilter(const char* filterStr);
+	void setFilter(bool (*customFilter)(ClassifiedPacket& packet));
 
 	ClassifiedPacket& getClassifiedPacket(byte4 index);
 
 private:
 	constexpr static const byte4 POOL_BUFFER_SIZE = 0x5000;
 	constexpr static const byte4 MAX_PACKETS = 0x100;
+
+	bool (*m_customFilter)(ClassifiedPacket& packet);
 
 	Device& m_device;
 	bool m_running;

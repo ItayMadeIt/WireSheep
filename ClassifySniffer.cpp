@@ -1,7 +1,7 @@
 #include "ClassifySniffer.h"
 
 ClassifySniffer::ClassifySniffer(Device& device, Classifier* classifier)
-	: m_device(device), m_buffer(), m_classifiedPackets(), m_running(false), m_classifier(classifier)
+	: m_device(device), m_buffer(), m_classifiedPackets(), m_running(false), m_classifier(classifier), m_customFilter(nullptr)
 {}
 
 void ClassifySniffer::setClassifier(Classifier* newClassifier)
@@ -9,38 +9,59 @@ void ClassifySniffer::setClassifier(Classifier* newClassifier)
 	m_classifier = newClassifier;
 }
 
-void ClassifySniffer::capture(byte4 maxPackets)
+bool ClassifySniffer::capture(byte4 maxPackets)
 {
 	if (m_classifier == nullptr)
 	{
-		return;
+		return false;
 	}
 
 	m_running = true;
 
-	pcap_pkthdr* header;
-	const u_char* pkt_data;
-
 	while (m_running && m_classifiedPackets.count() < maxPackets)
 	{
-		int res = (pcap_next_ex(m_device.getHandle(), &header, &pkt_data));
+		byte* backPtr = m_buffer.end();
+		IMMutablePacket curPacket{ backPtr, MAX_PACKET_SIZE};
+
+		int res = m_device >> curPacket; 
 
 		// error
-		if (res <= 0)
+		if (res == 0)
 		{
 			m_running = false;
-			return;
+			return false;
+		}
+		
+		if (res == -1)
+		{
+			// my special `buffer too large error`
+			continue;
 		}
 
-		byte* backPtr = m_buffer.end();
-		m_buffer.insert(pkt_data, header->caplen);
-		
-		m_classifiedPackets.emplace_back(backPtr, (byte4)header->caplen, header->ts);
+		if (res < 0)
+		{
+			std::cerr << "[Error] " << pcap_geterr(m_device.getHandle()) << std::endl;
+			return false;
+		}
+
+		m_buffer.insert(curPacket.buffer(), curPacket.size());
+		m_classifiedPackets.emplace_back(backPtr, (byte4)curPacket.size(), curPacket.getTimestamp());
 		
 		m_classifier->parse(m_classifiedPackets.back());
+		
+		if (m_customFilter == nullptr)
+		{
+			continue;
+		}
+
+		if (m_customFilter(m_classifiedPackets.back()) == false)
+		{
+			m_classifiedPackets.pop_back();
+			m_buffer.erase_back(curPacket.size());
+		}
 	}
 
-	std::cout << "Classified count: " << m_classifiedPackets.count() << std::endl;
+	return true;
 }
 
 void ClassifySniffer::setFilter(const char* filterStr)
@@ -59,6 +80,11 @@ void ClassifySniffer::setFilter(const char* filterStr)
 	{
 		throw std::runtime_error(pcap_geterr(handle));
 	}
+}
+
+void ClassifySniffer::setFilter(bool(*customFilter)(ClassifiedPacket& packet))
+{
+	m_customFilter = customFilter;
 }
 
 ClassifiedPacket& ClassifySniffer::getClassifiedPacket(byte4 index)

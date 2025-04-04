@@ -23,6 +23,10 @@ public:
 	byte* buffer();
 	byte4 size();
 
+	void size(byte4 value);
+	void setTimestamp(struct timeval timestamp);
+	struct timeval getTimestamp();
+
 private:
 	struct timeval m_timestamp;
 	byte* m_buffer;

@@ -100,7 +100,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Packet.lib;wpcap.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Lib;$(LibraryPath)</AdditionalLibraryDirectories>
-      <StackReserveSize>16384</StackReserveSize>
+      <StackReserveSize>64000</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -121,7 +121,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>Packet.lib;wpcap.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(SolutionDir)\Lib;$(LibraryPath)</AdditionalLibraryDirectories>
-      <StackReserveSize>16384</StackReserveSize>
+      <StackReserveSize>64000</StackReserveSize>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">

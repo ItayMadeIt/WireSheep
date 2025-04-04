@@ -30,6 +30,11 @@ namespace address
 		byte& operator[](const size_t index);
 
 		void operator=(const AddrIPv4& other);
+		friend bool operator==(const AddrIPv4& a, const AddrIPv4 b);
+		friend bool operator!=(const AddrIPv4& a, const AddrIPv4 b);
+
+		friend bool operator==(const AddrIPv4& addr, const char* str);
+		friend bool operator!=(const AddrIPv4& addr, const char* str);
 
 		std::string toString() const;
 
@@ -58,6 +63,14 @@ namespace address
 
 		byte& operator[](const size_t index);
 
+		void operator=(const AddrIPv6& other);
+		
+		friend bool operator==(const AddrIPv6& a, const AddrIPv6 b);
+		friend bool operator!=(const AddrIPv6& a, const AddrIPv6 b);
+
+		friend bool operator==(const AddrIPv6& addr, const char* str);
+		friend bool operator!=(const AddrIPv6& addr, const char* str);
+
 		std::string toString() const;
 
 		friend std::ostream& operator<<(std::ostream& os, const AddrIPv6 ipv6);
@@ -82,6 +95,12 @@ namespace address
 		byte m_data[ADDR_MAC_BYTES];
 
 		byte& operator[](const size_t index);
+
+		friend bool operator==(const AddrMac& a, const AddrMac b);
+		friend bool operator!=(const AddrMac& a, const AddrMac b);
+
+		friend bool operator==(const AddrMac& addr, const char* str);
+		friend bool operator!=(const AddrMac& addr, const char* str);
 
 		std::string toString() const;
 

@@ -4,10 +4,7 @@
 
 UDP::UDP(byte* data)
 	: m_data(reinterpret_cast<UDPHeader*>(data))
-{
-	checksum(0);
-	length(getSize());
-}
+{}
 
 UDP::UDP(byte* data, const byte2 src, const byte2 dst)
 	: m_data(reinterpret_cast<UDPHeader*>(data))

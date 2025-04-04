@@ -102,9 +102,63 @@ DomainBytes DNS::formatDomain(const char* domain)
 
 }
 
-DomainBytes DNS::consumeDomain(const byte* ptr)
+DomainBytes DNS::consumeDomain(const byte* ptr) const
 {
-    return { reinterpret_cast<const char*>(ptr) };
+    DomainBytes result;
+
+    if (*ptr != 0)
+    {
+        byte2 signature = Endianness::fromNetwork(*reinterpret_cast<const byte2*>(ptr));
+        if ((signature & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000)
+        {
+            byte* domainAddr = addr() + (signature & 0b0011'1111'1111'1111);
+            return consumeDomain(domainAddr);
+        }
+    }
+
+    byte2 index = 0;
+    while (ptr[index] != '\0')
+    {
+        result[index] = ptr[index];
+        index++;
+    }
+    result[index++] = '\0';
+
+    result.resize(index);
+
+    return result;
+}
+
+DomainBytes DNS::decodeDomain(const DomainBytes& dnsDomain)
+{
+    DomainBytes result;
+
+    const byte* ptr = dnsDomain.begin();
+    const byte* end = dnsDomain.end();
+
+    while (ptr < end && *ptr != 0)
+    {
+        byte len = *ptr;
+        ++ptr;
+
+        if (ptr + len > end)
+        {
+            break;
+        }
+
+        if (!result.empty())
+        {
+            result.push_back('.');
+        }
+
+        result.insert(ptr, len);
+
+        ptr += len;
+    }
+
+    result.push_back('\0');
+
+    return result;
 }
 
 DNS::DNS(byte* data)
@@ -123,7 +177,7 @@ DNS& DNS::transactionID(const byte2 value)
     return *this;
 }
 
-byte2 DNS::transactionID()
+byte2 DNS::transactionID() const
 {
     return Endianness::fromNetwork(m_data->transactionID);
 }
@@ -154,15 +208,20 @@ DNS& DNS::addQuestion(MutablePacket& packet, const DomainBytes& qAddr, byte2 qTy
     return *this;
 }
 
-DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index)
+DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index) const
 {
     // ptr to questions begin
-    byte* ptr = reinterpret_cast<byte*>(m_data) + sizeof(byte2) * 6; 
+    byte* ptr = reinterpret_cast<byte*>(m_data) + BASE_SIZE; 
+
+    byte2 specialDomain = 0;
 
     for (size_t i = 0; i < index; i++)
     {
-        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        byte2 firstBytes = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+
+        if ((firstBytes & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000) // compressed
         {
+            specialDomain = firstBytes;
             ptr += 2;
         }
         else
@@ -176,11 +235,23 @@ DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index)
         }
 
         ptr += 2 + 2 + 4;
+
+        byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+        ptr += 2 + rdlength;
     }
 
-
     DomainBytes domain = consumeDomain(ptr);
-    ptr += domain.size();
+
+    byte2 firstBytes = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    if ((firstBytes & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000) // compressed
+    {
+        ptr += sizeof(byte2);
+    }
+    else
+    {
+        ptr += domain.size();
+    }
+
 
     byte2 netType = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
     ptr += sizeof(netType);
@@ -188,7 +259,7 @@ DNS::QuestionResourceRecord DNS::getQuestionResponse(const size_t index)
     byte2 netClass = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
 
 
-    return QuestionResourceRecord(
+     return QuestionResourceRecord(
         domain,
         netType,
         netClass
@@ -232,15 +303,20 @@ DNS& DNS::addAnswer(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType
     return *this;
 }
 
-DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)
+DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)const
 {
     // ptr to questions begin
     byte* ptr = reinterpret_cast<byte*>(m_data) + m_questionsEndLoc;
 
+    byte2 specialDomain = 0;
+
     for (size_t i = 0; i < index; i++)
     {
-        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        byte2 firstBytes = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+        
+        if ((firstBytes & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000) // compressed
         {
+            specialDomain = firstBytes;
             ptr += 2;
         }
         else
@@ -260,7 +336,16 @@ DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)
     }
 
     DomainBytes domain = consumeDomain(ptr);
-    ptr += domain.size();
+
+    byte2 firstBytes = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    if ((firstBytes & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000) // compressed
+    {
+        ptr += sizeof(byte2);
+    }
+    else
+    {
+        ptr += domain.size();
+    }
 
     byte2 netType = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
     ptr += sizeof(netType);
@@ -272,6 +357,11 @@ DNS::ResourceRecord DNS::getAnswerResponse(const size_t index)
     ptr += sizeof(netTtl);
 
     byte2 rdataLength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    // limit that to MAX_RDATA_SIZE
+    if (rdataLength > MAX_RDATA_SIZE)
+    {
+        rdataLength = MAX_RDATA_SIZE;
+    }
     ptr += sizeof(rdataLength);
 
     RDataBytes rdata{ ptr, ptr + rdataLength };
@@ -321,14 +411,14 @@ DNS& DNS::addAuthResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2
     return *this;
 }
 
-DNS::ResourceRecord DNS::getAuthResponse(const size_t index)
+DNS::ResourceRecord DNS::getAuthResponse(const size_t index) const
 {
     // ptr to auth begin
     byte* ptr = reinterpret_cast<byte*>(m_data) + m_answersEndLoc;
 
     for (size_t i = 0; i < index; i++)
     {
-        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000) // compressed
         {
             ptr += 2;
         }
@@ -413,14 +503,14 @@ DNS& DNS::addAdditionalResponse(MutablePacket& packet, const DomainBytes& aAddr,
     return *this;
 }
 
-DNS::ResourceRecord DNS::getAdditionalResponse(const size_t index)
+DNS::ResourceRecord DNS::getAdditionalResponse(const size_t index) const
 {
     // ptr to additional answers begin
     byte* ptr = reinterpret_cast<byte*>(m_data) + m_authRREndLoc;
     
     for (size_t i = 0; i < index; i++)
     {
-        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+        if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000) // compressed
         {
             ptr += 2;
         }
@@ -572,103 +662,176 @@ bool DNS::syncFields(byte4 remainingSize)
 
     // Go over questions
     byte2 questions = questionLength();
-
-    while (questions)
+    if (!processQuestions(ptr, questions, remainingSize))
     {
-        while (*ptr)
-        {
-            byte size = *ptr;
-            ptr += size + 1;
-
-            if (ptr >= addr() + remainingSize)
-            {
-                return false;
-            }
-        }
-
-        ptr += 1 + sizeof(byte2) + sizeof(byte2);
-        if (ptr >= addr() + remainingSize)
-        {
-            return false;
-        }
-        questions--;
+        return false;
     }
 
     m_questionsEndLoc = static_cast<byte2>(ptr - addr());
 
-    auto skipResourceRecord =
-        [&]()
-        {
-            if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
-            {
-                ptr += 2;
-                
-                if (ptr >= addr() + remainingSize)
-                {
-                    return false;
-                }
-            }
-            else
-            {
-                while (*ptr)
-                {
-                    byte len = *ptr;
+    auto skipResourceRecord = [&](byte4 remainingSize) -> bool {
+        return processResourceRecord(ptr, remainingSize);
+    };
 
-                    ptr += len + 1;
-
-                    if (ptr >= addr() + remainingSize)
-                    {
-                        return false;
-                    }
-                }
-
-                ptr++;
-                if (ptr >= addr() + remainingSize)
-                {
-                    return false;
-                }
-            }
-
-            ptr += 2 + 2 + 4;
-
-            if (ptr >= addr() + remainingSize)
-            {
-                return false;
-            }
-
-            byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
-            ptr += 2 + rdlength;
-
-            if (ptr >= addr() + remainingSize)
-            {
-                return false;
-            }
-        };
-
-    // Skip Answer RRs
-    for (size_t i = 0; i < answersLength(); ++i)
-    {
-        skipResourceRecord();
-    }
+    // Skip Answer Resource Records
+    if (!skipRecords(answersLength(), skipResourceRecord, remainingSize))
+        return false;
 
     m_answersEndLoc = static_cast<byte2>(ptr - addr());
 
-    // Skip Authority RRs 
-    for (size_t i = 0; i < authRRLength(); ++i)
-    {
-        skipResourceRecord();
-    }
+    // Skip Authority Resource Records
+    if (!skipRecords(authRRLength(), skipResourceRecord, remainingSize))
+        return false;
 
     m_authRREndLoc = static_cast<byte2>(ptr - addr());
 
-    // Skip Additional RRs 
-    for (size_t i = 0; i < additionalRRLength(); ++i)
-    {
-        skipResourceRecord();
-    }
+    // Skip Additional Resource Records
+    if (!skipRecords(additionalRRLength(), skipResourceRecord, remainingSize))
+        return false;
 
     m_additionalRREndLoc = static_cast<byte2>(ptr - addr());
-    
+
+    return true;
+}
+bool DNS::processQuestions(byte*& ptr, byte2 questionCount, byte4 remainingSize)
+{
+    bool nullDomainSeen = false; // Ensure no 2 null domains (root domain)
+
+    for (byte4 count = 0; count < questionCount; count++)
+    {
+        size_t totalLength = 0;
+
+        // Process each label in the domain name
+        while (true)
+        {
+            byte labelLength = *ptr;
+            ptr++;
+
+            if (labelLength == 0)  // Root domain (null byte)
+            {
+                if (totalLength == 0 && nullDomainSeen)
+                {
+                    return false;  // Multiple root domains
+                }
+             
+                nullDomainSeen = true;
+                break;  // End of domain name
+            }
+
+            // Label length must be between 1 and 63
+            if (labelLength < 1 || labelLength > 63)
+            {
+                return false;
+            }
+
+            totalLength += labelLength + 1;
+            if (totalLength > 253)  // Total domain length must not exceed 253 characters
+            {
+                return false;
+            }
+
+            // Validate characters in the label
+            for (byte4 i = 0; i < labelLength; i++)
+            {
+                if (ptr >= addr() + remainingSize)
+                {
+                    return false;  // Out of bounds
+                }
+
+                char ch = static_cast<char>(*ptr);
+
+                // Only printable ASCII characters are allowed
+                if (ch <= ' ' || ch > '~')
+                {
+                    return false;
+                }
+
+                ++ptr;
+            }
+        }
+
+        // Skip the question type and class (2 bytes each)
+        ptr += sizeof(byte2) + sizeof(byte2);
+
+        if (ptr > addr() + remainingSize)
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool DNS::processResourceRecord(byte*& ptr, byte4 remainingSize)
+{
+    // Check for compressed name (0xC0)
+    if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b1100'0000'0000'0000) == 0b1100'0000'0000'0000)
+    {
+        ptr += 2;  // Jump over compression pointer
+        if (ptr > addr() + remainingSize)
+        {
+            return false;
+        }
+    }
+    else
+    {
+        while (true)
+        {
+            byte labelLength = *ptr;
+            ptr++;
+
+            if (labelLength == 0)  // Root domain (null byte)
+            {
+                break;  // End of domain name
+            }
+
+            // Validate label length
+            if (labelLength < 1 || labelLength > 63)
+            {
+                return false;
+            }
+
+            for (byte4 i = 0; i < labelLength; i++)
+            {
+                if (ptr >= addr() + remainingSize)
+                {
+                    return false;
+                }
+
+                char ch = static_cast<char>(*ptr++);
+
+                // Only printable ASCII characters are allowed
+                if (ch <= ' ' || ch > '~')
+                {
+                    return false;
+                }
+            }
+        }
+    }
+
+    // Skip RR type, class, TTL, and RDlength (as per RFC)
+    ptr += 2 + 2 + 4;
+
+    if (ptr > addr() + remainingSize)
+    {
+        return false;
+    }
+
+    byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+    ptr += 2 + rdlength;
+
+    return (ptr <= addr() + remainingSize);  // Ensure we stay within bounds
+}
+
+bool DNS::skipRecords(byte2 recordCount, std::function<bool(byte4)> skipFunc, byte4 remainingSize)
+{
+    for (size_t i = 0; i < recordCount; ++i)
+    {
+        if (!skipFunc(remainingSize))
+        {
+            return false;
+        }
+    }
     return true;
 }
 
@@ -682,6 +845,45 @@ DNS::QuestionResourceRecord::QuestionResourceRecord(const std::string& address, 
 {}
 
 DNS::QuestionResourceRecord::QuestionResourceRecord(const DomainBytes & domain, const byte2 typeVal, const byte2 classVal)
-    : m_domain(formatDomain(reinterpret_cast<const char*>( domain.begin() ) )), m_type(typeVal), m_class(classVal)
+    : m_domain(domain), m_type(typeVal), m_class(classVal)
+{}
+
+std::ostream& operator<<(std::ostream& os, const DNS::QuestionResourceRecord& q)
 {
+    DomainBytes domain = DNS::decodeDomain(q.m_domain);
+
+    return os << "[Q] " << domain.c_str() <<
+        "  Type: " << (q.m_type) <<
+        "  Class: " << (q.m_class);
+}
+
+std::ostream& operator<<(std::ostream& os, const DNS::ResourceRecord& r)
+{
+    DomainBytes domain = DNS::decodeDomain(r.m_domain);
+
+    return os << "[RR] " << domain.c_str()
+        << "  Type: " << (r.m_type)
+        << "  Class: " << (r.m_class)
+        << "  TTL: " << (r.m_ttl)
+        << "  RDATA: " << r.m_rdata.c_str();
+}
+
+std::ostream& operator<<(std::ostream& os, const DNS& dns)
+{
+    os << "[DNS]" << std::endl;
+    os << " - transaction ID: " << dns.transactionID() << std::endl;
+
+    for (int i = 0; i < dns.questionLength(); ++i)
+        os << "  " << dns.getQuestionResponse(i) << std::endl;
+
+    for (int i = 0; i < dns.answersLength(); ++i)
+        os << "  " << dns.getAnswerResponse(i) << std::endl;
+
+    for (int i = 0; i < dns.authRRLength(); ++i)
+        os << "  " << dns.getAuthResponse(i) << std::endl;
+
+    for (int i = 0; i < dns.additionalRRLength(); ++i)
+        os << "  " << dns.getAdditionalResponse(i) << std::endl;
+
+    return os;
 }

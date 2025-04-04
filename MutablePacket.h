@@ -65,6 +65,9 @@ protected:
 	// Inherited via Packet
 	virtual const byte* buffer() const override;
 	virtual const byte4 size() const override;
+	virtual byte* buffer() override;
+	virtual byte4 size() override;
+	void size(byte4 value) override;
 };
 
 template<typename ProtocolClass, typename ...Args>

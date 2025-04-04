@@ -63,6 +63,54 @@ void address::AddrIPv4::operator=(const AddrIPv4& other)
 	}
 }
 
+bool address::operator==(const AddrIPv4& a, const AddrIPv4 b)
+{
+	return std::memcmp(a.m_data, b.m_data, ADDR_IP4_BYTES);
+}
+
+bool address::operator!=(const AddrIPv4& a, const AddrIPv4 b)
+{
+	return !(a == b);
+}
+
+bool address::operator==(const AddrIPv4& addr, const char* str)
+{
+	byte parsed[ADDR_IP4_BYTES];
+	int curVal = 0;
+	int idx = 0;
+
+	for (const char* p = str; *p && idx < ADDR_IP4_BYTES; ++p)
+	{
+		if (*p == '.')
+		{
+			parsed[idx++] = (byte)curVal;
+			curVal = 0;
+		}
+		else if (*p >= '0' && *p <= '9')
+		{
+			curVal = curVal * 10 + (*p - '0');
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	parsed[idx] = (byte)curVal;
+
+	for (int i = 0; i < ADDR_IP4_BYTES; ++i)
+	{
+		if (parsed[i] != addr.m_data[i])
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
+
 std::string AddrIPv4::toString() const
 {
 	std::stringstream sstream;
@@ -144,6 +192,59 @@ address::AddrMac::AddrMac(const char* macStr)
 
 		if (*macStr == ':' || *macStr == '-') ++macStr;
 	}
+}
+
+bool address::operator==(const AddrMac& a, const AddrMac b)
+{
+	return std::memcmp(a.m_data, b.m_data, ADDR_MAC_BYTES);
+}
+
+bool address::operator!=(const AddrMac& a, const AddrMac b)
+{
+	return !(a == b);
+}
+
+bool address::operator==(const AddrMac& addr, const char* str)
+{
+	byte parsed[ADDR_MAC_BYTES] = {};
+	int idx = 0;
+
+	while (*str && idx < ADDR_MAC_BYTES)
+	{
+		int curVal = 0;
+		for (int i = 0; i < 2 && *str; ++i)
+		{
+			char c = *str++;
+			if (c >= '0' && c <= '9')
+				curVal = (curVal << 4) + (c - '0');
+			else if (c >= 'a' && c <= 'f')
+				curVal = (curVal << 4) + (c - 'a' + 10);
+			else if (c >= 'A' && c <= 'F')
+				curVal = (curVal << 4) + (c - 'A' + 10);
+			else
+				return false;
+		}
+
+		parsed[idx++] = (byte)curVal;
+
+		if (*str == ':' || *str == '-') ++str;
+	}
+
+	if (idx != ADDR_MAC_BYTES)
+		return false;
+
+	for (int i = 0; i < ADDR_MAC_BYTES; ++i)
+	{
+		if (parsed[i] != addr.m_data[i])
+			return false;
+	}
+
+	return true;
+}
+
+bool address::operator!=(const AddrMac& addr, const char* str)
+{
+	return !(addr == str);
 }
 
 byte& AddrMac::operator[](const size_t index)
@@ -242,6 +343,14 @@ byte& AddrIPv6::operator[](const size_t index)
 	return m_data[index];
 }
 
+void address::AddrIPv6::operator=(const AddrIPv6& other)
+{
+	for (size_t i = 0; i < ADDR_IP6_BYTES; i++)
+	{
+		m_data[i] = other.m_data[i];
+	}
+}
+
 std::string AddrIPv6::toString() const
 {
 	std::stringstream sstream;
@@ -261,9 +370,89 @@ std::string AddrIPv6::toString() const
 }
 
 
+bool address::operator!=(const AddrIPv4& addr, const char* str)
+{
+	return !(addr == str);
+}
+
 std::ostream& address::operator<<(std::ostream& os, const AddrIPv4 ipv4)
 {
 	return os << ipv4.toString();
+}
+
+bool address::operator==(const AddrIPv6& a, const AddrIPv6 b)
+{
+	return std::memcmp(a.m_data, b.m_data, ADDR_IP6_BYTES);
+}
+
+bool address::operator!=(const AddrIPv6& a, const AddrIPv6 b)
+{
+	return !(a == b);
+}
+
+bool address::operator==(const AddrIPv6& addr, const char* str)
+{
+	byte parsed[ADDR_IP6_BYTES] = {};
+	int idx = 0;
+	int curVal = 0;
+	bool inBlock = false;
+
+	while (*str && idx < ADDR_IP6_BYTES)
+	{
+		if (*str == ':')
+		{
+			if (!inBlock) {
+				// First colon
+				inBlock = true;
+			}
+			else {
+				// Double colon (zero compression)
+				int zeroFill = ADDR_IP6_BYTES - idx;
+				for (int i = 0; i < zeroFill; ++i)
+					parsed[idx++] = 0;
+				++str; // skip second ':'
+				continue;
+			}
+			++str;
+		}
+
+		curVal = 0;
+		int digitCount = 0;
+
+		while (*str && *str != ':' && digitCount < 4)
+		{
+			char c = *str++;
+			if (c >= '0' && c <= '9')
+				curVal = (curVal << 4) + (c - '0');
+			else if (c >= 'a' && c <= 'f')
+				curVal = (curVal << 4) + (c - 'a' + 10);
+			else if (c >= 'A' && c <= 'F')
+				curVal = (curVal << 4) + (c - 'A' + 10);
+			else
+				return false;
+
+			++digitCount;
+		}
+
+		if (idx + 1 >= ADDR_IP6_BYTES)
+			return false;
+
+		parsed[idx++] = (byte)((curVal >> 8) & 0xFF);
+		parsed[idx++] = (byte)(curVal & 0xFF);
+	}
+
+	for (int i = 0; i < ADDR_IP6_BYTES; ++i)
+	{
+		if (parsed[i] != addr.m_data[i])
+			return false;
+	}
+
+	return true;
+}
+
+bool address::operator!=(const AddrIPv6& addr, const char* str)
+{
+	return !(addr == str);
 }
 
 std::ostream& address::operator<<(std::ostream& os, const AddrIPv6 ipv6)

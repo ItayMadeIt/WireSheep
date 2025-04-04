@@ -239,6 +239,22 @@ const byte* MutablePacket::buffer() const
 
 const byte4 MutablePacket::size() const
 {
-	return m_size ;
+	return m_size;
+}
+
+
+byte* MutablePacket::buffer() 
+{
+	return m_buffer;
+}
+
+byte4 MutablePacket::size() 
+{
+	return m_size;
+}
+
+void MutablePacket::size(byte4 value)
+{
+	m_size = value;
 }
 

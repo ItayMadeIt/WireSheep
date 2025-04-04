@@ -1,96 +1,20 @@
 #include "Device.h"
+#include "IMMutablePacket.h"
+#include "StaticVector.hpp"
 
 Device::Device(const std::string& deviceName)
 {
-	if (deviceName.size() >= MAX_DEVICE_NAME)
-	{
-		throw std::runtime_error("Invalid Device Name");
-	}
-	std::memcpy(m_deviceName, deviceName.c_str(), deviceName.size());
-
-	char errBuffer[PCAP_ERRBUF_SIZE];
-
-	m_devicePtr = pcap_create(m_deviceName, errBuffer);
-
-	if (!m_devicePtr)
-	{
-		throw std::exception(errBuffer);
-	}
-
-	pcap_set_promisc(m_devicePtr, 1);
-	//pcap_set_immediate_mode(m_devicePtr, 1);
-	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
-	pcap_set_timeout(m_devicePtr, 1000);
-
-	// If activating failed
-	if (pcap_activate(m_devicePtr) != 0)
-	{
-		strcpy_s(errBuffer, pcap_geterr(m_devicePtr));
-		pcap_close(m_devicePtr);
-		throw std::runtime_error(errBuffer);
-	}
-
-	m_macs = NetworkUtils::getDeviceMacs(m_deviceName);
+	initializeDevice(deviceName.c_str());
 }
 
 Device::Device(const char* deviceName)
 {
-	size_t size = strlen(deviceName);
-	if (size >= MAX_DEVICE_NAME)
-	{
-		throw std::runtime_error("Invalid Device Name");
-	}
-
-	std::memcpy(m_deviceName, deviceName, strlen(deviceName) + 1);
-
-	char errBuffer[PCAP_ERRBUF_SIZE];
-	
-	m_devicePtr = pcap_create(m_deviceName, errBuffer);
-
-	if (!m_devicePtr)
-	{
- 		throw std::exception(errBuffer);
-	}
-
-	pcap_set_promisc(m_devicePtr, 1);
-	//pcap_set_immediate_mode(m_devicePtr, 1);
-	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
-	pcap_set_timeout(m_devicePtr, 1000);
-
-	// If activating failed
-	if (pcap_activate(m_devicePtr) != 0)
-	{
-		strcpy_s(errBuffer, pcap_geterr(m_devicePtr));
-		pcap_close(m_devicePtr);
-		throw std::runtime_error(errBuffer);
-	}
-
-	m_macs = NetworkUtils::getDeviceMacs(deviceName);
+	initializeDevice(deviceName);
 }
 
 Device::Device(const pcap_if_t* devicePtr)
 {
-	char errBuffer[PCAP_ERRBUF_SIZE];
-
-	m_devicePtr = pcap_create(devicePtr->name, errBuffer);
-
-	if (!m_devicePtr)
-	{
-		throw std::exception(errBuffer);
-	}
-
-	pcap_set_promisc(m_devicePtr, 1);
-	//pcap_set_immediate_mode(m_devicePtr, 1);
-	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
-	pcap_set_timeout(m_devicePtr, 1000);
-
-	// If activating failed
-	if (pcap_activate(m_devicePtr) != 0)
-	{
-		strcpy_s(errBuffer, pcap_geterr(m_devicePtr));
-		pcap_close(m_devicePtr);
-		throw std::runtime_error(errBuffer);
-	}
+	initializeDevice(devicePtr->name);
 
 	for (const pcap_addr* addressIt = devicePtr->addresses; addressIt != nullptr; addressIt = addressIt->next)
 	{
@@ -105,8 +29,6 @@ Device::Device(const pcap_if_t* devicePtr)
 			m_ipv4s.host = AddrIPv4(ipStr);
 		}
 	}
-
-	m_macs = NetworkUtils::getDeviceMacs(devicePtr->name);
 }
 
 Device::~Device()
@@ -116,6 +38,49 @@ Device::~Device()
 	{
 		pcap_close(m_devicePtr);
 	}
+}
+
+void Device::initializeDevice(const char* deviceName)
+{
+	size_t size = strlen(deviceName);
+	if (size >= MAX_DEVICE_NAME)
+	{
+		throw std::runtime_error("Invalid Device Name");
+	}
+
+	std::memcpy(m_deviceName, deviceName, size + 1);
+
+	char errBuffer[PCAP_ERRBUF_SIZE];
+
+	// Open the device for live capture
+	m_devicePtr = pcap_open_live(m_deviceName, 65535, 1, 1000, errBuffer); // Open for live capture
+	if (!m_devicePtr)
+	{
+		throw std::exception(errBuffer);
+	}
+
+	// Set additional configurations
+	pcap_set_promisc(m_devicePtr, 1);  // Promiscuous mode
+	pcap_set_buffer_size(m_devicePtr, 128 * 1024);  // Buffer size
+	pcap_set_timeout(m_devicePtr, 5000); // Timeout: 5 seconds
+
+	m_macs = NetworkUtils::getDeviceMacs(deviceName);
+}
+
+bool Device::openLiveCapture()
+{
+	char errBuffer[PCAP_ERRBUF_SIZE];
+
+	static constexpr int MAX_BYTE2_VALUE = 65535;
+	m_devicePtr = pcap_open_live(m_deviceName, MAX_BYTE2_VALUE, 1, 1000, errBuffer);
+
+	if (!m_devicePtr)
+	{
+		std::cerr << "Error opening device for capture: " << errBuffer << std::endl;
+		return false;
+	}
+
+	return true;
 }
 
 AddrMac Device::getDeviceMac() const
@@ -152,6 +117,13 @@ void Device::sendPacket(const Packet& packet)
 	}
 }
 
+int Device::recvPacket(pcap_pkthdr*& header, const byte*& pkt_data)
+{
+	byte4 res = pcap_next_ex(m_devicePtr, &header, &pkt_data);
+
+	return res;
+}
+
 
 pcap_t* Device::getHandle()
 {
@@ -179,4 +151,41 @@ Device& operator<<(Device& device, const std::vector<byte>& buffer)
 	device.sendPacket(buffer);
 
 	return device;
+}
+
+int operator>>(Device& device, Packet& packet)
+{
+	pcap_pkthdr* pkt_header;
+	const byte* pkt_buffer = nullptr;
+	int res = device.recvPacket(pkt_header, pkt_buffer);
+
+	std::memcpy(packet.buffer(), pkt_buffer, pkt_header->caplen);
+	packet.size(pkt_header->caplen);
+
+	return res;
+}
+
+
+int operator>>(Device& device, IMMutablePacket& packet)
+{
+	pcap_pkthdr* pkt_header = nullptr;
+	const byte* pkt_buffer = nullptr;
+	int res = device.recvPacket(pkt_header, pkt_buffer);
+
+	if (res == 0)
+	{
+		return 0;
+	}
+
+	if (pkt_header->caplen > packet.size())
+	{
+		return -1;
+	}
+
+	std::memcpy(packet.buffer(), pkt_buffer, pkt_header->caplen);
+	packet.size(pkt_header->caplen);
+
+	packet.setTimestamp(pkt_header->ts);
+
+	return res;
 }

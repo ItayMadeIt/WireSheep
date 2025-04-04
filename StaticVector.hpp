@@ -18,7 +18,9 @@ public:
     bool empty() const;
     void push_back(const T& val);
     void pop_back();
+
     void insert(const byte* ptr, const byte4 size);
+    void erase_back(const byte4 count);
 
     template<typename... Args>
     void emplace_back(Args&&... args);
@@ -38,6 +40,8 @@ public:
     T* end();
     const T* begin() const;
     const T* end() const;
+
+    const char* c_str() const;
 
 private:
     byte m_data[Capacity];
@@ -150,6 +154,18 @@ inline void StaticVector<T, Capacity>::insert(const byte* ptr, const byte4 size)
 }
 
 template<typename T, byte4 Capacity>
+inline void StaticVector<T, Capacity>::erase_back(const byte4 count)
+{
+    byte4 totalBytes = count * sizeof(T);
+    if (totalBytes > m_size)
+    {
+        throw std::runtime_error("erase back overflow");
+    }
+
+    m_size -= totalBytes;
+}
+
+template<typename T, byte4 Capacity>
 inline void StaticVector<T, Capacity>::resize(byte4 newCount, const T& val)
 {
     byte4 newSize = newCount * sizeof(T); 
@@ -199,6 +215,12 @@ inline const T* StaticVector<T, Capacity>::end() const
 }
 
 template<typename T, byte4 Capacity>
+inline const char* StaticVector<T, Capacity>::c_str() const
+{
+    return reinterpret_cast<const char*>(&m_data[0]);
+}
+
+template<typename T, byte4 Capacity>
 template<typename... Args>
 inline void StaticVector<T, Capacity>::emplace_back(Args && ...args)
 {
@@ -242,4 +264,23 @@ inline const T& StaticVector<T, Capacity>::back() const
     if (empty())
         throw std::runtime_error("StaticVector is empty");
     return *reinterpret_cast<const T*>(&m_data[m_size - sizeof(T)]);
+}
+
+template<typename T, byte4 Capacity>
+inline bool operator==(const StaticVector<T, Capacity>& vec, const char* str)
+{
+    const byte* vecData = reinterpret_cast<const byte*>(vec.begin());
+
+    if (vec.empty())
+        return str[0] == '\0';
+
+    return std::strcmp(reinterpret_cast<const char*>(vecData), str) == 0;
+}
+template<typename T, byte4 CapA, byte4 CapB>
+inline bool operator==(const StaticVector<T, CapA>& a, const StaticVector<T, CapB>& b)
+{
+    if (a.size() != b.size())
+        return false;
+
+    return std::memcmp(a.begin(), b.begin(), a.size()) == 0;
 }

@@ -109,9 +109,37 @@ bool applyTCP(ClassifiedPacket& packet)
 
 bool applyDNS(ClassifiedPacket& packet)
 {
-	byte4 protocolIndex = packet.protocolsCount() - 1;
-
 	DNS& dns = packet.add<DNS>();
+	if (!dns.syncFields(packet.unidentifiedPacketSize() + DNS::BASE_SIZE))
+	{
+		packet.pop();
+		return false;
+	}
+
+	return true;
+}
+
+bool myFilter(ClassifiedPacket& packet)
+{
+	// For example DNS + question name is dns.google
+
+	IPv4* ip = nullptr;
+	if (!packet.tryGet<IPv4>(ip))
+	{
+		return false;
+	}
+
+	address::AddrIPv4 addr = "8.8.4.4";
+	if (ip->src() != addr && ip->dst() != addr)
+	{
+		return false;
+	}
+
+	DNS* dns = nullptr;
+	if (!packet.tryGet<DNS>(dns))
+	{
+		return false;
+	}
 
 	return true;
 }
@@ -124,7 +152,7 @@ int main()
 
 	std::cout << devices;
 
-	Device device(devices[8]);
+	Device device(devices[6]);
 
 	Classifier classifier;
 	classifier.addRule(ProvidedProtocols::None, applyEther);
@@ -136,24 +164,25 @@ int main()
 
 	ClassifySniffer sniffer(device, &classifier);
 
-	sniffer.setFilter("udp");
-	sniffer.capture(15);
-	
-	for (int i = 0; i < 15; i++)
+	//sniffer.setFilter("udp");
+	sniffer.setFilter(myFilter);
+	bool succeed = sniffer.capture(5);
+
+	if (!succeed)
+	{
+		std::cerr << "Capture failed." << std::endl;
+		return - 1;
+	}
+
+	for (int i = 0; i < 5; i++)
 	{
 		ClassifiedPacket& packet = sniffer.getClassifiedPacket(i);
 
-		std::cout << "Packet [" << i << "]" << std::endl;
+		std::cout << "Packet #" << i << " ["  << packet.getRaw().size() << "]" << std::endl;
 		std::cout << packet.getRaw() << std::endl;
-		
-		int index;
-		if ((index = packet.find(ProvidedProtocols::DNS)) != -1)
-		{
-			UDP& udp = packet.get<UDP>(index);
+	
+		DNS& dns = packet.get<DNS>();
+		std::cout << dns << std::endl << std::endl;
 
-			std::cout << "This is a UDP packet: \n";
-			std::cout << "src: " << udp.src() << " dst: " << udp.dst() << std::endl;
-		}
-		std::cout << std::endl;
 	}
 }

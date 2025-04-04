@@ -19,7 +19,6 @@ const byte4 IMMutablePacket::size() const
 	return m_size;
 }
 
-
 byte* IMMutablePacket::buffer() 
 {
 	return m_buffer;
@@ -28,4 +27,19 @@ byte* IMMutablePacket::buffer()
 byte4 IMMutablePacket::size()
 {
 	return m_size;
+}
+
+void IMMutablePacket::size(byte4 value)
+{
+	m_size = value;
+}
+
+void IMMutablePacket::setTimestamp(timeval timestamp)
+{
+	m_timestamp = timestamp;
+}
+
+timeval IMMutablePacket::getTimestamp()
+{
+	return m_timestamp ;
 }

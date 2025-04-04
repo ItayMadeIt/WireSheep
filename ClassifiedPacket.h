@@ -20,7 +20,10 @@ public:
 	T& get(const byte4 index);
 
 	template<typename T>
-	T& tryGet(const byte4 index);
+	T& get();
+
+	template<typename T>
+	bool tryGet(T*& output);
 
 	bool contains(ProvidedProtocols protocol);
 	byte4 find(ProvidedProtocols protocol);
@@ -34,6 +37,8 @@ public:
 	bool isFull();
 
 	const byte* endPtr();
+	
+	byte4 unidentifiedPacketSize() const;
 
 private:
 	StaticVector<Protocol*, MAX_PROTOCOLS * sizeof(Protocol*)> m_protocolsPtr;
@@ -72,11 +77,30 @@ inline T& ClassifiedPacket::get(const byte4 index)
 }
 
 template<typename T>
-inline T& ClassifiedPacket::tryGet(const byte4 index)
+inline T& ClassifiedPacket::get()
 {
+	static_assert(std::is_base_of<Protocol, T>::value, "T must inherit from Protocol");
 
+	byte4 protocolIndex = find(T::ID);
 
-	return *reinterpret_cast<T*>(m_protocolsPtr[index]);
+	return *static_cast<T*>(m_protocolsPtr[protocolIndex]);
+}
+
+template<typename T>
+inline bool ClassifiedPacket::tryGet(T*& output)
+{
+	static_assert(std::is_base_of<Protocol, T>::value, "T must inherit from Protocol");
+
+	byte4 protocolIndex = find(T::ID);
+
+	if (protocolIndex == -1)
+	{
+		output = nullptr;
+		return false;
+	}
+
+	output = static_cast<T*>(m_protocolsPtr[protocolIndex]);
+	return true;
 }
 
 inline bool ClassifiedPacket::contains(ProvidedProtocols protocol)
@@ -134,4 +158,9 @@ inline bool ClassifiedPacket::isFull()
 inline const byte* ClassifiedPacket::endPtr()
 {
 	return m_rawPacket.buffer() + m_rawLastIndex;
+}
+
+inline byte4 ClassifiedPacket::unidentifiedPacketSize() const
+{
+	return m_rawPacket.size() - m_rawLastIndex;
 }

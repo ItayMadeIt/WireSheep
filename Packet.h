@@ -22,6 +22,23 @@ public:
 	virtual const byte4 size() const = 0;
 
 
+	/// <summary>
+	/// Get the packet's buffer byte pointer
+	/// </summary>
+	/// <returns>buffer byte pointer</returns>
+	virtual byte* buffer() = 0;
+
+	/// <summary>
+	/// Get the packet's buffer size
+	/// </summary>
+	/// <returns>buffer size</returns>
+	virtual byte4 size() = 0;
+
+	/// <summary>
+	/// Set the packet's buffer size
+	/// </summary>
+	virtual void size(byte4 value) = 0;
+
 	friend std::ostream& operator<<(std::ostream& os, const Packet& packet);
 };
 

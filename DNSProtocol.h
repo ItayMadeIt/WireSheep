@@ -3,6 +3,7 @@
 #include "EndianHandler.h"
 #include "StaticVector.hpp"
 #include "DNSHeader.h"
+#include <functional>
 
 constexpr size_t MAX_RDATA_SIZE = 1024; // set 1024 bytes limit (mostly used for 1 IPv4 or similar)
 constexpr size_t MAX_DOMAIN_SIZE = 256; // 253 is the limit
@@ -170,24 +171,24 @@ public:
 
 	static DomainBytes formatDomain(const std::string& domain);
 	static DomainBytes formatDomain(const char* domain);
-	static DomainBytes consumeDomain(const byte* ptr);
+	static DomainBytes decodeDomain(const DomainBytes& dnsDomain);
 	
 	DNS(byte* data);
 
 	DNS& transactionID(const byte2 value);
-	byte2 transactionID();
+	byte2 transactionID() const;
 
 	DNS& addQuestion(MutablePacket& packet, const DomainBytes& qAddr, byte2 qType, byte2 qClass);
-	QuestionResourceRecord getQuestionResponse(const size_t index);
+	QuestionResourceRecord getQuestionResponse(const size_t index) const;
 
 	DNS& addAnswer(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
-	ResourceRecord getAnswerResponse(const size_t index);
+	ResourceRecord getAnswerResponse(const size_t index) const;
 
 	DNS& addAuthResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
-	ResourceRecord getAuthResponse(const size_t index);
+	ResourceRecord getAuthResponse(const size_t index) const;
 
 	DNS& addAdditionalResponse(MutablePacket& packet, const DomainBytes& aAddr, byte2 aType, byte2 aClass, byte4 aTtl, const RDataBytes& aData);
-	ResourceRecord  getAdditionalResponse(const size_t index);
+	ResourceRecord  getAdditionalResponse(const size_t index) const;
 
 	DNS& flags(byte2 newFlags);
 	DNS& flags(FlagsIndices newFlags);
@@ -212,9 +213,20 @@ public:
 
 	virtual bool syncFields(byte4 remainingSize) override;
 
+	bool processQuestions(byte*& ptr, byte2 questionCount, byte4 remainingSize);
+	bool processResourceRecord(byte*& ptr, byte4 remainingSize);
+	bool skipRecords(byte2 recordCount, std::function<bool(byte4)> skipFunc, byte4 remainingSize);
+
+	friend std::ostream& operator<<(std::ostream& os, const QuestionResourceRecord& q);
+	friend std::ostream& operator<<(std::ostream& os, const ResourceRecord& r);
+	friend std::ostream& operator<<(std::ostream& os, const DNS& dns);
+
 public:
 	static constexpr ProvidedProtocols ID = ProvidedProtocols::DNS;
 	static constexpr size_t BASE_SIZE = sizeof(DNSHeader);
+
+protected:
+	DomainBytes consumeDomain(const byte* ptr) const;
 
 protected:
 	DNSHeader* m_data;
