@@ -151,7 +151,8 @@ public:
 	void encodePost(MutablePacket& packet, const size_t index);
 
 public:
-	constexpr static size_t BASE_SIZE = sizeof(ICMPHeader);
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::ICMP;
+	static constexpr size_t BASE_SIZE = sizeof(ICMPHeader);
 
 protected:
 	

@@ -8,8 +8,7 @@ class RawSniffer {
 public:
 	RawSniffer(Device& device);
 
-	void start(byte4 maxPackets = 0x200);
-	void stop();
+	void capture(byte4 maxPackets = 0x200);
 
 	void setFilter(const char* filterStr);
 
@@ -22,7 +21,6 @@ private:
 	static void packetHandler(u_char* userData, const pcap_pkthdr* header, const u_char* pkt_data);
 	
 	Device& m_device;
-	bool m_running;
 
 	StaticVector<byte, POOL_BUFFER_SIZE> m_buffer;
 	StaticVector<IMMutablePacket, sizeof(IMMutablePacket)* MAX_PACKETS> m_packetViews;

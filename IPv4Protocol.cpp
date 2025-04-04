@@ -7,17 +7,12 @@ IPv4::IPv4(const IPv4& other) = default;
 IPv4::IPv4(byte * data)
     : m_data(reinterpret_cast<IPv4Header*>(data))
 {
+    /*
     version(4);
     ihl(5);
     dscp((byte)IPv4::Services::CS0); // default
     ecn(0b10);
-    identification(1);
-    flags(0);
-    fragmentOffset(0);
-    ttl(64);
-    protocol(IPv4::Protocols::UDP); // defualt 
-    totalLength(ihl() * 4);
-    checksum(0);
+    ttl(64);*/
 }
 
 IPv4::IPv4(byte* data, AddrIPv4 src, AddrIPv4 dst)
@@ -99,7 +94,7 @@ IPv4& IPv4::identification(const byte2 value)
     return *this;
 }
 
-byte2 IPv4::identification() const 
+byte2 IPv4::identification() const
 {
     return Endianness::fromNetwork(m_data->identification);
 }
@@ -156,9 +151,9 @@ IPv4& IPv4::protocol(const byte value)
     return *this;
 }
 
-IPv4::Protocols IPv4::protocol() const 
+byte IPv4::protocol() const 
 {
-    return static_cast<Protocols>(m_data->protocol);
+    return m_data->protocol;
 }
 
 IPv4& IPv4::totalLength(const byte2 value) 
@@ -235,6 +230,6 @@ void IPv4::encodePost(MutablePacket& packet, const size_t index)
 
 ProvidedProtocols IPv4::protType() const
 {
-    return ProvidedProtocols::IPv4;
+    return ID;
 }
 

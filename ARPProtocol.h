@@ -80,13 +80,14 @@ public:
 
 	virtual size_t getSize() const override;
 
-	// Size is the size without any length dependent attributes
-	static constexpr int BASE_SIZE = 8;
-
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
 	
 	virtual ProvidedProtocols protType() const;
+	
+public:
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::ARP;
+	static constexpr size_t BASE_SIZE = sizeof(ARPHeader);
 
 protected:
 	size_t m_size;

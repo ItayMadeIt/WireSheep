@@ -16,3 +16,8 @@ void Protocol::encodePost(MutablePacket& packet, size_t protocolIndex)
 {
 	// Empty implementation
 }
+
+bool Protocol::syncFields(byte4 remainingSize)
+{
+	return true;
+}

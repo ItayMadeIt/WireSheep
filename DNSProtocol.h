@@ -174,6 +174,9 @@ public:
 	
 	DNS(byte* data);
 
+	DNS& transactionID(const byte2 value);
+	byte2 transactionID();
+
 	DNS& addQuestion(MutablePacket& packet, const DomainBytes& qAddr, byte2 qType, byte2 qClass);
 	QuestionResourceRecord getQuestionResponse(const size_t index);
 
@@ -207,8 +210,11 @@ public:
 
 	virtual ProvidedProtocols protType() const;
 
+	virtual bool syncFields(byte4 remainingSize) override;
+
 public:
-	const static size_t BASE_SIZE = 12; // min size of 12 bytes
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::DNS;
+	static constexpr size_t BASE_SIZE = sizeof(DNSHeader);
 
 protected:
 	DNSHeader* m_data;
@@ -217,7 +223,5 @@ protected:
 	byte2 m_answersEndLoc;
 	byte2 m_authRREndLoc;
 	byte2 m_additionalRREndLoc;
-	//void encodeLayerPre   (std::vector<byte>& buffer, const size_t offset) override;
-
 };
 

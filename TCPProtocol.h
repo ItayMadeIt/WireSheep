@@ -124,7 +124,8 @@ public:
 	virtual void encodePost(MutablePacket& packet, const size_t index)override;
 
 public:
-	const static size_t BASE_SIZE = 20; // header size: 20 bytes
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::TCP;
+	static constexpr size_t BASE_SIZE = sizeof(TCPHeader);
 protected:
 
 	/// <summary>

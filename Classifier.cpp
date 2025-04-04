@@ -40,3 +40,13 @@ void Classifier::parse(ClassifiedPacket& packet)
 		}
 	}
 }
+
+void Classifier::addRule(ClassifyRule& rule)
+{
+	m_rules.push_back(rule);
+}
+
+void Classifier::addRule(ProvidedProtocols lastProtocol, bool(*apply)(ClassifiedPacket&))
+{
+	m_rules.emplace_back(lastProtocol, apply);
+}

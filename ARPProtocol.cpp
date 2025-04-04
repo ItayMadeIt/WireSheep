@@ -76,7 +76,7 @@ byte* ARP::addr() const
 
 ProvidedProtocols ARP::protType() const
 {
-	return ProvidedProtocols::ARP;
+	return ID;
 }
 
 ARP& ARP::opcode(const byte2 value)

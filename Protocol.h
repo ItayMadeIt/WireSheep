@@ -22,6 +22,15 @@ public:
 
 	virtual void addr(byte* address) = 0;
 	virtual byte* addr() const = 0;
+
+	/// <summary>
+	/// Syncs the fields of the protocol and it's attachment
+	/// It will return true if it was successful, false otherwise.
+	/// If it wasn't successful then the protocol's fields may be invalid.
+	/// </summary>
+	/// <param name="remainingSize">Remaining size in the packet</param>
+	/// <returns>Is successful</returns>
+	virtual bool syncFields(byte4 remainingSize);
 	
 	virtual ProvidedProtocols protType() const = 0;
 };

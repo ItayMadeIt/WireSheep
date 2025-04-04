@@ -10,7 +10,7 @@ public:
 	constexpr static const byte4 MAX_PROTOCOLS_AMOUNT = 256;
 
 	ClassifiedPacket(const IMMutablePacket rawPacket);
-	ClassifiedPacket(const byte* data, const byte4 length, struct timeval timestamp);
+	ClassifiedPacket(byte* data, const byte4 length, struct timeval timestamp);
 	ClassifiedPacket(const ClassifiedPacket& other) = default;
 
 	template<typename T>
@@ -19,9 +19,17 @@ public:
 	template<typename T>
 	T& get(const byte4 index);
 
+	template<typename T>
+	T& tryGet(const byte4 index);
+
+	bool contains(ProvidedProtocols protocol);
+	byte4 find(ProvidedProtocols protocol);
+
 	void pop();
 
 	byte4 protocolsCount();
+
+	IMMutablePacket& getRaw();
 
 	bool isFull();
 
@@ -42,20 +50,59 @@ inline T& ClassifiedPacket::add()
 {
 	static_assert(std::is_base_of<Protocol, T>::value, "T must inherit from Protocol");
 
-	byte* ptr = m_protocolStorage.begin() + m_protocolStorage.size();
-	m_protocolsPtr.push_back(reinterpret_cast<const  Protocol*>(ptr));
+	// Add to protocol storage the size
+	byte* ptr = m_protocolStorage.end();
+	m_protocolStorage.resize(m_protocolStorage.size() + sizeof(T));
 
-	Protocol& protocol = new (ptr) T(m_rawPacket.buffer() + m_rawLastIndex);
+	// Add ptr to the list
+	m_protocolsPtr.push_back(reinterpret_cast<Protocol*>(ptr));
+
+	// Get protocol ptr
+	Protocol* protocol = new (ptr) T(m_rawPacket.buffer() + m_rawLastIndex);
 	
-	m_rawLastIndex += protocol.getSize();
+	m_rawLastIndex += protocol->getSize();
 
-	return protocol;
+	return *reinterpret_cast<T*>(protocol);
 }
 
 template<typename T>
 inline T& ClassifiedPacket::get(const byte4 index)
 {
 	return *reinterpret_cast<T*>(m_protocolsPtr[index]);
+}
+
+template<typename T>
+inline T& ClassifiedPacket::tryGet(const byte4 index)
+{
+
+
+	return *reinterpret_cast<T*>(m_protocolsPtr[index]);
+}
+
+inline bool ClassifiedPacket::contains(ProvidedProtocols protocol)
+{
+	for (byte4 i = 0; i < m_protocolsPtr.count(); i++)
+	{
+		ProvidedProtocols curProtocol = m_protocolsPtr[i]->protType();
+		if (curProtocol == protocol)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+inline byte4 ClassifiedPacket::find(ProvidedProtocols protocol)
+{
+	for (byte4 i = 0; i < m_protocolsPtr.count(); i++)
+	{
+		if (m_protocolsPtr[i]->protType() == protocol)
+		{
+			return i;
+		}
+	}
+
+	return -1;
 }
 
 inline void ClassifiedPacket::pop()
@@ -72,6 +119,11 @@ inline void ClassifiedPacket::pop()
 inline byte4 ClassifiedPacket::protocolsCount()
 {
 	return m_protocolsPtr.count();
+}
+
+inline IMMutablePacket& ClassifiedPacket::getRaw()
+{
+	return m_rawPacket;
 }
 
 inline bool ClassifiedPacket::isFull()

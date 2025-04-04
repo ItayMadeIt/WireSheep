@@ -145,8 +145,8 @@ ProvidedProtocols UDP::protType() const
 
 void UDP::encodePre(MutablePacket& packet, const size_t index)
 {
-	size_t startOffset = (byte*)m_data - (byte*)packet.getBuffer();
-	size_t endOffset = packet.getSize();
+	byte2 startOffset = (byte*)m_data - (byte*)packet.getBuffer();
+	byte2 endOffset = packet.getSize();
 
 	length(endOffset - startOffset);
 

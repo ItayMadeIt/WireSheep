@@ -12,17 +12,20 @@ struct IMMutableProtocolEntry
 class IMMutablePacket : public Packet
 {
 public:
-	IMMutablePacket(const byte* data, const byte4 length);
-	IMMutablePacket(const byte* data, const byte4 length, struct timeval timestamp);
+	IMMutablePacket(byte* data, const byte4 length);
+	IMMutablePacket(byte* data, const byte4 length, struct timeval timestamp);
 
 
 	// Inherited via Packet
 	const byte* buffer() const override;
 	const byte4 size() const override;
 
+	byte* buffer();
+	byte4 size();
+
 private:
 	struct timeval m_timestamp;
-	const byte* m_buffer;
+	byte* m_buffer;
 	byte4 m_size;
 
 };

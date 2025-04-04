@@ -6,6 +6,6 @@ ClassifiedPacket::ClassifiedPacket(const IMMutablePacket rawPacket)
 
 }
 
-ClassifiedPacket::ClassifiedPacket(const byte* data, const byte4 length, timeval timestamp)
+ClassifiedPacket::ClassifiedPacket(byte* data, const byte4 length, timeval timestamp)
 	: m_rawPacket(data, length, timestamp), m_rawLastIndex(0), m_protocolsPtr(), m_protocolStorage()
 {}

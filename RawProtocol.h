@@ -21,7 +21,8 @@ public:
 	virtual ProvidedProtocols protType() const;
 
 public:
-	const static size_t BASE_SIZE = 0;
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::Raw;
+	static constexpr size_t BASE_SIZE = 0;
 
 protected:
 	byte* m_data;

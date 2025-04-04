@@ -46,7 +46,8 @@ public:
 
 	friend std::ostream& operator<<(std::ostream& os, const Ethernet& ether);
 public:
-	const static size_t BASE_SIZE = 14;
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::Ethernet;
+	static constexpr size_t BASE_SIZE = sizeof(EthernetHeader);
 
 protected:
 

@@ -18,8 +18,9 @@ Device::Device(const std::string& deviceName)
 	}
 
 	pcap_set_promisc(m_devicePtr, 1);
-	pcap_set_immediate_mode(m_devicePtr, 1);
-	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024); 
+	//pcap_set_immediate_mode(m_devicePtr, 1);
+	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
+	pcap_set_timeout(m_devicePtr, 1000);
 
 	// If activating failed
 	if (pcap_activate(m_devicePtr) != 0)
@@ -52,8 +53,9 @@ Device::Device(const char* deviceName)
 	}
 
 	pcap_set_promisc(m_devicePtr, 1);
-	pcap_set_immediate_mode(m_devicePtr, 1);
+	//pcap_set_immediate_mode(m_devicePtr, 1);
 	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
+	pcap_set_timeout(m_devicePtr, 1000);
 
 	// If activating failed
 	if (pcap_activate(m_devicePtr) != 0)
@@ -78,8 +80,9 @@ Device::Device(const pcap_if_t* devicePtr)
 	}
 
 	pcap_set_promisc(m_devicePtr, 1);
-	pcap_set_immediate_mode(m_devicePtr, 1);
+	//pcap_set_immediate_mode(m_devicePtr, 1);
 	pcap_set_buffer_size(m_devicePtr, 4 * 1024 * 1024);
+	pcap_set_timeout(m_devicePtr, 1000);
 
 	// If activating failed
 	if (pcap_activate(m_devicePtr) != 0)

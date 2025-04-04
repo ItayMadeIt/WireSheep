@@ -110,12 +110,22 @@ DomainBytes DNS::consumeDomain(const byte* ptr)
 DNS::DNS(byte* data)
     : m_data(reinterpret_cast<DNSHeader*>(data))
 {
-    std::memset(m_data, 0, BASE_SIZE);
-
     m_questionsEndLoc = BASE_SIZE;
     m_answersEndLoc = BASE_SIZE;
     m_authRREndLoc = BASE_SIZE;
     m_additionalRREndLoc = BASE_SIZE;
+}
+
+DNS& DNS::transactionID(const byte2 value)
+{
+    m_data->transactionID = Endianness::toNetwork(value);
+
+    return *this;
+}
+
+byte2 DNS::transactionID()
+{
+    return Endianness::fromNetwork(m_data->transactionID);
 }
 
 DNS& DNS::addQuestion(MutablePacket& packet, const DomainBytes& qAddr, byte2 qType, byte2 qClass)
@@ -523,68 +533,7 @@ byte2 DNS::additionalRRLength() const
 
 size_t DNS::getSize() const
 {
-    constexpr size_t headerSize = sizeof(m_data->transactionID) + sizeof(m_data->flags) + 
-        sizeof(m_data->questionsLength) + sizeof(m_data->answerLength) + sizeof(m_data->authoritiveRRLength) + sizeof(m_data->additionalRRLength);
-
-    byte* ptr = (byte*)m_data + headerSize;
-
-    // Go over questions
-    byte2 questions = questionLength();
-
-    while (questions)
-    {
-        while (*ptr)
-        {
-            byte size = *ptr;
-            ptr += size + 1;
-        }
-
-        ptr += 1 + sizeof(byte2) + sizeof(byte2);
-        questions--;
-    }
-
-    auto skipResourceRecord = 
-        [&ptr]() 
-        {
-            if ((Endianness::fromNetwork( *reinterpret_cast<byte2*>(ptr) ) & 0b11000000) == 0b11000000) // compressed
-            {
-                ptr += 2;
-            }
-            else 
-            {
-                while (*ptr) 
-                {
-                    byte len = *ptr;
-                    ptr += len + 1;
-                }
-                ptr++;
-            }
-
-            ptr += 2 + 2 + 4; 
-
-            byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
-            ptr += 2 + rdlength;
-        };
-
-    // Skip Answer RRs
-    for (size_t i = 0; i < answersLength(); ++i)
-    {
-        skipResourceRecord();
-    }
-
-    // Skip Authority RRs 
-    for (size_t i = 0; i < authRRLength(); ++i)
-    {
-        skipResourceRecord();
-    }
-
-    // Skip Additional RRs 
-    for (size_t i = 0; i < additionalRRLength(); ++i)
-    {
-        skipResourceRecord();
-    }
-
-    return ptr - reinterpret_cast<byte*>( m_data  );
+    return m_additionalRREndLoc;
 }
 
 void DNS::addr(byte* address)
@@ -599,7 +548,128 @@ byte* DNS::addr() const
 
 ProvidedProtocols DNS::protType() const
 {
-    return ProvidedProtocols::DNS;
+    return ID;
+}
+
+bool DNS::syncFields(byte4 remainingSize)
+{
+    if (remainingSize < DNS::BASE_SIZE)
+    {
+        return false;
+    }
+
+    if (remainingSize == DNS::BASE_SIZE)
+    {
+        return (
+            questionLength() == 0 &&
+            answersLength() == 0 &&
+            authRRLength() == 0 &&
+            additionalRRLength() == 0
+        );
+    }
+
+    byte* ptr = (byte*)m_data + BASE_SIZE;
+
+    // Go over questions
+    byte2 questions = questionLength();
+
+    while (questions)
+    {
+        while (*ptr)
+        {
+            byte size = *ptr;
+            ptr += size + 1;
+
+            if (ptr >= addr() + remainingSize)
+            {
+                return false;
+            }
+        }
+
+        ptr += 1 + sizeof(byte2) + sizeof(byte2);
+        if (ptr >= addr() + remainingSize)
+        {
+            return false;
+        }
+        questions--;
+    }
+
+    m_questionsEndLoc = static_cast<byte2>(ptr - addr());
+
+    auto skipResourceRecord =
+        [&]()
+        {
+            if ((Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr)) & 0b11000000) == 0b11000000) // compressed
+            {
+                ptr += 2;
+                
+                if (ptr >= addr() + remainingSize)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                while (*ptr)
+                {
+                    byte len = *ptr;
+
+                    ptr += len + 1;
+
+                    if (ptr >= addr() + remainingSize)
+                    {
+                        return false;
+                    }
+                }
+
+                ptr++;
+                if (ptr >= addr() + remainingSize)
+                {
+                    return false;
+                }
+            }
+
+            ptr += 2 + 2 + 4;
+
+            if (ptr >= addr() + remainingSize)
+            {
+                return false;
+            }
+
+            byte2 rdlength = Endianness::fromNetwork(*reinterpret_cast<byte2*>(ptr));
+            ptr += 2 + rdlength;
+
+            if (ptr >= addr() + remainingSize)
+            {
+                return false;
+            }
+        };
+
+    // Skip Answer RRs
+    for (size_t i = 0; i < answersLength(); ++i)
+    {
+        skipResourceRecord();
+    }
+
+    m_answersEndLoc = static_cast<byte2>(ptr - addr());
+
+    // Skip Authority RRs 
+    for (size_t i = 0; i < authRRLength(); ++i)
+    {
+        skipResourceRecord();
+    }
+
+    m_authRREndLoc = static_cast<byte2>(ptr - addr());
+
+    // Skip Additional RRs 
+    for (size_t i = 0; i < additionalRRLength(); ++i)
+    {
+        skipResourceRecord();
+    }
+
+    m_additionalRREndLoc = static_cast<byte2>(ptr - addr());
+    
+    return true;
 }
 
 DNS::ResourceRecord::ResourceRecord(const DomainBytes& address, const byte2 typeVal, const byte2 classVal, const byte4 ttlVal, const RDataBytes& rdata)

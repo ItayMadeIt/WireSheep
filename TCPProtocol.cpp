@@ -40,9 +40,7 @@ size_t TCP::getOptionsSize() const
 
 TCP::TCP(byte* data)
     : m_data(reinterpret_cast<TCPHeader*>(data)), m_optionsEndLoc(BASE_SIZE)
-{
-    std::memset(data, 0, BASE_SIZE);
-}
+{}
 
 void TCP::calculateChecksum(MutablePacket& packet, const size_t index)
 {
@@ -117,7 +115,7 @@ void TCP::calculateChecksum(MutablePacket& packet, const size_t index)
 
 ProvidedProtocols TCP::protType() const
 {
-	return ProvidedProtocols::TCP;
+	return ID;
 }
 
 void TCP::encodePre(MutablePacket& packet, const size_t index)

@@ -155,9 +155,6 @@
     <ClInclude Include="Address.h">
       <Filter>Header Files\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="Protocol.h">
-      <Filter>Header Files\Packets</Filter>
-    </ClInclude>
     <ClInclude Include="UDPProtocol.h">
       <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
@@ -223,6 +220,9 @@
     </ClInclude>
     <ClInclude Include="Classifier.h">
       <Filter>Header Files\Sniffing</Filter>
+    </ClInclude>
+    <ClInclude Include="Protocol.h">
+      <Filter>Header Files\Protocols\Implementations</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

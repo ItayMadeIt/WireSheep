@@ -3,9 +3,7 @@
 
 Ethernet::Ethernet(byte* data)
 	: m_data(reinterpret_cast<EthernetHeader*>(data))
-{
-	type(0);
-}
+{}
 
 Ethernet::~Ethernet() = default;
 
@@ -43,7 +41,7 @@ Ethernet& Ethernet::type(const Protocols value)
 
 byte2 Ethernet::type() const
 {
-	return m_data->etherType;
+	return Endianness::fromNetwork(m_data->etherType);
 }
 
 void Ethernet::encodePost(MutablePacket& packet, size_t protocolIndex)
@@ -67,7 +65,7 @@ byte* Ethernet::addr() const
 
 ProvidedProtocols Ethernet::protType() const
 {
-	return ProvidedProtocols::Ethernet;
+	return ID;
 }
 
 size_t Ethernet::getSize() const

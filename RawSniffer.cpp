@@ -5,34 +5,30 @@ RawSniffer::RawSniffer(Device& device)
 	: m_device(device), m_packetViews()
 {}
 
-void RawSniffer::start(byte4 maxPackets)
+void RawSniffer::capture(byte4 maxPackets)
 {
-	m_running = true;
-
 	pcap_pkthdr* header;
 	const u_char* pkt_data;
 
-	while (m_running && m_packetViews.count() < maxPackets)
+	while (m_packetViews.count() < maxPackets)
 	{
-		int res = pcap_dispatch(
-			m_device.getHandle(), 
-			16, 
-			&RawSniffer::packetHandler, 
-			reinterpret_cast<u_char*>(this)
-		);
+		int res = pcap_next_ex(m_device.getHandle(), &header, &pkt_data);
+
+		if (res == 0)
+		{
+			break;
+		}
 
 		if (res < 0)
 		{
 			std::cerr << "Error capturing packets\n";
-			m_running = false;
 			return;
 		}
-	}
-}
 
-void RawSniffer::stop()
-{
-	m_running = false;
+		byte* curEnd = m_buffer.end();
+		m_buffer.insert(pkt_data, header->caplen);
+		m_packetViews.emplace_back(curEnd, static_cast<byte4>(header->caplen), header->ts);
+	}
 }
 
 void RawSniffer::setFilter(const char* filterStr)

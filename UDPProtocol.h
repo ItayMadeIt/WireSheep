@@ -34,7 +34,8 @@ public:
 	virtual void encodePre(MutablePacket& packet, const size_t index) override;
 	virtual void encodePost(MutablePacket& packet, const size_t index)override;
 public:
-	const static size_t BASE_SIZE = 8; 
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::UDP;
+	static constexpr size_t BASE_SIZE = sizeof(UDPHeader);
 
 protected:	
 	virtual void calculateChecksum(MutablePacket& packet, const size_t index);

@@ -5,14 +5,11 @@
 ICMP::ICMP(byte* data)
     : m_data(reinterpret_cast<ICMPHeader*>(data)), m_payloadLength(0)
 {
-    std::memset(data, 0, BASE_SIZE);
 }
 
 ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::EchoReply msg)
     : m_data(reinterpret_cast<ICMPHeader*>(data)), m_payloadLength(0)
 {
-    std::memset(data, 0, BASE_SIZE);
-
     type(ControlType::EchoReply);
     code(ControlCode::EchoReply);
 
@@ -22,8 +19,6 @@ ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::EchoReply msg)
 ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::EchoRequest msg)
     : m_data(reinterpret_cast<ICMPHeader*>(data)), m_payloadLength(0)
 {
-    std::memset(data, 0, BASE_SIZE);
-    
     type(ControlType::EchoRequest);
     code(ControlCode::EchoRequest);
 
@@ -37,15 +32,11 @@ ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::EchoRequest msg)
 ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::DestinationUnreachable msg)
     : m_data(reinterpret_cast<ICMPHeader*>(data)), m_payloadLength(0)
 {
-    std::memset(data, 0, BASE_SIZE);
-    
 }
 
 ICMP::ICMP(byte* data, MutablePacket& packet, ICMPMesssages::TimeExceeded msg)
     : m_data(reinterpret_cast<ICMPHeader*>(data))
 {
-    std::memset(data, 0, BASE_SIZE);
-    
     type(ControlType::TimeExceeded);
     code(msg.code);
 
@@ -205,7 +196,7 @@ byte* ICMP::addr() const
 
 ProvidedProtocols ICMP::protType() const
 {
-    return ProvidedProtocols::ICMP;
+    return ID;
 }
 
 

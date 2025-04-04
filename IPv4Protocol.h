@@ -127,7 +127,7 @@ public:
 
 	IPv4& protocol(const Protocols value);
 	IPv4& protocol(const byte value);
-	Protocols protocol() const;
+	byte protocol() const;
 
 	IPv4& totalLength(const byte2 value); 
 	byte2 totalLength() const;
@@ -146,10 +146,10 @@ public:
 	virtual void encodePost(MutablePacket& packet, const size_t index) override;
 
 public:
-	const static size_t BASE_SIZE = 20; // min size of 20 bytes
+	static constexpr ProvidedProtocols ID = ProvidedProtocols::IPv4;
+	static constexpr size_t BASE_SIZE = sizeof(IPv4Header);
 
 protected:
-
 	const static byte IHL_MIN_SIZE = 5;
 
 protected:
