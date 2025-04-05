@@ -5,7 +5,7 @@
 #include "DNSHeader.h"
 #include <functional>
 
-constexpr size_t MAX_RDATA_SIZE = 1024; // set 1024 bytes limit (mostly used for 1 IPv4 or similar)
+constexpr size_t MAX_RDATA_SIZE = 65535; // set 1024 bytes limit (mostly used for 1 IPv4 or similar)
 constexpr size_t MAX_DOMAIN_SIZE = 256; // 253 is the limit
 using RDataBytes = StaticVector<byte, MAX_RDATA_SIZE>;
 using DomainBytes = StaticVector<byte, MAX_DOMAIN_SIZE>;

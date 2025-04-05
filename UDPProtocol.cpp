@@ -155,3 +155,14 @@ void UDP::encodePost(MutablePacket& packet, const size_t index)
 {
 	calculateChecksum(packet, index);
 }
+
+std::ostream& operator<<(std::ostream& os, const UDP& udp)
+{
+	os << "[UDP]" << std::endl;
+	os << "\tSrc Port: " << udp.src() << std::endl;
+	os << "\tDst Port: " << udp.dst() << std::endl;
+	os << "\tLength:   " << udp.length() << std::endl;
+	os << "\tChecksum: " << std::hex << std::setw(4) << std::setfill('0') << udp.checksum() << std::dec << std::endl;
+
+	return os;
+}

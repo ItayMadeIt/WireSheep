@@ -4,17 +4,17 @@
 
 Device::Device(const std::string& deviceName)
 {
-	initializeDevice(deviceName.c_str());
+	initDevice(deviceName.c_str());
 }
 
 Device::Device(const char* deviceName)
 {
-	initializeDevice(deviceName);
+	initDevice(deviceName);
 }
 
 Device::Device(const pcap_if_t* devicePtr)
 {
-	initializeDevice(devicePtr->name);
+	initDevice(devicePtr->name);
 
 	for (const pcap_addr* addressIt = devicePtr->addresses; addressIt != nullptr; addressIt = addressIt->next)
 	{
@@ -40,7 +40,7 @@ Device::~Device()
 	}
 }
 
-void Device::initializeDevice(const char* deviceName)
+void Device::initDevice(const char* deviceName)
 {
 	size_t size = strlen(deviceName);
 	if (size >= MAX_DEVICE_NAME)
@@ -52,17 +52,33 @@ void Device::initializeDevice(const char* deviceName)
 
 	char errBuffer[PCAP_ERRBUF_SIZE];
 
-	// Open the device for live capture
-	m_devicePtr = pcap_open_live(m_deviceName, 65535, 1, 1000, errBuffer); // Open for live capture
+	// Open the device 
+	m_devicePtr = pcap_create(m_deviceName, errBuffer);
 	if (!m_devicePtr)
 	{
-		throw std::exception(errBuffer);
+		throw std::runtime_error("Failed to create device");
 	}
 
-	// Set additional configurations
-	pcap_set_promisc(m_devicePtr, 1);  // Promiscuous mode
-	pcap_set_buffer_size(m_devicePtr, 128 * 1024);  // Buffer size
-	pcap_set_timeout(m_devicePtr, 5000); // Timeout: 5 seconds
+	// Set options BEFORE activation
+	if (pcap_set_promisc(m_devicePtr, 1) != 0)
+	{
+		throw std::runtime_error("Failed to set promiscuous mode");
+	}
+
+	if (pcap_set_buffer_size(m_devicePtr, 512 * 1024) != 0)
+	{
+		throw std::runtime_error("Failed to set buffer size");
+	}
+
+	if (pcap_set_timeout(m_devicePtr, 5000) != 0)
+	{
+		throw std::runtime_error("Failed to set timeout");
+	}
+
+	if (pcap_activate(m_devicePtr) != 0)
+	{
+		throw std::runtime_error("Failed to activate device");
+	}
 
 	m_macs = NetworkUtils::getDeviceMacs(deviceName);
 }

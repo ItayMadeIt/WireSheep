@@ -50,7 +50,7 @@ public:
 	pcap_t* getHandle();
 
 private:
-	void initializeDevice(const char* deviceName);
+	void initDevice(const char* deviceName);
 
 	bool openLiveCapture();
 	

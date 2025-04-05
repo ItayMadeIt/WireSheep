@@ -30,6 +30,8 @@ public:
 
 	void pop();
 
+	void updateLastSize();
+
 	byte4 protocolsCount();
 
 	IMMutablePacket& getRaw();
@@ -138,6 +140,19 @@ inline void ClassifiedPacket::pop()
 
 	m_rawLastIndex -= get<Protocol>(m_protocolsPtr.count() - 1).getSize();
 	m_protocolsPtr.pop_back();
+}
+
+inline void ClassifiedPacket::updateLastSize()
+{
+	Protocol& lastProtocol = get<Protocol>(protocolsCount() - 1);
+
+	byte* lastProtocolAddr = lastProtocol.addr();
+	byte4 lastSize = endPtr() - lastProtocolAddr;
+
+	byte4 newSize = lastProtocol.getSize();
+	
+	m_rawLastIndex -= lastSize;
+	m_rawLastIndex += newSize;
 }
 
 inline byte4 ClassifiedPacket::protocolsCount()

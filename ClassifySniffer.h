@@ -19,6 +19,34 @@ public:
 
 	ClassifiedPacket& getClassifiedPacket(byte4 index);
 
+
+	struct PacketIterator
+	{
+		using iterator_category = std::forward_iterator_tag;
+		using difference_type = std::ptrdiff_t;
+		using value_type = ClassifiedPacket;
+		using pointer = ClassifiedPacket*;  // or also value_type*
+		using reference = ClassifiedPacket&;  // or also value_type&
+
+		PacketIterator(pointer ptr) : m_ptr(ptr) {}
+
+		reference operator*() const { return *m_ptr; }
+		pointer operator->() { return m_ptr; }
+
+		PacketIterator& operator++() { m_ptr++; return *this; }
+		PacketIterator operator++(int) { PacketIterator tmp = *this; ++(*this); return tmp; }
+
+		friend bool operator== (const PacketIterator& a, const PacketIterator& b) { return a.m_ptr == b.m_ptr; };
+		friend bool operator!= (const PacketIterator& a, const PacketIterator& b) { return a.m_ptr != b.m_ptr; };
+
+	private:
+		pointer m_ptr;
+	};
+
+
+	PacketIterator begin() { return { m_classifiedPackets.begin() }; }
+	PacketIterator end() { return { m_classifiedPackets.end() }; }
+
 private:
 	constexpr static const byte4 POOL_BUFFER_SIZE = 0x5000;
 	constexpr static const byte4 MAX_PACKETS = 0x100;

@@ -251,7 +251,7 @@ TCP& TCP::flags(const byte value)
     return *this;
 }
 
-byte TCP::flags()
+byte TCP::flags() const
 {
     return Endianness::fromNetwork(m_data->flags);
 }
@@ -270,6 +270,21 @@ constexpr TCP::Flags operator&(TCP::Flags a, TCP::Flags b)
 {
     using T = std::underlying_type_t<TCP::Flags>;
     return static_cast<TCP::Flags>(static_cast<T>(a) & static_cast<T>(b));
+}
+
+std::ostream& operator<<(std::ostream& os, const TCP& tcp)
+{
+	os << "[TCP]" << std::endl;
+	os << "\tSrc Port:   " << tcp.src() << std::endl;
+	os << "\tDst Port:   " << tcp.dst() << std::endl;
+	os << "\tSeq Num:    " << tcp.seq() << std::endl;
+	os << "\tAck Num:    " << tcp.ack() << std::endl;
+	os << "\tFlags:      " << (byte2)tcp.flags() << std::endl;
+	os << "\tWindow:     " << tcp.window() << std::endl;
+	os << "\tChecksum:   " << std::hex << std::setw(4) << std::setfill('0') << tcp.checksum() << std::dec << std::endl;
+	os << "\tUrgent Ptr: " << tcp.urgentPtr() << std::endl;
+
+	return os;
 }
 
 // OPTIONS

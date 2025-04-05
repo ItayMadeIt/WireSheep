@@ -85,7 +85,7 @@ ICMP& ICMP::checksum(const byte2 value)
     return *this;
 }
 
-byte2 ICMP::checksum()
+byte2 ICMP::checksum() const
 {
     return Endianness::fromNetwork(m_data->checksum);
 }
@@ -97,7 +97,7 @@ ICMP& ICMP::content(const byte4 value)
     return *this;
 }
 
-byte4 ICMP::content()
+byte4 ICMP::content() const
 {
     return Endianness::toNetwork(m_data->content);
 }
@@ -132,7 +132,6 @@ ICMP& ICMP::echoRequest(MutablePacket& packet, byte2 id, byte2 seq, const void* 
     content(contentVal);
 
     setPayload(packet, reinterpret_cast<const byte*>(data), static_cast<byte2>(length));
-
 
     return *this;
 }
@@ -236,4 +235,14 @@ void ICMP::encodePost(MutablePacket& packet, const size_t index)
 
     // one complement
     checksum(~checksumVal & 0xFFFF);
+}
+
+std::ostream& operator<<(std::ostream& os, const ICMP& protocol)
+{
+    os << "[ICMP]" << std::endl;
+    os << "\tType:     " << (byte2)protocol.type() << std::endl;
+    os << "\tCode:     " << (byte2)protocol.code() << std::endl;
+    os << "\tChecksum: " << std::hex << std::setw(4) << std::setfill('0') << protocol.checksum() << std::endl;
+    os << "\tContent:  " << std::hex << std::setw(8) << std::setfill('0') << protocol.content() << std::endl << std::dec << std::setfill(' ');
+    return os;
 }

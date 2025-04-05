@@ -233,3 +233,16 @@ ProvidedProtocols IPv4::protType() const
     return ID;
 }
 
+std::ostream& operator<<(std::ostream& os, const IPv4& ipv4)
+{
+    os << "[IPv4]" << std::endl;
+    os << "\tSrc:      " << ipv4.src() << std::endl;
+    os << "\tDst:      " << ipv4.dst() << std::endl;
+    os << "\tProtocol: " << (byte2)ipv4.protocol() << std::endl;
+    os << "\tFlags:    " << (byte2)ipv4.flags() << std::endl;
+    os << "\tId:       " << ipv4.identification() << std::endl;
+    os << "\tTTL:      " << (byte2)ipv4.ttl() << std::endl;
+    os << "\tFrag Off: " << ipv4.fragmentOffset() << std::endl;
+
+    return os;
+}

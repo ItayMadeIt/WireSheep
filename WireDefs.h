@@ -13,7 +13,7 @@ using byte8 = uint64_t;
 // Can add as many protocols
 enum class ProvidedProtocols : byte4
 {
-	Invalid  =  -1,
+	Invalid  =  0xFFFFFFFF,
 	None =  0,
 	Ethernet =  1,
 	IPv4     =  2, // not fully implemented (options)

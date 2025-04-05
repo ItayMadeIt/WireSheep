@@ -145,6 +145,8 @@ public:
 	virtual void encodePre(MutablePacket& packet, const size_t index) override;
 	virtual void encodePost(MutablePacket& packet, const size_t index) override;
 
+	friend std::ostream& operator<<(std::ostream& os, const IPv4& ipv4);
+
 public:
 	static constexpr ProvidedProtocols ID = ProvidedProtocols::IPv4;
 	static constexpr size_t BASE_SIZE = sizeof(IPv4Header);

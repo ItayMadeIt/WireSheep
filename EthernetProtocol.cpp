@@ -78,11 +78,11 @@ std::ostream& operator<<(std::ostream& os, const Ethernet& ether)
 	os << "[Ethernet]" << std::endl;
 
 	// Output source and destination
-	os << "Src : " << ether.src() << std::endl;
-	os << "Dst : " << ether.dst() << std::endl;
+	os << "\tSrc:  " << ether.src() << std::endl;
+	os << "\tDst:  " << ether.dst() << std::endl;
 
 	// Output type as hex
-	os << "Type: 0x" << std::setfill('0') << std::setw(4) << std::hex << ether.type() << std::endl;
+	os << "\tType: " << std::setfill('0') << std::setw(4) << std::hex << ether.type() << std::endl;
 
 	return os;
 }

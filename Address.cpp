@@ -5,6 +5,11 @@ using namespace address;
 
 AddrIPv4::AddrIPv4() = default;
 
+address::AddrIPv4::AddrIPv4(const byte* copy)
+{
+	std::memcpy(m_data, copy, ADDR_IP4_BYTES);
+}
+
 AddrIPv4::AddrIPv4(const std::string& ipv4Str)
 {
 	std::stringstream sstream(ipv4Str);
@@ -137,6 +142,10 @@ AddrIPv4 AddrIPv4::broadcast = AddrIPv4("255.255.255.255");
 
 
 address::AddrMac::AddrMac() = default;
+address::AddrMac::AddrMac(const byte* copy)
+{
+	std::memcpy(m_data, copy, ADDR_MAC_BYTES);
+}
 AddrMac::AddrMac(const std::string& macStr)
 {
 	std::stringstream sstream(macStr);
@@ -277,6 +286,11 @@ AddrMac AddrMac::broadcast = AddrMac("FF:FF:FF:FF:FF:FF");
 
 AddrIPv6::AddrIPv6() = default;
 
+address::AddrIPv6::AddrIPv6(const byte* copy)
+{
+	std::memcpy(m_data, copy, ADDR_IP6_BYTES);
+}
+
 AddrIPv6::AddrIPv6(const std::string& ipv6Str)
 {
 	std::stringstream sstream(ipv6Str);
@@ -375,11 +389,6 @@ bool address::operator!=(const AddrIPv4& addr, const char* str)
 	return !(addr == str);
 }
 
-std::ostream& address::operator<<(std::ostream& os, const AddrIPv4 ipv4)
-{
-	return os << ipv4.toString();
-}
-
 bool address::operator==(const AddrIPv6& a, const AddrIPv6 b)
 {
 	return std::memcmp(a.m_data, b.m_data, ADDR_IP6_BYTES);
@@ -455,12 +464,38 @@ bool address::operator!=(const AddrIPv6& addr, const char* str)
 	return !(addr == str);
 }
 
+std::ostream& address::operator<<(std::ostream& os, const AddrIPv4 ipv4)
+{
+	char buf[16];
+	std::snprintf(buf, sizeof(buf), "%u.%u.%u.%u",
+		ipv4.m_data[0], ipv4.m_data[1], ipv4.m_data[2], ipv4.m_data[3]);
+
+	return os << buf;
+}
+
 std::ostream& address::operator<<(std::ostream& os, const AddrIPv6 ipv6)
 {
-	return os << ipv6.toString();
+	char buf[40];
+	int offset = 0;
+
+	for (int i = 0; i < 16; i += 2)
+	{
+		if (i != 0) buf[offset++] = ':';
+
+		uint16_t val = (ipv6.m_data[i] << 8) | ipv6.m_data[i + 1];
+		offset += std::snprintf(buf + offset, sizeof(buf) - offset, "%x", val);
+	}
+
+	buf[offset] = '\0';
+	return os << buf;
 }
 
 std::ostream& address::operator<<(std::ostream& os, const AddrMac mac)
 {
-	return os << mac.toString();
+	char buf[18];
+
+	std::snprintf(buf, sizeof(buf), "%02X:%02X:%02X:%02X:%02X:%02X",
+		mac.m_data[0], mac.m_data[1], mac.m_data[2], mac.m_data[3], mac.m_data[4], mac.m_data[5]);
+
+	return os << buf;
 }

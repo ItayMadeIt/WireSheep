@@ -17,6 +17,7 @@ namespace address
 	struct AddrIPv4
 	{
 		AddrIPv4();
+		AddrIPv4(const byte* copy);
 		AddrIPv4(const std::string& ipv4Str);
 		AddrIPv4(const char* ipv4Str);
 
@@ -51,6 +52,7 @@ namespace address
 	struct AddrIPv6
 	{
 		AddrIPv6();
+		AddrIPv6(const byte* copy);
 		AddrIPv6(const std::string& ipv6Str);
 		AddrIPv6(const char* ipv6Str);
 
@@ -84,9 +86,10 @@ namespace address
 	struct AddrMac
 	{
 		AddrMac();
+		AddrMac(const byte* copy);
 		AddrMac(const std::string& macStr);
 		AddrMac(const char* macStr);
-
+		
 		/// <summary>
 		/// Array to store IPv6 (6 bytes).
 		/// Data stored in network order.

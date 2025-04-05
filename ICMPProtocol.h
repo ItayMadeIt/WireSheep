@@ -124,11 +124,11 @@ public:
 	byte code() const;
 
 	ICMP& checksum(const byte2 value);
-	byte2 checksum();
+	byte2 checksum() const;
 
 	// Simple content access
 	ICMP& content(const byte4 value);
-	byte4 content();
+	byte4 content() const;
 
 	ICMP& setPayload(MutablePacket& packet, const byte* payload, const byte2 length);
 	byte* getPayloadPtr();
@@ -141,7 +141,6 @@ public:
 	ICMP& timeExceeded(MutablePacket& packet, byte codeVal, const byte* originalIPv4Packet);
 	ICMP& timeExceeded(MutablePacket& packet, ControlCode codeVal, const byte* originalIPv4Packet);
 
-
 	virtual size_t getSize() const override;
 	virtual void addr(byte* address) override;
 	virtual byte* addr() const override;
@@ -149,6 +148,8 @@ public:
 
 	void encodePre(MutablePacket& packet, const size_t index);
 	void encodePost(MutablePacket& packet, const size_t index);
+
+	friend std::ostream& operator<<(std::ostream& os, const ICMP& protocol);
 
 public:
 	static constexpr ProvidedProtocols ID = ProvidedProtocols::ICMP;

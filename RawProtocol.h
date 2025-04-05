@@ -20,6 +20,8 @@ public:
 
 	virtual ProvidedProtocols protType() const;
 
+	friend std::ostream& operator<<(std::ostream& os, const Raw& raw);
+
 public:
 	static constexpr ProvidedProtocols ID = ProvidedProtocols::Raw;
 	static constexpr size_t BASE_SIZE = 0;

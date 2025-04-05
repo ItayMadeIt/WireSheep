@@ -51,3 +51,10 @@ size_t Raw::getSize() const
 {
     return m_size;
 }
+
+std::ostream& operator<<(std::ostream& os, const Raw& raw)
+{
+    os << raw.addr() ;
+
+    return os;
+}

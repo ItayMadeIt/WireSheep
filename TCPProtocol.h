@@ -104,7 +104,7 @@ public:
 	byte2 urgentPtr() const;
 
 	TCP& flags(const byte value);
-	byte flags();
+	byte flags() const;
 
 
 	template<typename OptionType>
@@ -122,6 +122,8 @@ public:
 
 	virtual void encodePre(MutablePacket& packet, const size_t index) override;
 	virtual void encodePost(MutablePacket& packet, const size_t index)override;
+
+	friend std::ostream& operator<<(std::ostream& os, const TCP& tcp);
 
 public:
 	static constexpr ProvidedProtocols ID = ProvidedProtocols::TCP;

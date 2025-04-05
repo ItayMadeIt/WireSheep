@@ -235,3 +235,34 @@ ARP& ARP::targetProtocolAddr(const byte* addr)
 
 	return *this;
 }
+
+std::ostream& operator<<(std::ostream& os, const ARP& arp)
+{
+	using namespace address;
+
+	constexpr size_t hwLen = ADDR_MAC_BYTES;
+	constexpr size_t protoLen = ADDR_IP4_BYTES;
+
+	os << "[ARP]" << std::endl;
+
+	if (arp.hardwareLength() == hwLen && arp.protocolLength() == protoLen)
+	{
+		AddrMac senderMac(arp.senderHardwareAddr());
+		AddrIPv4 senderIP(arp.senderProtocolAddr());
+		AddrMac targetMac(arp.targetHardwareAddr());
+		AddrIPv4 targetIP(arp.targetProtocolAddr());
+
+		os << "\tSender MAC:  " << senderMac << std::endl;
+		os << "\tSender IP:   " << senderIP << std::endl;
+		os << "\tTarget MAC:  " << targetMac << std::endl;
+		os << "\tTarget IP:   " << targetIP << std::endl;
+	}
+	else
+	{
+		os << "\t[!] Unknown address sizes:" << std::endl;
+		os << "\t    Hardware size: " << static_cast<int>(arp.hardwareLength()) << std::endl;
+		os << "\t    Protocol size: " << static_cast<int>(arp.protocolLength()) << std::endl;
+	}
+
+	return os;
+}

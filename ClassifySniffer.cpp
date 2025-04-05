@@ -28,6 +28,7 @@ bool ClassifySniffer::capture(byte4 maxPackets)
 		// error
 		if (res == 0)
 		{
+			std::cout << "Timeout occurred. Reason: " << pcap_geterr(m_device.getHandle()) << "\n";
 			m_running = false;
 			return false;
 		}

@@ -85,10 +85,13 @@ public:
 	
 	virtual ProvidedProtocols protType() const;
 	
+	friend std::ostream& operator<<(std::ostream& os, const ARP& arp);
+
 public:
 	static constexpr ProvidedProtocols ID = ProvidedProtocols::ARP;
 	static constexpr size_t BASE_SIZE = sizeof(ARPHeader);
 
+	
 protected:
 	size_t m_size;
 
