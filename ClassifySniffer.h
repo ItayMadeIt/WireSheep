@@ -1,10 +1,12 @@
 #pragma once
 
+#include <functional>
 #include "Device.h"
 #include "StaticVector.hpp"
 #include "IMMutablePacket.h"
 #include "ClassifiedPacket.h"
 #include "Classifier.h"
+
 
 class ClassifySniffer {
 public:
@@ -13,9 +15,12 @@ public:
 	void setClassifier(Classifier* newClassifier);
 
 	bool capture(byte4 maxPackets = 0x200);
+	bool callbackCapture(byte4 maxPackets);
+
+	void setCallback(std::function<void(ClassifiedPacket& packet)> callback);
 
 	void setFilter(const char* filterStr);
-	void setFilter(bool (*customFilter)(ClassifiedPacket& packet));
+	void setFilter(std::function<bool(ClassifiedPacket& packet)> filter);
 
 	ClassifiedPacket& getClassifiedPacket(byte4 index);
 
@@ -48,10 +53,16 @@ public:
 	PacketIterator end() { return { m_classifiedPackets.end() }; }
 
 private:
+	static void packetHandler(u_char* userData, const pcap_pkthdr* header, const u_char* packetData);
+	void createPacketHandler(const pcap_pkthdr* header, const u_char* packetData);
+
+private:
 	constexpr static const byte4 POOL_BUFFER_SIZE = 0x5000;
 	constexpr static const byte4 MAX_PACKETS = 0x100;
 
-	bool (*m_customFilter)(ClassifiedPacket& packet);
+	std::function<bool(ClassifiedPacket& packet)> m_filter;
+	std::function<void(ClassifiedPacket& packet)> m_callback;
+	byte4 m_packets;
 
 	Device& m_device;
 	bool m_running;

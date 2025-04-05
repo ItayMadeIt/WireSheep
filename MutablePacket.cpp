@@ -4,6 +4,23 @@ MutablePacket::MutablePacket() :
     Packet(), m_protocolCount(0), m_protocolEndOffset(0), m_size(0), m_buffer{}
 {}
 
+void MutablePacket::detach()
+{
+	if (m_protocolCount == 0)
+	{
+		throw std::exception("No protocols to detach!");
+	}
+
+	// Pop the last attached protocol
+	const MutableProtocolEntry& lastEntry = m_protocolEntries[m_protocolCount - 1];
+
+	m_size = lastEntry.dataOffset; 
+	m_protocolEndOffset = lastEntry.objectOffset; 
+
+	// Remove from entries
+	--m_protocolCount;
+}
+
 byte* MutablePacket::getBuffer()
 {
 	return m_buffer;

@@ -34,7 +34,7 @@ public:
 	virtual void encodePre(MutablePacket& packet, const size_t index) override;
 	virtual void encodePost(MutablePacket& packet, const size_t index)override;
 
-	friend std::ostream& operator<<(std::ostream& os, UDP& udp);
+	friend std::ostream& operator<<(std::ostream& os, const UDP& udp);
 
 public:
 	static constexpr ProvidedProtocols ID = ProvidedProtocols::UDP;

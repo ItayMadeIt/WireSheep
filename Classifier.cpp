@@ -7,6 +7,7 @@
 #include "UDPProtocol.h"
 #include "DNSProtocol.h"
 #include "ICMPProtocol.h"
+#include "RawProtocol.h"
 
 Classifier Classifier::m_singleton;
 
@@ -31,7 +32,7 @@ void Classifier::parse(ClassifiedPacket& packet)
 		lastProtocol = packet.get<Protocol>(protocolsCount - 1).protType();
 	}
 
-	ProvidedProtocols newProtocol = ProvidedProtocols::None;
+	bool found = false;
 
 	// Will be modified from o(n) to o(1) :
 	for (byte4 i = 0; i < m_rules.count(); i++)
@@ -43,10 +44,17 @@ void Classifier::parse(ClassifiedPacket& packet)
 		
 		if (m_rules[i].apply(packet))
 		{
+			found = true;
+
 			// parse another layer
 			parse(packet);
 			break;
 		}
+	}
+
+	if (! found)
+	{
+		packet.add<Raw>().setSize(packet.unidentifiedPacketSize());
 	}
 }
 

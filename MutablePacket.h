@@ -19,6 +19,8 @@ public:
 
 	template<typename ProtocolClass, typename... Args>
 	ProtocolClass& attach(Args&&... args);
+	
+	void detach();
 
 	byte* getBuffer();
 	byte4 getSize();
@@ -94,10 +96,11 @@ inline ProtocolClass& MutablePacket::attach(Args&&... args)
 		throw std::exception("Not enough space for alignment!");
 	}
 
+	std::memset(m_buffer + protocolDataOffset, 0, ProtocolClass::BASE_SIZE);
+
 	// Add base size of protocol to buffer size
 	// If more specifciation is needed, modify Packet using helper functions.
 	m_size += ProtocolClass::BASE_SIZE;
-
 	ProtocolClass* protocolObj = new (alignedPtr) ProtocolClass(m_buffer + protocolDataOffset, std::forward<Args>(args)...);
 
 	// Modify to the alligned offset value

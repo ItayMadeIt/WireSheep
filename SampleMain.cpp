@@ -70,9 +70,63 @@ bool myFilter(ClassifiedPacket& packet)
 
 	return arp->protocolLength() == ADDR_IP4_BYTES && arp->hardwareLength() == ADDR_MAC_BYTES;
 	*/
-
+	
+	/*
 	ICMP* icmp;
 	return packet.tryGet<ICMP>(icmp);
+	*/
+	return false;
+}
+
+bool dnsFilter(ClassifiedPacket& packet)
+{
+	DNS* dns;
+	return (packet.tryGet<DNS>(dns));
+}
+
+void sendDnsPacket(Device& device)
+{
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+	MutablePacket packet;
+	Ethernet& ether = packet.attach<Ethernet>();
+	// from my device to my device
+	ether.src(device.getDeviceMac());
+	ether.dst(device.getDeviceMac());
+	ether.type(Ethernet::Protocols::IPv4);
+
+	IPv4& ipv4 = packet.attach<IPv4>();
+	ipv4.dscp((byte)IPv4::Services::CS0);
+	ipv4.version(4);
+	ipv4.ihl(5);
+	ipv4.identification(0x1234);
+	ipv4.src(device.getDeviceIPv4());
+	ipv4.dst("8.8.8.8");
+	ipv4.protocol(IPv4::Protocols::UDP);
+	ipv4.ttl(64);
+
+	UDP& udp = packet.attach<UDP>();
+	udp.src(0x1234);
+	udp.dst(53);
+
+	DNS& dns = packet.attach<DNS>();
+	dns.addQuestion(packet, DNS::formatDomain("wikipedia.com"), (byte)DNS::RRType::A, (byte)DNS::RRClass::Internet);
+
+	packet.compile();
+
+	device << packet;
+	std::cout << "Sent wikipedia.com" << std::endl;
+
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+	packet.detach();// remove last DNS
+	DNS& dns2 = packet.attach<DNS>();
+	dns2.addQuestion(packet, DNS::formatDomain("youtube.com"), (byte)DNS::RRType::A, (byte)DNS::RRClass::Internet);
+
+	packet.compile();
+
+	device << packet;
+	std::cout << "Sent youtube.com" << std::endl;
 }
 
 int main()
@@ -89,29 +143,29 @@ int main()
 
 	ClassifySniffer sniffer(device, &Classifier::basicClassifier());
 
-	const int CAPTURE_AMOUNT = 2;
+	const int CAPTURE_AMOUNT = 8;
 
-	sniffer.setFilter(myFilter);
-	bool succeed = sniffer.capture(CAPTURE_AMOUNT);
+	sniffer.setFilter("udp"); // basic filter
+	sniffer.setFilter(dnsFilter); // udp port filter
+	sniffer.setCallback(
+		[&device](ClassifiedPacket& recvPacket) -> void
+		{
+			std::cout << "Packet " << " [" << recvPacket.getRaw().size() << "]" << std::endl;
 
-	if (!succeed)
-	{
-		std::cerr << "Capture failed." << std::endl;
-		return - 1; 
-	}
-
-	for (ClassifiedPacket& packet : sniffer)
-	{
-		std::cout << "Packet " << " ["  << packet.getRaw().size() << "]" << std::endl;
-		std::cout << packet.getRaw() << std::endl;
+			DNS& recvDNS = recvPacket.get<DNS>();
+			std::cout << recvDNS << std::endl;
+		}
+	);
 	
-		Ethernet& ether = packet.get<Ethernet>();
-		std::cout << ether << std::endl;
+	std::thread sendThread(
+		[&]()
+		{
+			sendDnsPacket(device);
+		}
+	);
 
-		IPv4& ip = packet.get<IPv4>();
-		std::cout << ip << std::endl;
-		
-		ICMP& arp = packet.get<ICMP>();
-		std::cout << arp << std::endl;
-	}
+	bool succeed = sniffer.callbackCapture(CAPTURE_AMOUNT);
+	sendThread.join();
+
+	return 0;
 }

@@ -200,7 +200,6 @@ int operator>>(Device& device, IMMutablePacket& packet)
 
 	std::memcpy(packet.buffer(), pkt_buffer, pkt_header->caplen);
 	packet.size(pkt_header->caplen);
-
 	packet.setTimestamp(pkt_header->ts);
 
 	return res;

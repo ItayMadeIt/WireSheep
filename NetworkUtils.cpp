@@ -17,7 +17,7 @@ AddrMac NetworkUtils::getSelfMac(const char* deviceName)
     }
     if (from == len)
     {
-        throw std::runtime_error("No { found in MAC address");
+        from = 0;
     }
 
     size_t to = len > 0 ? len - 1 : 0; // last char

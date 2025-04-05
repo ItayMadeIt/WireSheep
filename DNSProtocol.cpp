@@ -861,11 +861,13 @@ std::ostream& operator<<(std::ostream& os, const DNS::ResourceRecord& r)
 {
     DomainBytes domain = DNS::decodeDomain(r.m_domain);
 
-    return os << "[RR] " << domain.c_str()
+    os << "[RR] " << domain.c_str()
         << "  Type: " << (r.m_type)
         << "  Class: " << (r.m_class)
         << "  TTL: " << (r.m_ttl)
-        << "  RDATA: " << r.m_rdata.c_str();
+        << "  RDATA: ";
+    os.write(r.m_rdata.c_str(), r.m_rdata.size());
+    return os;
 }
 
 std::ostream& operator<<(std::ostream& os, const DNS& dns)

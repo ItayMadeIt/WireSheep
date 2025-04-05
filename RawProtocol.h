@@ -13,6 +13,8 @@ public:
 	Raw& pushBack(const byte* values, const size_t length, MutablePacket& packet);
 	Raw& pushBack(const std::vector<byte>& values, MutablePacket& packet);
 
+	void setSize(byte4 size);
+
 	virtual size_t getSize() const override;
 
 	virtual void addr(byte* address) override;
